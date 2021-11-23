@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Converting Numeric/String Variables</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-96123149-3');
+  </script>
+</head>
+
+<body>
+  <div class="border">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+<!--   <div class="fast-nav">
+    <div id="back"><a href="../stata.html">&larr;</a></div>
+    <div id="home"><a href="../home.html">home</a></div>
+  </div> -->
+    
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Converting Numeric/String Variables</h1>
+	<h2>encode; decode</h2>
+	<p>
+		<span class="g">encode <em>var</em>, gen(<em>newvar</em>)</span> creates a numeric variable <span class="g">newvar</span> by assigning a numeric value to each of <span class="g">var</span>'s string value. It provides a mapping between the numeric value and the value label. 
+	</p>
+	<p>
+		<span class="g">
+			. sysuse auto <br>
+			. encode make, gen(make_num)</span> creates the numeric variable <span class="g">make_num</span>.<br>
+		<span class="g">. label list make_num</span> gives us the mapping between the numeric values and the labels of the newly defined numeric variable <span class="g">make_num</span>. 
+	<pre><code>
+make_num:
+           1 AMC Concord
+           2 AMC Pacer
+           3 AMC Spirit
+           4 Audi 5000
+           5 Audi Fox
+           6 BMW 320i
+           7 Buick Century
+           8 Buick Electra
+           9 Buick LeSabre
+          10 Buick Opel
+          11 Buick Regal
+          12 Buick Riviera
+          13 Buick Skylark
+          14 Cad. Deville
+          15 Cad. Eldorado
+          16 Cad. Seville
+          17 Chev. Chevette
+          18 Chev. Impala
+          19 Chev. Malibu
+          20 Chev. Monte Carlo
+          21 Chev. Monza
+          22 Chev. Nova
+          23 Datsun 200
+          24 Datsun 210
+          25 Datsun 510
+          26 Datsun 810
+          27 Dodge Colt
+          28 Dodge Diplomat
+          29 Dodge Magnum
+          30 Dodge St. Regis
+          31 Fiat Strada
+          32 Ford Fiesta
+          33 Ford Mustang
+          34 Honda Accord
+          35 Honda Civic
+          36 Linc. Continental
+          37 Linc. Mark V
+          38 Linc. Versailles
+          39 Mazda GLC
+          40 Merc. Bobcat
+          41 Merc. Cougar
+          42 Merc. Marquis
+          43 Merc. Monarch
+          44 Merc. XR-7
+          45 Merc. Zephyr
+          46 Olds 98
+          47 Olds Cutl Supr
+          48 Olds Cutlass
+          49 Olds Delta 88
+          50 Olds Omega
+          51 Olds Starfire
+          52 Olds Toronado
+          53 Peugeot 604
+          54 Plym. Arrow
+          55 Plym. Champ
+          56 Plym. Horizon
+          57 Plym. Sapporo
+          58 Plym. Volare
+          59 Pont. Catalina
+          60 Pont. Firebird
+          61 Pont. Grand Prix
+          62 Pont. Le Mans
+          63 Pont. Phoenix
+          64 Pont. Sunbird
+          65 Renault Le Car
+          66 Subaru
+          67 Toyota Celica
+          68 Toyota Corolla
+          69 Toyota Corona
+          70 VW Dasher
+          71 VW Diesel
+          72 VW Rabbit
+          73 VW Scirocco
+          74 Volvo 260		
+	</code></pre>
+	</p>
+	<p>
+		<span class="g">decode <em>var</em>, gen(<em>newvar</em>)</span> works the other way around. It creates a string variable <span class="g">newvar</span> using the value labels attached earlier to the numeric variable <span class="g">var</span>. <br>
+		<span class="g">. decode foreign, gen(foreign_str)</span> creates a string variable that has two values “Domestic” and “Foreign”. <br>
+		<span class="g">. codebook foreign_str </span> 
+		<pre><code>
+-----------------------------------------------------------------------------------
+foreign_str                                                                Car type
+-----------------------------------------------------------------------------------
+
+                  type:  string (str8)
+
+         unique values:  2                        missing "":  0/74
+
+            tabulation:  Freq.  Value
+                            52  "Domestic"
+                            22  "Foreign"			
+		</code></pre>
+		Compare with <br>
+		<span class="g">.  codebook foreign </span> 
+		<pre><code>
+-----------------------------------------------------------------------------------
+foreign                                                                    Car type
+-----------------------------------------------------------------------------------
+
+                  type:  numeric (byte)
+                 label:  origin
+
+                 range:  [0,1]                        units:  1
+         unique values:  2                        missing .:  0/74
+
+            tabulation:  Freq.   Numeric  Label
+                            52         0  Domestic
+                            22         1  Foreign			
+		</code></pre>
+	</p>
+
+	<h2>destring; tostring</h2>
+	<p>
+		<span class="g">destring/tostring, replace</span> or <span class="g">destring/tostring, generate()</span> converts string variables to numeric variables and vice versa. 
+	</p>
+	<p>
+		<span class="g">
+			. tostring make_num, gen(make_str)</span> converts the numeric variable <span class="g">make_num</span> previously <span class="g">encode</span>d from <span class="g">make</span> back to a string variable but with values in numbers rather than alphabetical letters. <br>
+		<span class="g">. codebook  make_str</span>
+		<pre><code>
+-----------------------------------------------------------------------------------
+make_str                                                             Make and Model
+-----------------------------------------------------------------------------------
+
+                  type:  string (str2)
+
+         unique values:  74                       missing "":  0/74
+
+              examples:  "21"
+                         "35"
+                         "49"
+                         "62"
+		</code></pre>
+
+	</p>
+	<p>
+		<span class="g">. destring make_str, replace</span> converts <span class="g">make_str</span> to a numeric variable. <br>
+		<span class="g">. codebook  make_str</span>
+		<pre><code>
+-----------------------------------------------------------------------------------
+make_str                                                             Make and Model
+-----------------------------------------------------------------------------------
+
+                  type:  numeric (byte)
+
+                 range:  [1,74]                       units:  1
+         unique values:  74                       missing .:  0/74
+
+                  mean:      37.5
+              std. dev:   21.5058
+
+           percentiles:        10%       25%       50%       75%       90%
+                                 8        19      37.5        56        67			
+		</code></pre>
+	</p>
+
+	<h2>real(); string()</h2>
+		<p>
+		<span class="g">string(<em>n</em>)</span> and <span class="g">real(<em>s</em>)</span> are two string functions that convert numeric/string to string/numeric variables. 
+	</p>
+	<p>
+		<span class="g">string(<em>n</em>)</span> is a synonym for <span class="g">strofreal(<em>n</em>)</span> and converts numeric or missing values to strings. <br>
+		<span class="g">
+			. sysuse auto <br>
+			. gen rep78_str = string(rep78)</span> converts the numeric and missing values of <span class="g">rep78</span> to strings.
+	</p>
+	<p>
+		<span class="g">real(<em>s</em>)</span> converts strings to numeric or missing values. The string variable must contain number characters, otherwise missing values will be generated. <br>
+		<span class="g">. gen rep78_str_num = real(rep78_str)</span>  converts the string variable <span class="g">rep78_str</span> created above back to numeric again. 
+	</p>
+
+	<h2>Summary</h2>
+	<p>
+		<span class="g">label define</span> creates labels to each value of a numeric variable.
+	</p>
+	<p>
+		<span class="g">encode</span> works on strings. It creates a new variable, and assigns a numeric value to each of the string value. <br> 
+		<span class="g">decode</span> works on numeric variables that has attached value labels. It creates a new string variable that gets its variable values from the previous label values. 
+	</p>
+	<p>
+		<span class="g">destring</span> works on string variables that contain numbers stored as strings, and converts them to numbers. <br>
+		<span class="g">tostring</span> converts numeric variables to strings. <br>
+	</p>
+	<p>
+		<span class="g">real()/string()</span> functions convert strings/numeric variables between each other, but cannot be used just by themselves.
+	</p>
+	
+	</div>
+  <div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+business_id,name,full_address,hours,open,categories,city,state,review_count,stars
+5UmKMjUEUNdYWqANhGckJw,Mr Hoagie,"4734 Lebanon Church Rd
+Dravosburg, PA 15034","{'Friday': {'close': '21:00', 'open': '11:00'}, 'Wednesday': {'close': '21:00', 'open': '11:00'}, 'Thursday': {'close': '21:00', 'open': '11:00'}, 'Monday': {'close': '21:00', 'open': '11:00'}, 'Tuesday': {'close': '21:00', 'open': '11:00'}}",TRUE,"['Fast Food', 'Restaurants']",Dravosburg,PA,4,4.5
+UsFtqoBl7naz8AVUBZMjQQ,Clancy's Pub,"202 McClure St
+Dravosburg, PA 15034",{},TRUE,['Nightlife'],Dravosburg,PA,4,3.5
+3eu6MEFlq2Dg7bQh8QbdOg,Joe Cislo's Auto,"1 Ravine St
+Dravosburg, PA 15034",{},TRUE,"['Auto Repair', 'Automotive']",Dravosburg,PA,3,5
+cE27W9VPgO88Qxe4ol6y_g,Cool Springs Golf Center,"1530 Hamilton Rd
+Bethel Park, PA 15234",{},FALSE,"['Active Life', 'Mini Golf', 'Golf']",Bethel Park,PA,5,2.5
+HZdLhv6COCleJMo7nPl-RA,Verizon,"301 South Hills Village
+Pittsburgh, PA 15241","{'Thursday': {'close': '17:00', 'open': '10:00'}, 'Saturday': {'close': '21:00', 'open': '10:00'}, 'Monday': {'close': '21:00', 'open': '10:00'}, 'Sunday': {'close': '18:00', 'open': '11:00'}, 'Friday': {'close': '17:00', 'open': '10:00'}, 'Tuesday': {'close': '21:00', 'open': '10:00'}, 'Wednesday': {'close': '21:00', 'open': '10:00'}}",TRUE,"['Shopping', 'Home Services', 'Internet Service Providers', 'Mobile Phones', 'Professional Services', 'Electronics']",Pittsburgh,PA,5,2.5
+mVHrayjG3uZ_RLHkLj-AMg,Emil's Lounge,"414 Hawkins Ave
+rankin, PA 15104","{'Tuesday': {'close': '19:00', 'open': '10:00'}, 'Wednesday': {'close': '19:00', 'open': '10:00'}, 'Thursday': {'close': '19:00', 'open': '10:00'}, 'Saturday': {'close': '16:00', 'open': '10:00'}, 'Friday': {'close': '20:00', 'open': '10:00'}}",TRUE,"['Bars', 'American (New)', 'Nightlife', 'Lounges', 'Restaurants']",rankin,PA,20,5
+VHYT1qgQw5JvXAlUDhTArA,Extreme Fitness 2,"2101 Greentree Rd Ste B201
+Pittsburgh, PA 15220",{},TRUE,"['Active Life', 'Trainers', 'Fitness & Instruction']",Pittsburgh,PA,3,2.5
+KayYbHCt-RkbGcPdGOThNg,Alexion's Bar & Grill,"141 Hawthorne St
+Greentree
+Carnegie, PA 15106","{'Thursday': {'close': '02:00', 'open': '11:00'}, 'Saturday': {'close': '02:00', 'open': '12:00'}, 'Monday': {'close': '02:00', 'open': '11:00'}, 'Friday': {'close': '02:00', 'open': '11:00'}, 'Tuesday': {'close': '02:00', 'open': '11:00'}, 'Wednesday': {'close': '02:00', 'open': '11:00'}}",TRUE,"['Bars', 'American (Traditional)', 'Nightlife', 'Restaurants']",Carnegie,PA,21,4
+b12U9TFESStdy7CsTtcOeg,Flynn's Tire And Auto Service,"718A Hope Hollow Rd
+Carnegie, PA 15106","{'Thursday': {'close': '19:00', 'open': '07:30'}, 'Saturday': {'close': '16:00', 'open': '07:30'}, 'Monday': {'close': '19:00', 'open': '07:30'}, 'Friday': {'close': '19:00', 'open': '07:30'}, 'Tuesday': {'close': '19:00', 'open': '07:30'}, 'Wednesday': {'close': '19:00', 'open': '07:30'}}",TRUE,"['Auto Repair', 'Automotive', 'Tires']",Carnegie,PA,7,2.5
+Sktj1eHQFuVa-M4bgnEh8g,Forsythe Miniature Golf & Snacks,"920 Forsythe Rd
+Carnegie
+Carnegie, PA 15106",{},FALSE,"['Active Life', 'Mini Golf']",Carnegie,PA,4,4

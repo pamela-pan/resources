@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Arranging Your Data</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Arranging Your Data</h1>
+	<h2>sort; gsort</h2>
+	<p>
+		<span class="g">sort/gsort</span>  arranges the observations in ascending order. <br>
+		<span class="g">
+			. sysuse auto <br>
+			. sort make</span> 
+	</p>
+	<p>
+		<span class="g">gsort -<em>var</em></span> can arrange the observations in descending order. 
+	</p>
+	<p>
+		<span class="g">. gsort mpg</span> sorts <span class="g">mpg</span> in ascending order.<br>
+		<span class="g">. gsort -mpg price</span>  sorts <span class="g">mpg</span> in descending order and <span class="g">price</span> in ascending order.
+	</p>
+
+	<h2>order</h2>
+	<p>
+		<span class="g">order</span> arranges the order of variables.
+	</p>
+	<p>
+		<span class="g">order <em>varlist</em>(, first)</span> or <span class="g">order <em>varlist</em>, last</span> moves the variables to the first or last column. <br>
+		<span class="g">. order trunk turn, last</span> moves the two variables <span class="g">trunk</span> and <span class="g">turn</span> to the last two columns.
+	</p>
+	<p>
+		<span class="g">order <em>varlist</em>, before(<em>var</em>)</span> or <span class="g">order <em>varlist</em>, after(<em>var</em>)</span> moves the variables before or after a certain variable. <br>
+		<span class="g">. order trunk turn, before(mpg)</span> moves <span class="g">trunk</span> and <span class="g">turn</span> before <span class="g">mpg</span>.
+	</p>
+
+	</div>
+
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Creating and Recoding Variables</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+	
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Creating and Recoding Variables</h1>
+
+	<p>The five commands below are often used to create or modify variables. </p>
+	<h2>generate; replace</h2>
+	<p>
+		<span class="g">generate <em>newvar</em> = <em>exp</em></span> creates the new variable from existing variables through an expression. <br>
+		<span class="g">
+		. sysuse auto<br>
+		. gen price1 = price/2.5<br></span>
+	</p>
+	<p>
+		<span class="g">replace</span> changes the contents of a variable. It can be used in combination with <span class="g">generate</span> to recode the newly created variable from the existing numeric variable.<br>
+		<span class="g">
+		. gen price2 = price<br>
+		. replace price2 = price*0.8 if foreign == 1</span>
+	</p>
+
+	<h2>recode</h2>
+	<p>
+		<span class="g">recode <em>var (rule)...</em>, generate(<em>newvar</em>)</span> changes the contents of numeric variables, usually to create categorical variables. 
+	</p>
+	<p>
+		<span class="g">
+			. sysuse auto <br>
+			. recode rep78 (min/2 = 1 good) (3 = 2 fair) (4 5 = 3 poor) (missing = .), gen(rep78_scale) label(repair_record_scale)<br>
+		</span>
+	</p>
+	<p>
+		Some notes for <span class="g">recode</span>:
+	</p>
+	<h4>ranges</h4>
+	<p>
+		Values specified in the <span class="g">()</span> includes the two boundaries.
+	</p>
+	<p>
+		Numbers to the left of <span class="g">=</span> are values to be recoded, while the number following <span class="g">=</span> is the new value to be assigned.
+	</p>
+	<p>
+		<span class="g">/</span> means “through”.
+	</p>
+	<h4>values</h4>
+	<p>
+		<span class="g">min</span> refers to the smallest value; <span class="g">max</span> refers to the largest value.
+	</p>
+	<p>
+		<span class="g">missing</span> indicates all missing values; <span class="g">nonmissing</span> for all nonmissing values; and <span class="g">else</span> for both missing and non-missing values. 
+	</p>
+	<p>
+		If there are values unassigned, they will be taken to the new variable as they are.
+	</p>
+	<h4>value labels</h4>
+	<p>
+		Contents following the assigned value is the value label (e.g. good).
+	</p>
+	<p>
+		<span class="g">label()</span> gives a name to the new value label.
+	</p>
+	<p>
+		To check if the transformations have worked as we would like them to be, it is always a good idea to cross-tabulate the newly defined variables and the variables created from. <br>
+		<span class="g">
+		. tab rep78 rep78_scale</span> <br>
+	<pre>
+		<code>
+    Repair |  RECODE of rep78 (Repair Record 1978)
+    Record |              
+      1978 |      good       fair       poor |     Total
+-----------+---------------------------------+----------
+         1 |         2          0          0 |         2 
+         2 |         8          0          0 |         8 
+         3 |         0         30          0 |        30 
+         4 |         0          0         18 |        18 
+         5 |         0          0         11 |        11 
+-----------+---------------------------------+----------
+     Total |        10         30         29 |        69 
+
+		</code>
+	</pre>
+	</p>
+
+	<h2>egen</h2>
+	<p>
+		<span class="g">egen</span> is the extended <span class="g">generate</span>. It requires a function to be specified to generate a new variable: <span class="g">egen <em>newvar</em> = <em>function()</em></span>. 
+	</p>
+	<p>
+		Functions include <span class="g">mean(), sd(), min(), max(), rowmean(), diff(), total(), std(), group()</span> etc.  Type <span class="g">help egen</span> to view a complete list and descriptions of the functions that go with <span class="g">egen</span>.
+	</p>
+	<p>Below we will see some common usage of <span class="g">egen</span>.</p>
+
+	<h3>generating new variables</h3>
+	<h4>total()</h4>
+	<p>
+		<span class="g">
+			. sysuse auto <br>
+			. egen total_weight=total(weight), by(foreign)</span> creates the total car weight by car type. 
+	</p>
+	<p>
+		Note that <span class="g">egen <em>newvar</em> = total()</span> treats missing values as 0. Therefore, if we want to include only the nonmissing cases, we need to <br>
+		<span class="g">
+			. egen total_weight = total(weight) if !missing(weight), by(foreign) 
+		</span> 
+	</p>
+
+	<h4>rowmean()</h4>
+	<p>
+		<span class="g">. egen car_space = rowmean(headroom length)</span> creates an arbitrary measure for car space using the mean of headroom and car length. 
+	</p>
+	<p>
+		Note that if one of the two variables <span class="g">headroom</span> and <span class="g">length</span> is missing, <span class="g">egen <em>newvar</em> = rowmean()</span> will ignore the missing observations and use the non-missing observations for calculation. If both are missing, <span class="g">egen <em>newvar</em> = rowmean()</span> will then return a missing value. In this example neither variable contains missing values. 
+	<p>
+		Compare this method with the <span class="g">generate</span> method:<br>
+		<span class="g">. gen car_space2 = (headroom + length)/2</span> where if any of the variables has missing values, <span class="g">generate</span> will ignore the entire rows and return missing values.
+	</p>
+
+<!-- 	<h4>max()</h4>
+	<p>
+		In hierarchical data, in combination with the <span class="g">by</span> prefix , <span class="g">generate</span> and <span class="g">egen</span> can be used to create indicator variables on lower levels. <br>
+		<span class="g">
+		. sysuse citytemp <br>
+		. by region (division),sort: gen heat_Ind1 = heatdd > 8000 </span>
+	</p> -->
+
+	<h4>group()</h4>
+	<p><span class="g">egen <em>group_id</em> = group(<em>old_group_var</em>)</span> creates a new group id with numeric values for the categorical variable.</p>
+	<p>
+		<span class="g">
+		. sysuse citytemp <br>
+		. egen region_id = group(region) <br>
+		. tostring(region_id), replace <br></span>
+		generates a new group id with values from 1 to 4 for the categorical variable <span class="g">region</span> and then converts the id variable to a string. 
+	</p>
+	
+	<h3>recoding variables</h3>
+	<h4>cut()</h4>
+	<p>
+		<span class="g">egen <em>newvar</em> = cut(<em>var</em>),at(<em>#,#,…,#</em>)</span> provides one more method of recoding numeric to categorical variables. <span class="g">#</span> specifies the cut-offs with its left-side being inclusive. <br>
+		<span class="g">. egen price3 = cut(price),at(3291,5000,15906)</span> recodes price into <span class="g">price3</span> with three intervals [3291,5000), [5000, 15906), and [5000, 15906).
+	</p>
+	<p>
+		<span class="g">egen <em>newvar</em> = cut(<em>var</em>),group(<em>#</em>)</span> alternatively divides the newly defined variable into groups of equal frequencies.<br>
+		<span class="g">. egen price4 = cut(price), group(5)</span> generates <span class="g">price4</span> into 5 groups of the same size.
+	</p>
+
+	<h2>autocode</h2>
+	<p>
+		Another way to convert numeric variables to categorical or factor variables is to use <span class="g">autocode</span>, the automated version of <span class="g">recode</span>.  </p>
+	<p>
+		<span class="g">generate <em>newvar</em> = autocode(<em>var, n, a, b</em>)</span> recodes the numeric variable <span class="g">var</span> into a categorical variable <span class="g">newvar</span> with <span class="g">n</span> equal-length intervals; <span class="g">a</span> and <span class="g">b</span> are the two boundaries where <span class="g">a</span> is inclusive.
+	</p>
+	<p>
+		<span class="g">
+		. sysuse auto <br>
+		. sort price<br>
+		. gen price5 = autocode(price,3,price[1],price[_N])<br></span>
+		recodes the numeric variable <span class="g">price</span> into a variable of three categories ranging from its minimum to the maximum value. <span class="g">price[1]</span> and <span class="g">price[_N]</span> are explicit subscripting that tells Stata where to refer to.  
+	</p>
+
+	<h2>Summary</h2>
+	<p>
+		Four methods of transforming numeric to categorical variables that we have come across so far:<br>
+		<ul>
+			<span class="g">
+			<li>generate <em>var</em>, replace</li>
+			<li>recode <em>var</em>, generate()</li>
+			<li>generate <em>var</em>, autocode()</li>
+			<li>egen <em>var</em> = cut()</li>
+			</span>
+		</ul>
+	</p>
+	</div>
+
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

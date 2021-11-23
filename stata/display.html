@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>display</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">display</h1>
+	<h2>Working as a calculator</h2>
+		<p>
+		Stata can be used as a calculator interactively. <span class="g">display</span> followed by an expression will display the results right away.<br>
+		<span class="g">. display 100^2</span> 
+		<pre><code>10000</code></pre>
+		<span class="g">. display %6.0fc 100*100</span> 
+		<pre><code>10,000</code></pre>
+		<span class="g">. display as text "the square root of 10000 is " sqrt(10000)</span> 
+		<pre><code>the square root of 10000 is 100</code></pre>
+		<span class="g">. display _pi</span>
+		<pre><code>3.1415927</code></pre>
+		<span class="g">. display normal(0.5)</span>
+		<pre><code>0.69146246</code></pre>
+		</p>
+
+	<h2>Displaying the results while a program runs</h2>
+	<p>
+		It is useful in some cases to display results on the screen while a program runs, which allows us to see where we are and to check if the codes are correct. 
+	</p>
+	<p>
+		Below we included <span class="g">display "`var':" `i' " vs " `i'+1</span> so that we knew which variable and which pair it was being performed on; we also could spot anything abnormal right away while the program was running. 
+		<pre><code>
+sysuse auto
+
+local i = 1
+while `i' < 3{
+	foreach var in price mpg {
+		display "`var':" `i' " vs " `i'+1
+		estpost ttest `var' if rep78 == `i' | rep78 == `i'+1, by(rep78)
+	}
+	local i = `i' + 1
+}		
+		</code></pre>
+	</p>
+	<p>
+		<pre><code>
+price:1 vs 2
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+       price | -1403.125         10   2650.997  -.5292821          8   .3054887   .6109774   .6945113          2     4564.5          8   5967.625 
+mpg:1 vs 2
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+         mpg |     1.875         10   3.021731   .6205052          8   .7239061   .5521877   .2760939          2         21          8     19.125 
+price:2 vs 3
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+       price | -461.6083         38   1406.913     -.3281         36   .3723684   .7447368   .6276316          8   5967.625         30   6429.233 
+mpg:2 vs 3
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+         mpg | -.3083333         38    1.61937  -.1904033         36   .4250314   .8500628   .5749686          8     19.125         30   19.43333 
+
+		</code></pre>
+	</p>
+	<p>
+		The output could have been confusing without any marks. 
+		<pre><code>
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+       price | -1403.125         10   2650.997  -.5292821          8   .3054887   .6109774   .6945113          2     4564.5          8   5967.625 
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+         mpg |     1.875         10   3.021731   .6205052          8   .7239061   .5521877   .2760939          2         21          8     19.125 
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+       price | -461.6083         38   1406.913     -.3281         36   .3723684   .7447368   .6276316          8   5967.625         30   6429.233 
+
+             |      e(b)   e(count)      e(se)       e(t)    e(df_t)     e(p_l)       e(p)     e(p_u)     e(N_1)    e(mu_1)     e(N_2)    e(mu_2) 
+-------------+------------------------------------------------------------------------------------------------------------------------------------
+         mpg | -.3083333         38    1.61937  -.1904033         36   .4250314   .8500628   .5749686          8     19.125         30   19.43333 
+			
+		</code></pre>		
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>	

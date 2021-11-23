@@ -1,0 +1,167 @@
+---
+title: "Part I: Creating Animated Graphs with gganimate"
+author: "Yun Dai"
+date: "04/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/stu")
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/session")
+
+library(dplyr)
+map <- stu %>% select(date, latitude, longitude, city)
+```
+
+******
+In this post and the next, we will use tracking logs from an online course platform to create animated visualizations. These user logs have captured user behaviors with timestamps, IP addresses, server events, pages visited, and device information, among others. The focus of this post is animation. In [the next post](https://shanghai.hosting.nyu.edu/data/r/case-2-2-shinyapp.html), we add interactivity to animation with Shiny App using the same data. 
+
+For the animation part, we explore two aspects of the user engagement with the data available: (1) global distribution of the users over time, and (2) resource usage over time.
+
+Before we can readily visualize the data, there is quite some dirty work to be done, including [reading the compressed JSON files sent from the server every day](https://shanghai.hosting.nyu.edu/data/r/reading-data.html#reading_a_lot_of_compressed_json_files), [extracting information from IP addresses to get the local times](https://shanghai.hosting.nyu.edu/data/r/local-time.html), parsing the user strings to get the user device information, and aggregating data. Below we show only the steps of creating the plots and animation.
+
+******
+## Global distributions 
+Below is the subset of data that we are using for demo. What we want to achieve with the data is to create a map of global user distribution over time. The animation part comes in when the distribution changes over time daily. 
+```{r}
+head(map, 3)
+```
+
+We first load all the packages that we are going to need. Note that the package `gganimate` has been [updated](https://github.com/thomasp85/gganimate); code written for the old API will not work with the new version. 
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+library(ggthemes)
+library(gganimate)
+library(maps)
+library(dplyr)
+```
+
+******
+### aggregating data
+In order to create the map, we need to aggregate the data to obtain the counts of users at each location on each day. Later, using the counts, we are going to weight the size of points (areas of the circle).
+```{r message=FALSE, warning=FALSE}
+map <- map %>%
+  group_by(date, latitude, longitude) %>%
+  add_tally(n()) %>%
+  arrange(date, city) %>%
+  distinct()
+
+map$date <- as.Date(map$date)
+map$latitude <- as.numeric(map$latitude) 
+map$longitude <- as.numeric(map$longitude) 
+
+head(map)
+```
+
+******
+### the base map
+We need a base map before we can plot any geolocation information on it.
+```{r message=FALSE, warning=FALSE, fig.height=3, fig.width=4}
+ggplot() +
+  borders("world", colour = "gray90", fill = "gray85") +
+  theme_map()
+```
+
+******
+### adding locations
+Then we add a layer of locations to the base map, where the point sizes are weighted by the total number of users on a certain day. 
+
+Below we have added all layers of daily distributions altogether; hence some points have been masked by others. But in the animation to be created below, we can clearly view the daily distribution with the change of the date, just like a frame in a film. 
+```{r message=FALSE, warning=FALSE}
+ggplot(data = map) +
+  borders("world", colour = "gray90", fill = "gray85") +
+  theme_map() + 
+  geom_point(aes(x = longitude, y = latitude, size = n), 
+             colour = "#351C4D", alpha = 0.55) +
+  labs(size = "Users") +
+  ggtitle("Distribution of Users Online") 
+```
+
+
+******
+### adding animation
+Finally, we let the distribution change as the date moves forward. 
+```{r message=FALSE, warning=FALSE}
+ggplot() +
+  borders("world", colour = "gray90", fill = "gray85") +
+  theme_map() + 
+  geom_point(data = map, aes(x = longitude, y = latitude, size = n), 
+             colour = "#351C4D", alpha = 0.5) +
+  labs(title = "Date: {frame_time}", size = "Users") +
+  transition_time(date) +
+  ease_aes("linear")
+```
+
+Our data is not big, so the pattern is not that interesting as what we see in those maps created using massive Twitter data.
+
+******
+## Resource usage trajectory
+Something else that we are interested in is how users accessed the resources on the platform along important time nodes. In the sample data below, `id` is the user id, and `interval` is the duration of time spent on a resource during one instance of accessing the platform; the rest variables are self-explanatory.
+
+```{r}
+head(session)
+```
+
+******
+### aggregating data
+We sum up the time that users spent on each resource on each day.
+```{r}
+resource_day_sum <- session %>% 
+  group_by(date, resource) %>%
+  tally(round(sum(interval) / 60, 2)) %>%
+  rename(sum = n)
+
+resource_day_sum$resource <- factor(resource_day_sum$resource, levels = c("Watch", "Task", "Read", "Intro", "Slides"))
+```
+
+
+******
+### the line graph
+We are interested in how users spent time on all resources along the assignment due dates, represented by the reference lines on the plot. We first store the due dates in a vector `due` to be used later to make the reference lines. 
+```{r}
+due <- c(as.POSIXct("2016-01-25 UTC"), as.POSIXct("2016-02-01 UTC"), as.POSIXct("2016-02-15 UTC"), 
+         as.POSIXct("2016-02-22 UTC"), as.POSIXct("2016-02-29 UTC"), as.POSIXct("2016-03-07 UTC"),
+         as.POSIXct("2016-03-14 UTC"), as.POSIXct("2016-03-21 UTC"), as.POSIXct("2016-03-28 UTC"))
+```
+
+Then we can plot the line graph. It is quite obvious that closer to the due dates there are more users accessing all kinds of resources than the rest of times.
+```{r message=FALSE,warning=FALSE}
+color <- c("#765285","#D1A827","#709FB0", "#849974", "#A0C1B8")
+
+ggplot(resource_day_sum, aes(date, sum, group = resource, colour = resource)) + 
+  geom_line(alpha = 0.75) + 
+  scale_x_datetime(breaks = seq(as.POSIXct("2016-01-26 UTC"), as.POSIXct("2016-04-02 UTC"), "7 days"), 
+                   date_labels = "%b %d") +
+  geom_vline(xintercept = due, alpha = 0.6, size = 0.5, colour = "grey55") +
+  scale_colour_manual(values = color, name = "Resource") +
+  labs(title = "Time Spent Online Learning", x = "Date", y = "Total Minutes of All Students/ Day") 
+```
+
+******
+### adding animation
+Finally, we add animation to the line graph with the aid of `gganimate` functionalities. 
+```{r message=FALSE, warning=FALSE}
+ggplot(resource_day_sum, aes(date, sum, group = resource, colour = resource)) + 
+  geom_line(alpha = 0.75) + 
+  scale_x_datetime(breaks = seq(as.POSIXct("2016-01-26 UTC"), as.POSIXct("2016-04-02 UTC"), "7 days"), 
+                   date_labels = "%b %d") +
+  geom_vline(xintercept = due, alpha = 0.6, size = 0.5, colour = "grey55") +
+  scale_colour_manual(values = color) +
+  geom_segment(aes(xend = max(date), yend = sum), linetype = 2) + 
+  geom_point(size = 2) + 
+  geom_text(aes(x = max(date), label = resource), hjust = 0) + 
+  transition_reveal(resource, date) + 
+  labs(title = "Time Spent Online Learning", x = "Date", y = "Total Minutes of All Students/ Day") + 
+  theme_minimal() + 
+  theme(plot.margin = margin(5.5, 60, 5.5, 5.5),
+        legend.position="none")
+```
+
+*This part is inspired by [this post](https://github.com/thomasp85/gganimate/wiki/Temperature-time-series).*

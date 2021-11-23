@@ -1,0 +1,220 @@
+---
+title: "More on Subsetting"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+
+```{r echo=FALSE}
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/sample1")
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/df")
+df <- all
+```
+
+
+***
+In [Vectors](https://shanghai.hosting.nyu.edu/data/r/vectors.html) and [Data Structures](http://shanghai.hosting.nyu.edu/data/r/data-structures.html), we discussed how to index/subset vectors, matrices, arrays, lists and data frames. In this post, we will explore more subsetting techniques with a few cases. 
+
+******
+## Storing temporary outputs
+### extending object elements
+Objects can be extended by subsetting operators.
+
+```{r}
+v <- c(1,2,3) 
+v[4] <- 4 
+v
+```
+
+This technique is useful when we need to create an object to store temporary outputs from a series of operations (e.g. in a loop). 
+
+***
+Extending the example above, we can add elements to an empty vector one by one in a loop by extending the elements of the vector. 
+```{r}
+output <- c()
+
+i <- 1
+for (i in 1:5){
+  output[i] <- i
+}
+
+output
+```
+
+***
+Extending the example above further, we can add elements to rows and columns of an empty data frame in a loop by extending its elements.
+```{r}
+multiplier <- c(1:5)
+output <- data.frame()
+
+i <- 1
+for (i in multiplier){
+  output[i,1] <- multiplier[i]
+  output[i,2] <- paste(2, "*", multiplier[i], "=", 2 * multiplier[i])
+}
+
+names(output) <- c("multiplier", "output")
+output
+```
+
+******
+### case 1
+Now we will look at how storing temporary outputs by extending object elements could be useful.
+
+In the example below, we use the dataset `df`. Each row of `df` describes a talk. We want to add a new column `num_tweet` to the existing data frame `df`. `num_tweet` would be the number of tweets mentioning one speaker of a talk, binded to each row of `main_speaker` in `df`. Before that, we need to create a new vector to store the number of tweets for each speaker. 
+
+```{r}
+head(df["main_speaker"])
+```
+
+In each iteration of the loop, a query with the speaker name is sent to Twitter to collect all tweets mentioning the speaker. The count of the tweets for each speaker is then calculated and stored in the vector `num_tweets`.
+
+```{r eval=FALSE}
+library(rtweet)
+
+## creating the query term
+df$speaker <- gsub(pattern = " and |,| \\+ ", replacement = " OR ", df$main_speaker)
+speaker <- df$main_speaker
+
+## creating a new vector to store the number of tweets for each speaker 
+num_tweets <- double()
+
+for (i in 1:length(df$speaker)){
+  tweets <- nrow(search_tweets(q = speaker[i], retryonratelimit = TRUE))
+  num_tweets[i] <- tweets
+}
+
+df$num_tweet <- num_tweets
+```
+
+
+***
+### case 2
+Using the same data, below we want to extract the polarity scores from the `ratings` for each talk, weight each polarity score by how many people gave the rating, and sum up all the weighted polarity scores of each talk to get a final "sentiment score". 
+
+`ratings` came in a dictionary type of structure.
+
+```{r}
+head(df["ratings"], 1)
+```
+
+We first need to convert the `ratings` to a list, where each element is a data frame. 
+```{r message=FALSE,warning=FALSE}
+library(purrr)
+library(jsonlite)
+library(sentimentr)
+
+## extract the ratings and counts
+rating <- gsub("'", '"', df$ratings) 
+rating2 <- map(rating, fromJSON)
+
+rating2[[2]]
+```
+
+For each of the data frame, we apply the sentiment analysis and extract the polarity score from it for each rating (each row of column `name` of the data frames in `rating2`). The scores are stored in a list, where each element is a vector.
+```{r}
+## calculate the polarity score
+rating3 <- list()
+for (i in 1:length(rating2)){
+  rating3[[i]] <- sentiment(rating2[[i]][,2])$sentiment
+}
+
+head(rating3, 3)
+```
+
+We then weight the polarity score of each rating by the `count` of each rating, which is the third column of each data frame in the list `rating2`. Summing up all the weighted scores with matrix multiplication (stored in a list), we get the final score for each talk. 
+
+```{r}
+## weight the score by counts
+score <- list()
+for (i in 1:length(rating2)){
+  count <- rating2[[i]][,3]
+  sum <- count %*% rating3[[i]]
+  score[[i]] <- sum[1,1]
+}
+
+head(score)
+```
+
+`score` is unlisted to a vector and merged back to `df` as a new variable.
+```{r}
+score <- unlist(score)
+df$score <- score
+```
+
+
+******
+## Modifying object elements
+The help file of the R sample dataset `USArrests` discusses which subsets of the data need to be modified. These are useful examples of modifying data frame elements. 
+
+We can access the examples by typing `?USArrests` in the R console.
+
+In the first case, the urban population `UrbanPop` of Maryland needs to be modified to 76.6.
+```{r}
+d1 <- USArrests
+d1["Maryland", "UrbanPop"] <- 76.6
+```
+
+In the second case, the urban population of several states need to be adjusted taking into account how they were rounded previously.
+```{r}
+states1 <- c("Colorado", "Florida", "Mississippi", "Wyoming")
+states2 <- c("Nebraska", "Pennsylvania")
+
+d1[states1, "UrbanPop"] <- d1[states1, "UrbanPop"] + 0.5
+d1[states2, "UrbanPop"] <- d1[states2, "UrbanPop"] - 0.5
+```
+
+***
+Below we have another example. Using the data `sample1`, we want to replace the values of two columns depending on the value of the third column.
+```{r message=FALSE, warning=FALSE}
+head(sample1[c("var", "var_avg", "var_p50")], 10)
+```
+
+We first find rows where `var` is missing, and then replace `var_avg` and `var_p50` with 0.
+```{r message=FALSE, warning=FALSE}
+sample1[is.na(sample1$var), c("var_avg", "var_p50")] <- c(var_avg = 0, var_p50 = 0) 
+```
+
+This is what we can get. 
+```{r}
+head(sample1[c("var", "var_avg", "var_p50")], 10)
+```
+
+
+******
+## `subset()`
+In addition to using the subsetting operators, we can also use the function `subset()` to subset a vector, a matrix, or a data frame, which meet conditions.
+
+Below we get a subset of `iris`.
+```{r}
+subset(iris, Species == "versicolor" & Petal.Width < 1.2, Sepal.Length) 
+```
+
+******
+## %in% operator
+`%in%` is an operator that returns a logical vector indicating if there is a match or not for its left operand. It is useful when we want to access elements of a vector.
+
+Below we remove values `a`, `b`, and `c` from the vector `y`.
+```{r message=FALSE, warning=FALSE}
+y <- letters
+## letters is the 26 lower-case letters of the Roman alphabet built into R
+
+y <- y[!y %in% c("a", "b", "c")]
+y
+```
+
+***
+In another example below, we remove `admin` accounts from `id` to create a student subset.
+```{r eval=FALSE}
+library(dplyr)
+
+admin <- c("tst282", "tst288", "tst424", "tst284")
+student <- filter(data, !(id %in% admin))
+```

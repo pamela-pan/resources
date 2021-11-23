@@ -1,0 +1,76 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Useful Commands in Programs</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Useful Commands in Programs</h1>
+	<h2>quietly</h2>
+	<p>
+		<span class="g">quietly</span> runs the command but suppresses the output. 
+	</p>
+	<p>
+		Try running the commands below. Compare <br>
+		<span class="g">
+		. sysuse auto <br>
+		. quietly reg price mpg if foreign <br>
+		. predict fv if e(sample) 
+		</span>
+	</p>
+	<p>
+		and <br>
+		<span class="g">
+		. reg price mpg if foreign <br>
+		. predict fv if e(sample)
+		</span>
+	</p>
+	<p>
+		In this example we do not care so much about the regression outputs but rather the predictions in the estimated sample. Thus we asked Stata to suppress the <span class="g">reg</span> outputs.
+	</p>
+
+	<h2>preserve; restore</h2>
+	<p>
+		In pair, <span class="g">preserve</span> and <span class="g">restore</span> preserves and restores data. This is useful when we want to keep the original data untouched when a program ends while some damage needs to be done while we run the program. 
+	</p>
+	<p>
+		Compare what the dataset would be like with and without <span class="g">preserve</span> and <span class="g">restore</span>. <br>
+		<span class="g">
+		. sysuse citytemp <br>
+		. preserve <br>
+		. collapse (mean) heatdd, by(region division) <br>
+		. list heatdd <br>
+		. restore
+		</span>
+	</p>
+	<p>
+		Without <span class="g">preserve</span> and <span class="g">restore</span>, after a <a class="internal" href="3_data_prep1.html#collapse"><span class="g">collapse</span></a> the dataset will be aggregated to summary statistics and thus the original dataset will be damaged. <br>
+		<span class="g">. collapse (mean) heatdd, by(region division) </span>
+	</p>			
+
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>	

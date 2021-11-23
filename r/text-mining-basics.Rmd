@@ -1,0 +1,402 @@
+---
+title: "Text Mining with TED Talks Data"
+author: "Yun Dai"
+date: "01/2020"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+setwd("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample")
+load("num_in_tweet")
+num_tweets <- num_in_tweet
+```
+
+
+*This post was a summary of what was delivered in the Library workshop on text mining in Fall 2019.*
+
+******
+The data we use are the TED Talks data that can be downloaded from [Kaggle](https://www.kaggle.com/rounakbanik/ted-talks), and tweets that we need to collect from Twitter. The questions we use to guide this study are (1) if giving a Ted talk led to more "exposure" on Twitter, and (2) what aspects of the talk contributed to the difference, if any. Our goal is not to make any causal claims linking TED Talk presence to higher Twitter mentions. The goal is rather to walk through the essentials and some techniques of text mining using a case. 
+
+******
+## Before we start
+
+***
+### workflow
+The workflow of this project is described below:
+
+* data collection
+    + downloading TED Talks data
+    + collecting tweets with Twitter API
+* data preprocessing
+    + text preprocessing
+    + other data cleaning
+* feature selection
+* feature generation
+    + polarity score (sentiment analysis)
+    + topic modeling
+* making prediction
+    + regression
+    + random forest 
+    + ...
+
+
+******
+### loading packages
+Below we load the packages that we will be using.
+```{r message=FALSE, warning=FALSE}
+library(readr)
+## collecting tweets via Twitter API
+library(rtweet) 
+library(httpuv)
+## data frame manipulation
+library(dplyr)
+library(purrr) 
+library(tidyr)
+library(jsonlite)
+## text mining
+library(quanteda) 
+## polarity score
+library(sentimentr) 
+## topic modeling
+library(topicmodels) 
+## prediction
+library(randomForest) 
+```
+
+
+******
+### textual objects
+
+A **token** is [an instance of a sequence of characters in some particular document that are grouped together as a useful semantic unit for processing](https://nlp.stanford.edu/IR-book/html/htmledition/tokenization-1.html). A token can be a word, a sentence, a paragraph, or an n-gram. **Tokenization** is the process of splitting text into tokens. 
+
+A **corpus** is the raw strings with metadata and details. 
+
+A **document-term matrix** is a matrix where each column represents a term, where each column represents a document (e.g. a book, an article), and where the value usually is the frequency of the term in the document.
+
+
+******
+## Collecting Data
+
+******
+### downloading TED Talks data
+TED Talks data can be downloaded from [Kaggle](https://www.kaggle.com/rounakbanik/ted-talks). "These datasets contain information about all audio-video recordings of TED Talks uploaded to the official TED.com website until September 21st, 2017. The TED main dataset contains information about all talks including number of views, number of comments, descriptions, speakers and titles. The TED transcripts dataset contains the transcripts for all talks available on TED.com."
+
+Once we download the datasets, we can load and merge the two datasets.
+```{r message=FALSE,warning=FALSE}
+main <- read_csv("sample/ted_main.csv")
+transcript <- read_csv("sample/transcripts.csv")
+all <- merge(main, transcript, by = "url")
+```
+
+Below is a summary of the data. The *Data* section on the [Kaggle](https://www.kaggle.com/rounakbanik/ted-talks) page provides a nice preview of all features and descriptions of the two original datasets.
+```{r}
+summary(all)
+```
+
+******
+### collecting tweets with Twitter API
+To collect tweets from Twitter, we need a Twitter account first. Then we will use the package [`rtweet`](https://rtweet.info/) to access Twitter's REST and stream APIs. With `rtweet`, we are able to search tweets, stream tweets, get friends, get timelines, get favorites, search users, get trends, among other things. The returned data are in tidy structures. We no longer need to go to [Twitter search API](https://developer.twitter.com/en/apps/) to create an app and get the keys and tokens. We will be asked to authorize the embedded `rstats2twitter` app during an interactive R session.
+
+Note that the Twitter search API permits extraction of only 6-9 days of tweets from the day of accessing API. Therefore, we are not able to collect data before a Ted Talk or right after a talk. This means that we are not able to establish causality between giving a Ted talk and Twitter exposure thereafter. Another issue with data collection is that the mentioned name by a Twitter account may not be the person who actually gave a Ted talk, but someone with the same name.  In short, the method used in this project is far from rigorous, and is a proxy to what we attempt to achieve. Nevertheless, we pretend this is not a problem and concentrate on the task of most interest to us.
+
+******
+After we set up our Twitter account, we are almost ready to scrape the tweets using speakers' names and calculate the number of tweet mentions of each speaker. But before we connect to the Twitter API, we need to figure out the right query terms for our search.  
+
+The query terms are the names of speakers. The TED dataset contains a column `main_speaker` on the speakers' names. Most talks have one speaker, but some have more than one. In the dataset, multiple speakers are separated by `+`, `,` or `and`. 
+```{r echo=FALSE}
+head(all[all$num_speaker > 1, "main_speaker"], 10)
+```
+
+However, `rtweet::search_tweets()`, the function we will use to search tweets, separates each query term with spaces or "OR" (in caps). Therefore, we need to replace `+`, `,` or `and` with  `OR` wherever applicable, before we use those names in the search queries.
+```{r}
+all$speaker <- gsub(pattern = " and |,| \\+ ", replacement = " OR ", all$main_speaker)
+```
+
+Now the search `q = "Alec Soth OR Stacey Baker"` looks for tweets containing both "Alec Soth" and "Stacey Baker" located anywhere in the tweets and in any order. Twitter's API should return any tweet that contains either "Alec Soth" or "Stacey Baker".
+```{r echo=FALSE}
+head(all[all$num_speaker > 1, "speaker"], 10)
+```
+
+***
+Then, for each speaker, we are able to scrape the tweets containing their names, and count the number of name mentions. The number of returned tweets is 100 by default; the maximum is 18000. Setting `retryonratelimit = TRUE` would automate the process of conducting big searches, waiting and retrying when rate is limited. 
+
+My Twitter API ran from April 24, 2019 to April 26, 2019. The number of name mentions could be different depending on when you access the tweets. 
+
+```{r eval=FALSE}
+q_list <- all$speaker
+num_tweets <- double()
+
+for (i in 1:length(all$speaker)){
+  tweets <- nrow(search_tweets(q = q_list[i], retryonratelimit = TRUE))
+  num_tweets[i] <- tweets
+}
+all$num_in_tweet <- num_tweets
+```
+
+```{r echo=FALSE}
+all$num_in_tweet <- num_tweets
+```
+
+The summary of the number of name mentions is shown below.
+```{r}
+summary(all$num_in_tweet)
+```
+
+******
+## Text preprocessing
+We now have ample texts at hand, but they are not immediately ready for analysis. They need preprocessing first.
+
+[Text preprocessing](https://kavita-ganesan.com/text-preprocessing-tutorial/#What-is-text-preprocessing) is a process transforming the human language to machine readable format that are predictable and analyzable. The goals of doing so include normalizing vocabulary and dealing with sparsity issues. Text normalization is important for noisy texts where abbreviations, misspellings and use of out-of-vocabulary words are prevalent. 
+
+Text preprocessing is *task-dependent*. Common types of text preprocessing include:
+
+* removing stop words
+    + removing low information but common words
+    + e.g. a, an, the ...
+* normalization
+    + converting numbers into words or removing numbers
+    + converting all letters to lower or upper case
+    + expanding abbreviations
+* removing noises
+    + punctuations, special characters, numbers ...
+    + html formats
+    + domain specific keywords (e.g. "RT" for retweet) 
+* stemming
+    + reducing inflection in words to their root form
+    + chopping off the ends of words
+    + e.g. connected/connection/connects -> connect
+* lemmatization
+    + removing inflections and mapping a word to its root
+    + transforming words to the actual root
+    + trouble/troubled/troubling -> trouble
+
+*[Reference to text preprocessing](https://kavita-ganesan.com/text-preprocessing-tutorial/#What-is-text-preprocessing)*
+
+We will see how we preprocess our textual data when we get to topic modeling.
+
+
+***
+## Feature selection
+To answer if giving a Ted talk led to higher tweet mentions and what aspects of the talk contributed to the difference, we need to select relevant features in model construction. Some features are ready for use, some need cleaning, and some can be mined further to extract important information. 
+
+`comments` (number of comments), `duration` (duration of the talk in seconds), `language` (number of languages in which the talk is available) and `views` (number of views on the talk) are numeric features ready for use. Later we will see if more comments, longer duration, more available languages and more views of the talk would result in more tweet mentions.
+
+```{r echo=FALSE}
+head(all[c("comments", "duration", "languages", "views")])
+
+```
+
+***
+`published_date` is a Unix timestamp of the published date. What we need is the year information from it. Later we want to see if the year of the talk would be associated with the number of tweets in any way.
+```{r echo=FALSE}
+head(all$published_date)
+```
+
+To extract the year component, `published_date` is first converted from the Unix timestamp to a `POSIXct` object. The years are further extracted from the date-times.
+```{r}
+all$date <- as.POSIXct(all$published_date, origin = "1970-01-01")
+all$year <- strftime(all$date, "%Y")
+all$year <- as.numeric(all$year)
+head(all$year)
+```
+
+
+******
+What other information can we get from the raw data? There are several features that are not yet there and that could be extracted from the texts. Those features could be polarity scores generated from the ratings for each talk, and the distribution of topics in the talks.
+
+`ratings` (ratings given to the talk) is relevant; at the least, we can extract "sentiments" (polarity scores) from those ratings to gauge how well-received each talk was. However, the structure of `ratings` does not support further analysis right away, and there is quite some transformation to be done. We will discuss that part when we get there.
+```{r echo=FALSE}
+head(all$ratings, 1)
+```
+
+`transcript` (the official English transcript of the talk) also contains rich information. For instance, we can get the topic distributions from the raw texts. `tags` of each talk would give us some hints on topic modeling. We will look into the text mining part in the next section. 
+
+```{r echo=FALSE}
+head(all$tags)
+```
+
+
+******
+## Feature generation
+In this section, we rely on two techniques to extract useful information from the raw data. Specifically, we leverage the polarity score in sentiment analysis to calculate a weighted score of sentiments towards a talk based on the given ratings. Besides, we use the Latent Dirichlet allocation (LDA) algorithm for topic modeling to obtain document-topic probabilities of each talk.
+
+******
+### polarity score
+Sentiment analysis helps us understand the attitudes and opinions expressed in texts. The sentiment can be quantified with a positive or negative value, the polarity score. In the TED talk dataset, `ratings` is a dictionary consisting of 14 ratings (e.g. "Inspiring", "Confusing") for each talk and the associated frequency of each rating. These `ratings` could be considered as "sentiments" towards each talk.  
+
+```{r echo=FALSE}
+head(all$ratings, 2)
+```
+
+We will use `sentimentr::sentiment()` to extract polarity scores for each talk, which essentially functions as an augmented dictionary lookup. In the process to be described below, each term of `ratings` will be run against the [polarity dictionary](https://rdrr.io/cran/sentimentr/man/sentiment.html) to obtain its polarity score. We will then weight the score of each term by its count. In the end, each talk would receive a score by summing up the weighted scores of 14 terms in each `ratings`. 
+
+Note that the polarity score is dependent upon the polarity dictionary used. `sentimentr::sentiment()` defaults to a combined and augmented version of Jocker’s (2017) & Rinker’s augmented Hu & Liu (2004) dictionaries. Please also read the documentation for the equations used by this algorithm of polarity score.
+
+******
+To calculate an overall "sentiment score" for each talk, we need to first extract each word and its count from `ratings` in the dictionary format. `sentiment()` approximates the sentiment (polarity) of text by sentence.
+```{r}
+### extract the ratings and counts
+rating_words <- gsub("'", '"', all$ratings) 
+rating_words[[1]]
+rating2 <- map(rating, fromJSON)
+
+### calculate the polarity score
+rating3 <- list()
+for (i in 1:length(rating2)){
+  rating3[[i]] <- sentiment(rating2[[i]][,2])$sentiment
+}
+
+### weight the polarity score of each word by its count 
+### add up the scores of the 14 words appearing in the ratings
+score <- list()
+for (i in 1:nrow(all)){
+  count <- rating2[[i]][,3]
+  sum <- count %*% rating3[[i]]
+  score[[i]] <- sum[1,1]
+}
+score <- unlist(score)
+
+### merge the score to the dataset
+all$score <- score
+```
+
+
+******
+### topic modeling
+I used the Latent Dirichlet allocation (LDA) algorithm for topic modeling to obtain the document-topic probabilities from the `transcripts`. LDA models each document as a mixture of topics, and offers the estimated proportion of words belonging to a certain topic in each document.[^4] Here a document is the transcript of each talk. The LDA algorithm would generate topic distributions, which later would be features of the prediction models.
+### per-document-per-topic probabilities
+Some preprocessing work was done before fitting the topic model: converting transcripts to lower cases, removing stop words, and converting sentences to words (tokenization).
+```{r eval=FALSE}
+## adding a column id to be used as document id
+all <- all %>% mutate(id = row_number())
+t <- all[, c("id", "transcript")]
+
+## text preprocessing
+t$transcript <- tolower(t$transcript)  
+t$transcript <- removeWords(t$transcript, stopwords("en"))  
+chunk_words <- t %>% unnest_tokens(word, transcript) %>%
+  count(id, word, sort = TRUE) %>% ungroup() %>% rename(count = n)
+
+## converting to document-term-matrix
+bag_of_words_dtm <- chunk_words %>% cast_dtm(id, word, count)
+```
+
+Then I applied the LDA algorithm to fit the topic model. Specifically, I examined the per-document-per-topic probabilities (by setting `matrix = gamma`), which was the estimated proportion of words generated from a topic from each transcript. I set `k` (number of topics) to be 8, since the average number of `tags` for each talk is 7.55.
+```{r eval=FALSE}
+tag_n <- str_match_all(all$tags, "'(.*?)'")
+tag_n2 <- c()
+for (i in 1:nrow(all)){
+  tag_n2[[i]] <- length(tag_n[[i]][,2])
+}
+mean(tag_n2)
+```
+
+In the prediction models, topic 8 was not included, since the proportion of words from topic8 is equal to 1 - sum of the proportions of the other topics, and would be highly correlated with other topics.
+```{r eval=FALSE}
+lda <- LDA(bag_of_words_dtm, k = 8, control = list(seed = 1234))
+documents <- tidy(lda, matrix = "gamma")
+documents$document <- as.numeric(documents$document)
+documents2 <- documents %>% spread(topic, gamma) %>% arrange(document)
+names(documents2)[1:9] <- c("id", "topic1", "topic2", "topic3", "topic4", "topic5" , "topic6", "topic7", "topic8")
+```
+
+I merged the topic distributions with the original data `all2`, which is not shown here. The merged data ready for predictive models looks like below.
+```{r}
+load("all2")
+head(all2, 3)
+```
+
+
+## Making predictions
+I used three models - linear regression, random forest and neural network - to approach my question. I then compared the Root Mean Square Error (RMSE) of each model, the standard deviation of the residuals, to measure how far the data points are from the fitted line.  
+
+Linear regression is a classical statistical model, while random forest and neural network are black box machine learning algorithms whose results could be hard to interpret. Random forest is mostly applied to classification problems, where it tackles the overfitting issue well and usually yields satisfying performance. Its performance could be less desirable in prediction problems, but I included the model here to compare with the others. Neural network is a deep learning technique, which usually works best on problems with many layers and on very large datasets, and may not be the most appropriate method here. Nevertheless, it would be interesting to compare across the three methods regarding their ability to make predictions. 
+
+The details of parameter tuning and the performance for each model are discussed in the section *Making predictions with three models* below.
+
+Contributing factors include number of comments made on the talk, duration of a talk, number of languages in which the talk is available, number of views, published years, calculated polarity sentiment scores from the ratings, and calculated estimated proportions of words from each topic in the transcript.
+
+## Making predictions with three models
+Before fitting the prediction models, I scaled the data with min-max normalization. 
+```{r}
+max <- apply(all2, 2, max)
+min <- apply(all2, 2, min)
+scaled <- data.frame(scale(all2, center = min, scale = max - min))
+```
+
+Then I created the training and testing data. 
+```{r}
+set.seed(54321)
+ind <- sample(2, nrow(all2), replace = T, prob = c(0.7, 0.3))
+training <- scaled[ind == 1, ]
+testing <- scaled[ind == 2, ]
+```
+
+### 2.1 Linear regression
+First, I fit the data with the linear regression model. According to the model output, `duration`, `languages` and `topic3` were the strongest predictors of number of Tweet mentions; `score`, `topic2` and `topic4` were also significant factors.
+```{r}
+lr <- lm(num_in_tweet ~ ., data = training)
+summary(lr)
+```
+
+I then evaluated the model with RMSE, which is 104. 
+```{r}
+predicted1 <- predict(lr, newdata = testing)
+b <- testing$num_in_tweet * (max(all2$num_in_tweet) - min(all2$num_in_tweet)) + min(all2$num_in_tweet)
+y1 <- predicted1 * (max(all2$num_in_tweet) - min(all2$num_in_tweet)) + min(all2$num_in_tweet)
+rmse1 <- sqrt(sum(b - y1)^2 / nrow(testing))
+rmse1
+```
+
+### 2.2 Random forest
+#### parameter tuning
+Before I fit the data with a random forest model, I tried with different parameters by tuning the number of variables sampled at each split and the number of trees to grow: `mtry = 4, ntree = 200`, `mtry = 3, ntree = 200`, `mtry = 2, ntree = 200`, `mtry = 1, ntree = 200`, `mtry = 1, ntree = 300`, `mtry = 1, ntree = 400`, and `mtry = 1, ntree = 500`. Each was run for 10 times with a different seed number. The results have been recorded and is shown below in the plot. Based on the results, `mtry = 1, ntree = 400`, and `mtry = 1, ntree = 500` had the smallest RMSE for the equal amount of times, but `mtry = 1, ntree = 400` had the lowest value. Code for parameter tuning is not shown here, but can be found in the supplementary script. 
+
+```{r message=FALSE, warning=FALSE, fig.width=6, fig.height=3}
+load("df_rf2")
+ggplot(data = df_rf2) +
+  geom_line(aes(k, df_rf, group = group, colour = group)) + 
+  scale_x_discrete(limits = 1:10) +
+  labs(x = "k", y = "RMSE")
+```
+
+#### the selected model
+The selected model, based on the tests above, was presented below. 
+```{r}
+set.seed(126)
+rf <- randomForest(num_in_tweet ~ ., data = training, mtry = 1, ntree = 400, importance = TRUE)
+rf
+```
+
+Importance of the predictors were also assessed. `languages`, `duration`, `score`, `comments` and `views` were the features that would increase MSE of the prediction the most if their values had been randomly shuffled.
+```{r}
+round(importance(rf), 2)
+```
+
+RMSE for the selected model is 881.63.
+```{r}
+predicted2 <- predict(rf, newdata = testing)
+y2 <- predicted2*(max(all2$num_in_tweet) - min(all2$num_in_tweet)) + min(all2$num_in_tweet)
+rmse2 <- sqrt(sum(b - y2)^2/nrow(testing))
+rmse2
+```
+
+
+### 2.4 Discussion 
+Although we got high RMSE from all three models, the linear regression model had better performance compared with the random forest model, and the neural network model on average. The high RMSE of the prediction models could be due to the limitations in the model itself, as discussed in the *Introduction* section at the beginning. 
+
+In both the linear regression and random forest models, `languages`, `duration`, `score` have been more important features in terms of statistical significance and the mean decrease accuracy. Topic distributions did not seem to matter as much as `languages` and `duration`. 
+
+******
+### resources on text mining with R
+This post follows many techniques and methods introduced in: 
+
+* Silge, J and Robinson, D. (2019). [Text Mining with R: A Tidy Approach](https://www.tidytextmining.com/). 

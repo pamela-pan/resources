@@ -1,0 +1,72 @@
+---
+title: "Filling in Missing Values with Previous or Next Value"
+author: "Yun Dai"
+date: "05/2020"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/stu2")
+session <- stu2
+```
+
+
+******
+Filling in missing values with previous or next value of selected columns can be useful, when values are recorded only when they change and otherwise not recorded. 
+
+For instance, below we have a sample dataset that is part of a tracking log (transformed from JSON format), which recorded user behaviors of an online course site. User interactions with the course site are logged when events data are emitted by the server, the browser, or the mobile device. 
+
+```{r}
+head(session, 10)
+```
+
+What we want to do is fill in the missing values of `event` for each `id` using the previous value of `event`. 
+
+We show how to do this with `tidyr::fill()` and `zoo::na.locf()` below.  
+
+***
+### `tidyr::fill()`
+In `fill()`, `.direction` is the direction in which to fill missing values. We can change the direction to "down" (the default), "up", "downup" (first down and then up) or "updown" (first up and then down). 
+```{r message=FALSE,warning=FALSE}
+library(tidyr)
+library(dplyr)
+
+session2 <- session %>%
+  mutate(event2 = event) %>%
+  group_by(id) %>%
+  fill(event2, .direction = "down")
+```
+
+```{r}
+head(session2, 20)
+```
+
+
+***
+### `zoo::na.locf()`
+Package `zoo` deals with time series data efficiently. 
+
+Below we use its function `na.locf0()`, which is [like `na.locf()` except it defaults to `na.rm = FALSE` and requires a single vector argument](https://stackoverflow.com/questions/23340150/replace-missing-values-na-with-most-recent-non-na-by-group?noredirect=1&lq=1). `na.locf()` is a generic function for replacing each NA with the most recent non-NA prior to it.
+
+```{r message=FALSE,warning=FALSE}
+library(zoo)
+
+session3 <- session %>% 
+  group_by(id) %>%
+  mutate(event2 = na.locf0(event, fromLast = FALSE))
+```
+
+In `na.locf0()`, `fromLast` sets whether observations are to be carried backward or forward. `fromLast = FALSE` fills the value with the previous entry. `fromLast = TRUE` carries the next observation backward. 
+
+The result is shown below.
+```{r}
+head(session3, 20)
+```
+

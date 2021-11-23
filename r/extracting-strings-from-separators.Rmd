@@ -1,0 +1,169 @@
+---
+title: "Extracting Strings from Separators"
+author: "Yun Dai"
+date: "08/2018"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+This post was adapted from a section in [The Dirty Work - Reshaping Data for Visualization](https://shanghai.hosting.nyu.edu/data/r/case-1-1-preprocessing.html). There we talked about how to extract strings from separators before plotting. The topic may be worthy of a post for itself.
+
+The data we collected contained separators, such as commas, tabs or spaces, which made cleaning and plotting a bit annoying. Dataset like this needs to be preprocessed before we make sense of it. We will see two cases below. Each explains one situation.
+
+Before we begin, let's load all the packages we will need, assuming you have already installed them.
+```{r warning=FALSE, message=FALSE}
+library(stringr)
+library(dplyr)
+```
+
+******
+## Case I: Strings without separators
+We have data from student submissions on "My favorite place to study in Library". The messy raw data were recoded to be consisent across respondents. 
+
+```{r warning=FALSE, message=FALSE}
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/survey")
+```
+
+```{r warning=FALSE, message=FALSE}
+head(survey$space_lib, n = 25)
+```
+
+Most have single strings, but some have multiple ones separated by the comma. 
+
+Let's say we want to create a frequency table counting how many times a unique value appeared. 
+
+We are not too worried because the strings themeselves do not contain the separator, which is the comma. So the program will not get confused which comma is what - is it a separator or is it part of the string. We can safely split the strings by comma. 
+
+On the contrary, in the second case below, some strings came with the separator, such as the comma in "Print, photocopy, scan". Simply splitting those strings can be problematic. 
+
+Back to where we are.
+```{r warning=FALSE, message=FALSE}
+lib <- unlist(strsplit(survey$space_lib, ","))
+## strsplit() splits the elements of the character vector space_lib into substrings by the commas
+## strsplit() is from base R
+## the result is a long list of all the extracted strings in vectors
+## we need to unlist() the list, and get a data.frame after unlist()
+head(lib, n = 30)
+```
+
+```{r warning=FALSE, message=FALSE}
+lib <- str_trim(lib, side = "both")
+## str_trim() is a function from the stringr package
+## removes the trailing and leading spaces generated in spliting
+```
+
+By now we are done with splitting and extracting the strings from the commas. From there we can proceed with creating the frequency table and plotting.
+
+```{r warning=FALSE, message=FALSE}
+lib <- lib[!lib %in% c("NULL")]
+## removes values coded as "NULL"
+```
+
+```{r warning=FALSE, message=FALSE}
+lib <- data.frame(lib) %>% count(lib) %>% data.frame() %>% arrange(-n)
+## counts the frequency of each unique value
+lib
+```
+
+
+******
+## Case II: Strings containing separators within
+In the second case, we want to visualize the distribution of visiting library by country. The data for "top reasons to visit the library" is *top_reason*. The group variable is *country*. Because we designed the survey questions, all variable values were known to us. 
+
+```{r warning=FALSE, message=FALSE}
+head(survey$top_reason)
+```
+
+As we see, each column contains multiple strings separated by commas. Ideally, we would like to have one unique value for a column. So like what we did before, we need to extract the individual strings from the commas. The problem is, however, this time some strings contain ",", the separator, within themselves. For instance, "Print, photocopy, scan" has "," between the verbs. So does "Use specialized databases (e.g. Bloomberg, Wind)". 
+
+One solution is, as the first step, to create one column for each value of *top_reason*, matched with *country*. The cell would be filled if the case is true for an individual, meaning that person voted for a reason and is from a specific country. 
+
+
+******
+### Step I
+Let's first store all unique values of *top_reason* in a vector *Reason*, which will be used as a *pattern* in extracting the strings.
+```{r warning=FALSE, message=FALSE}
+Reason <- c("Work on a class assignment/paper", "Watch video or listen audio", 
+            "Use specialized databases \\(e.g. Bloomberg, Wind\\)", "Use a library computer",  
+            "Use a group study room", "Print, photocopy, scan",  "Other", "Meet up with friends" , 
+            "Hang out between classes", "Get readings from Course Reserve", "Get help from a librarian", 
+            "Find a quiet place to study", "Borrow books and materials", "Attend a library workshop")
+Reason
+```
+
+Note that I added \\ to "Use specialized databases (e.g. Bloomberg, Wind)". The reason was that to quote a metacharacter (paranthese) with special meaning, double backslashes need to come before it. 
+
+
+******
+### Step II
+We can now reformat the data to a data frame with each column being a "reason".
+```{r warning=FALSE, message=FALSE}
+r <- data.frame(survey$country)
+## first we create a new data frame
+## let the first column be country because we will plot on country subsets
+```
+
+Values of each column will be extracted from the messy strings in the original dataset, if matched with the column name. For instance, if "Find a quiet place to study", among the other separated strings, matches with the column named "Find a quiet place to study" for an individual, the string will be added to the cell.
+
+```{r warning=FALSE, message=FALSE}
+for (m in 1: length(Reason)){
+  r[,Reason[m]] <- str_extract(survey$top_reason, Reason[m])
+}
+## length(Reason) counts how many elements the Reason vector contains
+## str_extract(string, pattern) is from the stringr package
+## r[,Reason[m]] adds each reason as a column to the data frame "r" one by one
+## str_extract(survey$top_reason, Reason[m]) extracts each element of reason by the pattern Reason[m]
+
+head(r)
+```
+
+```{r warning=FALSE, message=FALSE}
+table(r$`Use specialized databases \\(e.g. Bloomberg, Wind\\)`)
+## You may try in the earlier steps quoting without backlashes. No values will be carried over here. The frequency will be 0 in this table.
+```
+
+
+******
+### Step III
+Thinking of our goal again - what we need is a "frequency table" by country. We need to reshape the data to that structure.
+
+We need a data frame where the reasons came into one column. 
+```{r warning=FALSE, message=FALSE}
+dtset <- data.frame(Reason)
+dtset
+```
+
+```{r warning=FALSE, message=FALSE}
+levels(dtset$Reason)[levels(dtset$Reason) == "Use specialized databases \\(e.g. Bloomberg, Wind\\)"] <- "Use specialized databases (e.g. Bloomberg, Wind)"
+## reset the values of factor Reason: we've done quoting and let's remove the backslashes
+```
+
+Next we will summarize the distribution by country for each "reason".
+```{r warning=FALSE, message=FALSE}
+g <- c("China", "U.S.", "Other")
+
+for (n in 1:length(g)){
+  dtset[,g[n]] <- apply(r[r[] == g[n], 2:15], 2, function(x) length(which(!is.na(x))))
+}
+## adding one group member a time to the data.frame
+## g[n]: vector elements ("China", "U.S.", "Other")
+## apply(subset[rows where elements == values of the group vector, columns applied], rows, function(counts non-missing cases)) 
+```
+
+```{r warning=FALSE, message=FALSE}
+dtset$Total<- rowSums(dtset[,2:4], na.rm = TRUE, dims = 1)
+## creates a new column to calculate the total
+
+dtset <- dtset[order(dtset$Total,decreasing = T),]
+## reorder the rows by Total
+
+dtset
+```
+
+Done.

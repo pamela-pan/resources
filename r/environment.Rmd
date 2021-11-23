@@ -1,0 +1,118 @@
+---
+title: "The R Environment"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+## Downloading R and RStudio
+R is available for Linux, Mac OS X, and Windows operating systems. To download R, go to the [CRAN project](https://cran.r-project.org/) and then choose the version for your platform. CRAN stands for Comprehensive R Archive Network, and is a place to distribute R and R packages. It consists of mirror servers around the world. 
+
+If we use the [cloud mirror](https://cloud.r-project.org/) to download R, it's going to automatically pick a mirror for us and we don't have to worry about picking a mirror. 
+
+After we have downloaded R and install it on our computer, we can run R. On a Mac or Linux system, we can run R from the terminal. By typing "R" at a prompt, we will open the R console. On Windows or Mac, R graphical user interface is also available to us and is a more convenient way to use R. Inside R GUI window, there is a console, a tool bar, a menu bar etc. 
+
+While it is perfectly possible to use R in this way, for serious coding we'll want to use a more powerful text editor. We'll get the best experience of R by using an Integrated Development Environment, IDE. RStudio is an IDE developed by RStudio specifically for R and makes coding in R easier. We can go to the [RStudio website](https://www.rstudio.com/products/rstudio/download/) to download its free desktop version. Note that we must have R installed on our computer before we can install RStudio because RStudio is going to use the version of R on our computer.
+
+Generally, an IDE is a software application that provides common tools for software development in a single graphical user interface. For instance, RStudio comes with a source code editor, and features including syntax highlighting, auto-completion, and debugging. It provides integrated space where we can write R scripts, review objects, view command history, browse data frames, consult help documentations etc.
+
+
+******
+## RStudio interface and features
+Let's take a quick tour of RStudio. By default we'll have the console on the bottom left side; a source editor on the top left; the Environment, History and Connection panes on the top right; and the Files, Plots, Packages, Help and Viewer panes on the bottom right.  
+
+******
+### R console
+R console is the place where we interactively work with our commands and view the outputs.
+
+`>` is the default R prompt at which we type the commands in the console.
+
+******
+### source editor
+We can open a script in RStudio to write code. What's nice about RStudio is that it has integrated other languages such as Python, SQL, Stan, D3, etc. We can also open an R notebook or Markdown file, or build interactive web applications in RStudio.  
+
+******
+### other panes
+The Environment pane is where we can see our workspace (more on that later). The History pane allows us to browse the command history. The Connection pane is where we can connect to the databases. 
+
+If we have created some plots, we can view the plots in the Plots pane. The Packages pane is the place where we manage our packages. The Help pane is where we can get help. The Viewer pane is where we are going to view local HTML content. It could be web graphics generated using packages like htmlwidgets, or a local web application created using Shiny.
+
+******
+### data viewer
+The data viewer in RStudio has a familiar look of a spreadsheet, which allows us to look into the data frames or other rectangular data structures. 
+
+The `View()` function opens the viewer. Or we can also click the table icon in the Environment pane to open it. RStuido allows us to open several data frames at the same time as tabs and switch between them.
+
+In addition to viewing data, we can also sort, filter, and search data in the data viewer.
+
+******
+### RStudio keyboard shortcuts
+We can navigate the RStudio user interface more easily and productively with the shortcuts. Using the **Tab** key for automatic code completion is one example. 
+
+The RStudio [Keyboard Shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts) page has the complete reference.
+
+******
+## Working directory
+When using R, the first step suggested is to set a working directory. A working directory is a folder that we visit frequently to read and save files and data when we are working on a project. 
+
+We can use the function `getwd()` to return the location of the current working directory. Note that `getwd()` is a function without arguments. 
+
+If we feel the current location isn't the right place, we can set the working directory using the `setwd()` function. 
+
+```
+setwd("~/Desktop/sample")
+```
+
+Additionally, `setwd(".")` sets the working directory to the current directory. `setwd("..")` sets the working directory to the parent directory. `setwd("~")` sets the working directory to the user home directory. 
+
+In RStudio, there's an easier way to change the working directory. From the menu bar go to **Session**; then move to **Set Working Directory**; and select **Choose directory ...**. What we did from the drop-down menu will be represented in code in the console. 
+
+`dir()` lists all the files in the current working directory.
+
+If you're working on several projects, it is recommended that you use several working directories for different projects. Before you start, or before you save and write any files and data, do remember to check if the location is correct for you or not.
+
+***
+## Objects
+The entities that R creates and manipulates are known as *objects*. Everything in R is an object. These may be numeric vectors, character strings, lists, functions, etc. For now, let's just think about an object as a "thing" that is represented by the computer. 
+
+***
+### workspace
+The collection of objects currently stored in memory is called the *workspace*.
+
+The function `ls()` displays the names of the objects in our workspace.
+
+To remove objects from our workspace, we use the function `rm()`. There is no "undo"; once the variable is gone, it’s gone.
+
+```
+rm(a, b)
+```
+
+
+We can remove all the objects in memory using `rm(list = ls())`. This erases our entire workspace at once.
+
+We can save all the current objects with `save.image()`. The workspace are written to a file called *.RData. If not specified, the workspace will be saved to the current working directory.
+
+We can reload the workspace from this file when R is started at later time from the same directory. 
+
+```
+load("test.Rdata")
+```
+
+******
+### quitting the current R session
+`q()` terminates the current R session. 
+
+Note to include the parentheses to call a function even when there are no arguments.
+
+```{r eval=FALSE, include=FALSE}
+#You will be asked if you would like to save the workspace image to ~/.RData. If you say yes, the next time when you start the R session from the same working directory, RStudio will reload the workspace with the command history.
+```
+
+

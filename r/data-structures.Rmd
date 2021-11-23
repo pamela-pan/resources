@@ -1,0 +1,412 @@
+---
+title: "Data Structures"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+Think about data structures as different kinds of containers for storing data values.  
+
+We've met [vectors](https://shanghai.hosting.nyu.edu/data/r/vectors.html) already. Vectors are the most important type of object in R. Vectors contain a single type of value: numbers, strings, or logical values. But there are several others that are more complicated than vectors. Each defines how an object is stored in R.
+
+To begin with, factors. Think about factors as vectors with categorical labels.
+
+Then, matrices and arrays. A matrix is an extension of a vector to two dimensions. An array is a multidimensional vector.
+
+Next, we have lists. Lists are a general form of vector in which the various elements need not be of the same type. Lists can contain other objects, such as vectors, lists and data frames
+
+Finally, for this post (but not for R), data frames. Data frames are matrix-like structures, in which the columns can be of different types. Think about data frames as "data matrices" with one row per observational unit. 
+
+The data structures R operates on are called objects. Common types of objects include vectors, factors, arrays, matrices, lists, data frames, and functions. Below we'll go through each type of data structure. 
+
+***
+## Vectors
+Vectors contain ordered numbers, or sequences, and it can only contain objects of the same class.
+
+Vector is the most important object in R as much of R is "vectorized". This means that a function works on a whole vector, and there is no need to loop over all values of the vector. 
+
+Vectors of different lengths can appear in the same expression; but the shorter one will be recycled until it matches the longer one. We will receive a warning if the length of the longer object is not a multiple of the length of the shorter object.
+
+There are several ways to generate a vector of sequences using the `:` operator and functions `c()`, `seq()`, `rep()` and `paste()`.
+
+Read the full [post](https://shanghai.hosting.nyu.edu/data/r/vectors.html) on vectors.
+
+******
+## Factors
+A *factor* is a vector used to specify a discrete classification (grouping) of the components of other vectors of the same length. (W. N. Venables, D. M. Smith and the R Core Team. (2021). *An Introduction to R: Notes on R: A Programming Environment for Data Analysis and Graphics*.)
+
+We use factors to represent a categorical variable (e.g. in linear regression, logistic regression) and to label data items according to their group.
+
+We can create a factor with the function `factor()`. 
+```{r}
+flavor <- c("chocolate", "vanilla", "strawberry", "mint", 
+            "coffee", "strawberry", "vanilla", "pistachio")
+flavor_f <- factor(flavor)
+flavor_f
+```
+
+***
+A factor has an attribute called *levels*. Levels are the different values that a factor can take.
+```{r}
+attributes(flavor_f)
+```
+
+Use `levels()` to get the levels of a factor.
+```{r}
+levels(flavor_f)
+```
+
+
+`nlevels()` returns the number of levels of a factor.
+```{r}
+nlevels(flavor_f)
+```
+
+We can manually set the order of the levels. Use `levels` argument in the function `factor()` to specify the levels. Use `ordered` argument to determine if the levels should be regarded as ordered in the order given. By default, the levels are stored in alphabetical order.
+```{r}
+factor(flavor)
+factor(flavor, levels = c("strawberry", "vanilla", "chocalate", "coffee", "mint", "pistachio"))
+factor(flavor, levels = c("strawberry", "vanilla", "chocalate", "coffee", "mint", "pistachio"),
+       ordered = TRUE)
+```
+
+***  
+A more meaningful example is when the order actually matters. For example, we conducted a survey and asked respondents how they felt about the statement "sweet rice dumplings are better than salty dumplings." Respondents gave one of the following responses: Strongly Disagree, Disagree, Neutral, Agree, Strongly Agree. 
+
+```{r}
+survey_results <- factor(
+  c("Disagree", "Neutral", "Strongly Disagree",
+  "Neutral", "Agree", "Strongly Agree",
+  "Disagree", "Strongly Agree", "Neutral",
+  "Strongly Disagree", "Neutral", "Agree"),
+  levels = c("Strongly Disagree", "Disagree",
+  "Neutral", "Agree", "Strongly Agree"),
+  ordered = TRUE)
+
+survey_results
+```
+
+
+***
+### using factors
+Factors are useful in running regressions that have categorical variables with orders.
+```{r message=FALSE,warning=FALSE}
+library(dplyr)
+storms <- storms
+class(storms$category)
+levels(storms$category)
+```
+
+```{r}
+summary(lm(wind ~ category, data = storms))
+```
+
+***
+Factors are also useful in graphs to reorder levels of a variable.
+
+```{r include=FALSE}
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/dtset")
+```
+
+
+```{r message=FALSE,warning=FALSE}
+library(ggplot2)
+
+ggplot(dtset, aes(x = reorder(Reason, Total), y = Total, fill = factor(Level, levels = c("High","Medium","Low")))) + 
+  geom_bar(stat = "identity", alpha = 0.75) + 
+  scale_fill_manual(values = c("#765285", "#709FB0", "#D1A827"), name="Level of\nFrequency") +
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12, margin = margin(0,3,0,0)),
+        axis.title.y = element_blank(),
+        axis.title.x = element_text(size = 12, margin = margin(15,0,0,0)),
+        axis.ticks.x = element_line(size = 0),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        plot.margin = unit(c(0,0,1,0), "cm")) 
+```
+
+***
+### converting factors
+A factor can be converted to character using `as.character()`.
+```{r}
+f <- factor(c("chocolate", "vanilla", "strawberry"))
+f2 <- as.character(f)
+class(f2)
+```
+
+A factor can be converted to numeric using `as.numeric(as.character())`.
+```{r}
+category <- storms$category
+category2 <- as.numeric(as.character(category))
+class(category2)
+```
+
+Or through `as.numeric(levels())[]`.
+```{r}
+category3 <- as.numeric(levels(category))[category]
+class(category3)
+```
+
+
+******
+## Matrices and Arrays
+An array is a multidimensional vector. A matrix is a special type of array that has two dimensions.
+
+******
+### matrices
+A matrix is an extension of a vector to two dimensions. Just to show what that means:
+```{r}
+a <- 1:6
+dim(a) #initially NULL
+dim(a) <- c(2,3)
+a
+```
+
+***
+In real life, let's use the `matrix()` function to generate a new matrix and specify the numbers of rows and columns.  
+```{r}
+matrix(data = 1:6, nrow = 2, ncol = 3)
+```
+
+Note: A matrix **stores data of a single type.**
+
+By default data are filled by columns unless specified otherwise.
+```{r}
+matrix(data = 1:6, nrow = 2, ncol = 3, byrow = TRUE)
+```
+
+We can give the row and column names by specifying the `dimnames` argument. 
+
+```{r}
+matrix(data = 1:6, nrow = 2, ncol = 3, byrow = TRUE, dimnames = list(c("r1","r2"), c("c1","c2","c3")))
+```
+
+
+***  
+We refer to part of a matrix using the indexing operator `[]` that we've seen before.
+```{r}
+a[2,2] #second row and second column
+a[1:2,1:2] #first two rows and first two columns
+a[1,] #first row only
+a[,1] #first column only
+```
+  
+***
+`cbind()` and `rbind()` combine matrices together by binding columns and rows.
+
+```{r}
+m1 <- matrix(1:9, ncol = 3, nrow = 3) 
+m2 <- matrix(10:12, ncol =1, nrow = 3)
+m3 <- matrix(10:12, ncol = 3, nrow = 1) 
+```
+
+```{r}
+m1
+```
+
+```{r}
+m2
+```
+
+```{r}
+m3
+```
+
+```{r}
+cbind(m1, m2)
+rbind(m1, m3) 
+```
+
+
+***
+#### matrix operations
+R offers rich [matrix operators](http://www.philender.com/courses/multivariate/notes/matr.html). 
+
+For instance, matrix addition:
+```{r}
+A <- matrix(c(1:12), 3, 4) 
+B <- matrix(c(13:24), 3, 4) 
+A + B
+```
+
+Matrix multiplication:
+```{r}
+A * B
+```
+
+Transposition:
+```{r}
+t(A)
+```
+
+
+******
+### arrays
+A matrix is a special, two-dimensional array. An *array* is a multidimensional vector. Vectors and arrays are stored the same way internally. 
+
+```{r}
+b <- 1:12
+dim(b) <- c(2,3,2)
+b
+```
+
+***
+A more natural way to create an array is to use the function `array()`.
+```{r}
+b <- array(1:12, dim = c(2,3,2))
+b
+```
+
+```{r}
+attributes(b) 
+```
+
+```{r}
+dim(b) 
+```
+
+
+******
+## Lists
+A *list* is a vector where each element can be of a different data type.
+
+`list()` creates a list. List components can be named.  
+```{r}
+book <- list(title = "Nineteen Eighty-Four: A Novel", 
+             author = "George Orwell", 
+             published_year = 1949, 
+             pages = 328)
+book
+```
+
+
+***   
+### list indexing
+Lists can be indexed by position or name. 
+
+By position. Same as in vector indexing.
+```{r}
+book[3]
+book[-3]
+book[[3]]
+book[c(2,3)]
+```
+
+***   
+By name, using `$` or `[[""]]`. With `$`, R accepts partial matching of element names.
+```{r}
+book$title 
+book$t
+book[["title"]]
+book[c("title", "author")]
+```
+
+    
+Note: With `[]`, the result of these indexing operations is another list. If we want to access the contents of the list, we should use the double brackets `[[]]` operator or the dollar sign `$` operator for the named components.
+
+***
+### a list can contain other lists
+A list can contain other lists. This makes the list a *recursive* object in R. 
+
+```{r}
+books <- list("this list references another list", book)
+books
+```
+
+  
+To access nested elements, we can stack up the square brackets.
+```{r}
+books[[2]][["pages"]]
+```
+
+
+***
+### `unlist()`
+`unlist()` can be used to flatten a list to a vector.
+```{r}
+unlist(books) 
+```
+
+******
+## Data frames
+A *data frame* is a list with class `data.frame`. Data frames are used to store spreadsheet-like data. It has rows and columns. Each column can store data of a different type and is the same length. The columns must have names. The components of the data frame are vectors, factors, numeric matrices, lists, or other data frames.
+
+Data frames are particularly good for representing observational data.
+
+***
+Data frames can be created by `data.frame()`.
+```{r}
+laureate <- c("Bob Dylan", "Mo Yan", "Ernest Hemingway", "Winston Churchill", "Bertrand Russell")
+year <- c(2016, 2012, 1954, 1953, 1950)
+country <- c("United States", "China", "United States", "United Kingdom", "United Kingdom")
+genre <- c("poetry, songwriting", "novel, short story", "novel, short story, screenplay", "history, essay, memoirs", "philosophy")
+
+nobel_prize_literature <- data.frame(laureate, year, country, genre)
+nobel_prize_literature
+```
+
+***
+Note: A data frame is not a matrix; it is a list interpreted as a data frame. 
+```{r}
+mode(nobel_prize_literature)
+class(nobel_prize_literature)
+```
+
+***
+### data frame indexing
+We can refer to the components of a data frame by name using the list operators `$` or `[[]]`.
+```{r}
+nobel_prize_literature$laureate
+nobel_prize_literature[["laureate"]]
+```
+
+***
+Or using matrix-like notations.
+```{r}
+nobel_prize_literature[1,]
+```
+
+***
+Logical conditions are allowed, and actually frequently used.
+```{r}
+nobel_prize_literature$laureate[nobel_prize_literature$country == "United Kingdom"]
+```
+
+
+***
+### data frame attributes
+Data frame attributes include row names `rownames()`, column names `colnames()`, dimension names `dimnames()`, number of rows `nrow()`, number of columns `ncol()`, dimensions `dim()` etc. 
+
+```{r}
+rownames(nobel_prize_literature) 
+```
+
+```{r}
+colnames(nobel_prize_literature)
+```
+
+```{r}
+dimnames(nobel_prize_literature) 
+```
+
+```{r}
+nrow(nobel_prize_literature)
+```
+
+```{r}
+ncol(nobel_prize_literature)
+```
+
+```{r}
+dim(nobel_prize_literature)
+```
+
+

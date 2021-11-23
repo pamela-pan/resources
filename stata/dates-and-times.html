@@ -1,0 +1,547 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dates and Times</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<link rel="stylesheet" href="css/data_prep2.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Dates and Times</h1>
+	<h2>Data types and storage types</h2>
+		<p>
+			Values can be numeric or strings. Numeric values are stored as five types differing in range and accuracy: <span class="g">byte</span>, <span class="g">int</span>, <span class="g">long</span>, <span class="g">float</span> or <span class="g">double</span>. <span class="g">float</span> is the default storage type. Strings are stored as <span class="g">str#</span>, where <span class="g">#</span> indicates the maximum length of the string. 
+		</p>
+		<p>Storage types affect mainly how much memory will be needed. Usually we do not need to worry about the storage types, and Stata will take care of that and find the most efficient ways to store data. 
+		</p>
+	<p>
+		Dates and times usually come in the human readable string forms, such as “March 22, 2017 16:15 pm”, “2017.03.22 16:15” etc.  But Stata internally stores dates and times as integers and reads them as numeric values. 
+	</p>
+	<p>
+		In fact, Stata understands a date and time variable as the difference from the base.The base (the numeric value 0) of a datetime variable begins at 01jan1960 00:00:00.000 (the first millisecond of 01jan1960); therefore “25jan2016 08:30:25” will be 1769329825000 (milliseconds) for Stata.
+	</p>
+
+	<h2>Display format</h2>
+	<p>
+		Display format allows us to specify the output of the date/time variable. <br>
+		<span class="g">. format <em>timevar</em> %td</span> sets <span class="g">timevar</span> as a date variable. Here <span class="g">timevar</span> is already a numeric date and time variable. <br>
+		<span class="g">. format <em>timevar</em> %tcHH:MM:SS</span> further sets <span class="g">timevar</span> to be displayed as hour (00-23) : minute (00-59) :second (00-60). 
+	</p>
+	<p>
+		<span class="g">format <em>var %fmt</em></span> changes the display format but not the contents of the variable. <span class="g">%</span> starts the formatting, which can be a number, date, string, business calendar etc. 
+	</p>	
+	<p>
+		There are multiple ways to display a year, month, week, day, hour, minute, second etc. For instance, there are three additional codes to display the hour: <span class="g">Hh</span> (00-12), <span class="g">hH</span> (0-23), or <span class="g">hh</span> (0-12). 
+	</p>
+	<p>
+		Check the Stata help pages for the full list and the default display formats.
+	</p>
+
+	
+	<table class="table-l table-m table-s">
+	<tr>
+		<th width=25% ></th>
+		<th width=20% >Base</th>
+		<th width=11% >Display format</th>
+		<th width=24% >Storage type</th>
+		<th width=20% >String-to-numeric function</th>
+	</tr>
+	<tr>
+		<td>
+			datetime <br>
+			(assuming 86400 s/day)
+		</td>
+		<td>01jan1960</td>
+		<td class="code">%tc</td>
+		<td>must be <span class="g">double</span></td>
+		<td class="code">clock()</td>
+	</tr>
+	<tr>
+		<td>
+			datetime <br>
+			(equivalent to UTC)
+		</td>
+		<td>01jan1960</td>
+		<td class="code">%tC</td>
+		<td>must be <span class="g">double</span></td>
+		<td class="code">Clock()</td>
+	</tr>
+	<tr>
+		<td>date</td>
+		<td>01jan1960</td>
+		<td class="code">%td</td>
+		<td>may be <span class="g">float</span> or <span class="g">long</span> </td>
+		<td class="code">date()</td>
+	</tr>
+	<tr>
+		<td>weekly date</td>
+		<td>1960 week 1</td>
+		<td class="code">%tw</td>
+		<td>may be <span class="g">float</span> or <span class="g">int</span></td>
+		<td class="code">weekly()</td>
+	</tr>
+	<tr>
+		<td>monthly date</td>
+		<td>jan1960</td>
+		<td class="code">%tm</td>
+		<td>may be <span class="g">float</span> or <span class="g">int</span></td>
+		<td class="code">monthly()</td>
+	</tr>
+	<tr>
+		<td>quarterly date</td>
+		<td>1960 quarter 1 </td>
+		<td class="code">%tq</td>
+		<td>may be <span class="g">float</span> or <span class="g">int</span></td>
+		<td class="code">quarterly()</td>
+	</tr>
+	<tr>
+		<td>half-yearly date</td>
+		<td>1960 half-year 1</td>
+		<td class="code">%th</td>
+		<td>may be <span class="g">float</span> or <span class="g">int</span></td>
+		<td class="code">halfyearly()</td>
+	</tr>
+	<tr>
+		<td>yearly date</td>
+		<td>0 A.D</td>
+		<td class="code">%ty</td>
+		<td>may be <span class="g">float</span> or <span class="g">int</span></td>
+		<td class="code">yearly()</td>
+	</tr>
+	</table>
+
+	<p style=font-size:90%>
+		<em>*Scroll left and right if the table exceeds the screen on mobile devices.</em>
+	</p>
+
+	<p style=font-size:90%>
+		<em>*Adapted from tables in <a class="internal" href="http://www.stata.com/manuals14/u24.pdf">Working with dates and times</a> and <a class="internal" href="http://www.stata.com/manuals14/ddatetime.pdf">datetime – Date and time values and variables</a>.</em>
+	</p>
+
+	<div class="more">
+		<p>
+			<a href="http://www.stata.com/manuals14/ddatetimedisplayformats.pdf">More on the syntax of display formats for dates and times from the Stata data management manual </a>
+		</p>
+	</div>
+
+	<h2>Conversion</h2>
+	<p>
+		In the last column of the table above we have introduced the functions <span class="g"><em>function</em>(<em>string, mask</em>[,<em>topyear</em>])</span> that transform strings to the numeric date and time variables. 
+	</p>
+	<p>
+		In those functions, <span class="g">mask</span> specifies the order of the components appearing in the string. 
+	</p>
+
+		<table class="table-l table-m table-s">
+			<tr>
+				<th width=350px >Mask</th>
+				<th width=350px ></th>
+			</tr>
+			<tr>
+				<td class="code">M</td>
+				<td>month</td>
+			</tr>
+			<tr>
+				<td class="code">D</td>
+				<td>day</td>
+			</tr>
+			<tr>
+				<td class="code">Y</td>
+				<td>4-digit year</td>
+			</tr>
+			<tr>
+				<td class="code">19Y</td>
+				<td>2-digit year to be interpreted as 19xx</td>
+			</tr>
+			<tr>
+				<td class="code">20Y</td>
+				<td>2-digit year to be interpreted as 20xx</td>
+			</tr>
+			<tr>
+				<td class="code">h</td>
+				<td>hour of day</td>
+			</tr>
+			<tr>
+				<td class="code">m</td>
+				<td>minutes within hour</td>
+			</tr>
+			<tr>
+				<td class="code">s</td>
+				<td>seconds within minute</td>
+			</tr>
+			<tr>
+				<td class="code">#</td>
+				<td>ignore one element</td>
+			</tr>
+		</table>
+
+	<p style=font-size:90%>
+		<em>*Scroll left and right if the table exceeds the screen on mobile devices.</em>
+	</p>
+
+	<p style=font-size:90%>
+		<em>Source: <a class="internal" href="http://www.stata.com/manuals14/ddatetimetranslation.pdf">datetime translation – String to numeric date translation functions</a></em>
+	</p>
+	<p>
+		Here are some examples of the strings and their corresponding masks:
+	</p>
+
+		<table class="table-l table-m table-s">
+			<tr>
+				<th width=350px >datetime</th>
+				<th width=350px >mask</th>
+			</tr>
+			<tr>
+				<td>“25jan2016 08:30:25”</td>
+				<td>“DMYhms”</td>
+			</tr>
+			<tr>
+				<td>“2016-01-25 08:30:25”</td>
+				<td>“YMDhms”</td>
+			</tr>
+			<tr>
+				<td>“16-01-25 08:30”</td>
+				<td>“20YMDhm”</td>
+			</tr>
+			<tr>
+				<td>“08:30:25 UTC 01252016 ”</td>
+				<td>“hms#MDY”</td>
+			</tr>
+		</table>
+
+	<p style=font-size:90%>
+		<em>*Scroll left and right if the table exceeds the screen on mobile devices.</em>
+	</p>
+
+	<p>
+		Suppose we have the following dataset and the string variable <span class="g">anntims</span>: <br>
+		<span class="g">
+		. list in 1/5
+		</span> 
+		<pre><code>
+     +----------------------+
+     |  anntims     anndats |
+     |----------------------|
+  1. | 00:46:00   25feb2008 |
+  2. | 00:46:00   25feb2008 |
+  3. | 00:46:00   25feb2008 |
+  4. | 00:46:00   25feb2008 |
+  5. | 00:46:00   25feb2008 |
+     +----------------------+		
+		</code></pre>
+	</p>
+
+	<p>
+		We want to generate a new time variable from it: <br>
+		<span class="g">
+		. gen double anntims2 = clock(anntims,"hms") <br>
+		. format anntims2 %tcHH:MM:SS <br>
+		. list anntims2 in 1/5
+		</span>
+		<pre><code>
+     +----------+
+     | anntims2 |
+     |----------|
+  1. | 00:46:00 |
+  2. | 00:46:00 |
+  3. | 00:46:00 |
+  4. | 00:46:00 |
+  5. | 00:46:00 |
+     +----------+			
+		</code></pre>
+	</p>
+	<p>
+		We also want to create a new variable with both date and time from the variables <span class="g">anntims</span> (string) and <span class="g">anndats</span> (numeric). <br>
+		<span class="g">
+		. gen double anndatims = dhms(anndats,hh(anntims2),mm(anntims2),ss(anntims2)) <br>
+		. format anndatims %tcCCYY.NN.DD_HH:MM:SS <br>
+		. list anndatims in 1/5 <br>
+		</span>
+		<pre><code>
+     +---------------------+
+     |           anndatims |
+     |---------------------|
+  1. | 2008.02.25 00:46:00 |
+  2. | 2008.02.25 00:46:00 |
+  3. | 2008.02.25 00:46:00 |
+  4. | 2008.02.25 00:46:00 |
+  5. | 2008.02.25 00:46:00 |
+     +---------------------+		
+		</code></pre>
+	</p>
+
+	<h3>Working with two-digit-years</h3>
+	<p>
+		When working with the two-digit years, in addition to specifying the <span class="g">19Y</span> or <span class="g">20Y</span> masks, we can specify the <span class="g">topyear</span> option in date and time <span class="g"><em>function</em>(<em>string, mask, topyear</em>)</span>. The full year to be returned will be the year that does not exceed the largest value of the specified <span class="g">topyear</span>.
+	</p>
+	<p>
+		This is useful when we want to interpret the first two digits of the year components differently of a variable. 
+	</p>
+	<p>
+		For instance, suppose we have a date variable <span class="g">date</span> (string). We want to obtain the full years in the range of 1949-2048 and, based on the knowledge of the data, would like to interpret digits equal to or larger than 49 as from the years 19** and others as from 20**: <br>
+		<span class="g">
+		. list in 1/5
+		</span>
+		<pre><code>
+     +--------+
+     |   date |
+     |--------|
+  1. | 470505 |
+  2. | 480404 |
+  3. | 490101 |
+  4. | 500202 |
+  5. | 510303 |
+     +--------+			
+		</code></pre>
+	</p>
+	<p>
+		<span class="g">
+		. gen float fulldate = date(date, "YMD", 2048) <br>
+		. format fulldate %td <br> 
+		. list in 1/5 
+		<pre><code>
+     +--------------------+
+     |   date    fulldate |
+     |--------------------|
+  1. | 470505   05may2047 |
+  2. | 480404   04apr2048 |
+  3. | 490101   01jan1949 |
+  4. | 500202   02feb1950 |
+  5. | 510303   03mar1951 |
+     +--------------------+			
+		</code></pre>
+	</p>
+	<div class="more">
+		<p>
+			<a href="http://www.stata.com/manuals14/ddatetimedisplayformats.pdf">More on string to numeric date translation functions from the Stata data management manual </a>
+		</p>
+	</div>
+
+	<h2>Extraction</h2>
+	<p>
+		The functions below extract the components from the date and time variables. 
+	</p>
+
+
+		<table class="table-l table-m table-s">
+			<tr>
+				<th width=350px>time-of-day component</th>
+				<th width=350px>function</th>
+			</tr>
+			<tr>
+				<td>hour of day</td>
+				<td><span class="g">hh(<em>tc</em>)</span> or <span class="g">hhC(<em>tC</em>)</span></td>
+			</tr>
+			<tr>
+				<td>minutes of day</td>
+				<td><span class="g">mm(<em>tc</em>)</span> or <span class="g">mmC(<em>tC</em>)</span></td>
+			</tr>
+			<tr>
+				<td>seconds of day</td>
+				<td><span class="g">ss(<em>tc</em>)</span> or <span class="g">ssC(<em>tC</em>)</span></td>
+			</tr>
+		</table>
+
+		<table class="table-l table-m table-s">
+			<tr>
+				<th width=350px>date component</th>
+				<th width=350px>function</th>
+			</tr>
+			<tr>
+				<td>calendar year</td>
+				<td class="code">year(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>calendar month</td>
+				<td class="code">month(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>calendar day</td>
+				<td class="code">day(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>day of week (0=Sunday)</td>
+				<td class="code">dow(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>day of year (1=first day)</td>
+				<td class="code">doy(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>week within year (1=first week)</td>
+				<td class="code">week(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>quarter within year (1=first quarter)</td>
+				<td class="code">quarter(<em>td</em>)</td>
+			</tr>
+			<tr>
+				<td>half within year  (1=first half)</td>
+				<td class="code">halfyear(<em>td</em>)</td>
+			</tr>
+		</table>
+
+	<p style=font-size:90%>
+		<em>*Scroll left and right if the table exceeds the screen on mobile devices.</em>
+	</p>
+
+	<p style=font-size:90%>
+		<em>*Adapted from <a class="internal" href="http://www.stata.com/manuals14/ddatetime.pdf">tables in datetime – Date and time values and variables</a></em>
+	</p>
+	<p>
+		Suppose we want to extract the year from the variable <span class="g">anndats</span> we've seen earlier: <br>
+		<pre><code>
+     +----------------------+
+     |  anntims     anndats |
+     |----------------------|
+  1. | 00:46:00   25feb2008 |
+  2. | 00:46:00   25feb2008 |
+  3. | 00:46:00   25feb2008 |
+  4. | 00:46:00   25feb2008 |
+  5. | 00:46:00   25feb2008 |
+     +----------------------+		
+		</code></pre>
+	</p>
+	<p>
+		<span class="g">
+		. gen annyrs = year(anndats) <br>
+		. list annyrs in 1/5
+		</span> 
+		<pre><code>
+     +--------+
+     | annyrs |
+     |--------|
+  1. |   2008 |
+  2. |   2008 |
+  3. |   2008 |
+  4. |   2008 |
+  5. |   2008 |
+     +--------+			
+		</code></pre>
+	</p>
+	<p>
+		Suppose we want to extract the minutes from the time variable <span class="g">anntims2</span>: 
+		<pre><code>
+     +----------+
+     | anntims2 |
+     |----------|
+  1. | 00:46:00 |
+  2. | 00:46:00 |
+  3. | 00:46:00 |
+  4. | 00:46:00 |
+  5. | 00:46:00 |
+     +----------+			
+		</code></pre>
+		<span class="g">
+		. gen mins = mm(anntims2) <br>
+		. list mins in 1/5
+		</span> 
+		<pre><code>
+     +------+
+     | mins |
+     |------|
+  1. |   46 |
+  2. |   46 |
+  3. |   46 |
+  4. |   46 |
+  5. |   46 |
+     +------+			
+		</code></pre>
+	</p>
+
+	<h2>Concatenation</h2>
+	<p>
+		In one example above, we created a date and time variable by <br>
+		<span class="g">
+		. gen double anndatims = dhms(anndats,hh(anntims2),mm(anntims2),ss(anntims2)) <br>
+		. format anndatims %tcCCYY.NN.DD_HH:MM:SS <br>
+		</span> 
+		Here we used the <span class="g">dhms(<em>datetime, h, m, s</em>)</span> function to concatenate the dates, hours, minutes and seconds.
+	</p>
+	<p>
+		Let's see another case, where we want to create a new year variable that started from November using the same dataset below: <br>
+	<pre><code>
+     +-------------------------------+
+     |  anntims     anndats   annyrs |
+     |-------------------------------|
+  1. | 00:46:00   25feb2008     2008 |
+  2. | 00:46:00   25feb2008     2008 |
+  3. | 00:46:00   25feb2008     2008 |
+  4. | 00:46:00   25feb2008     2008 |
+  5. | 00:46:00   25feb2008     2008 |
+     +-------------------------------+
+	</code></pre>		
+	</p>
+	<p>
+		<pre><code>
+gen annyrs2 = .
+local i = 2000
+while `i' < 2017 {
+	replace annyrs2 = `i' if anndats >= mdy(11,1,`i') & anndats < mdy(11,1,`i'+1)
+	local i = `i' + 1
+}				
+		</code></pre>	
+	Here we used the <span class="g">mdy(<em>M, D, Y</em>)</span> function to concatenate the month, day, and year elements.
+	</p>
+
+	<h2>Calculation</h2>
+	<p>Since Stata internally uses the difference from the base to read the dates and times, calculation of durations is simply addition or subtraction of the date and time units. </p>
+	<p>
+		<span class="g">
+			. list time in 1/5
+		</span>
+			<pre><code>
+     +----------------------------------+
+     |                             time |
+     |----------------------------------|
+  1. | 2016-03-31T04:20:00.122823+00:00 |
+  2. | 2016-03-31T04:24:25.447985+00:00 |
+  3. | 2016-03-31T04:24:25.683670+00:00 |
+  4. | 2016-03-31T04:24:27.338571+00:00 |
+  5. | 2016-03-31T04:24:27.552821+00:00 |
+     +----------------------------------+
+			</code></pre>
+	</p>
+	<p>
+		Here are the codes to get them: <br>
+		<span class="g">
+		. gen datetime = substr(time,1,19)<br>
+		. gen microsec = substr(time,21,6) <br>
+		. destring microsec, replace <br>
+		. replace microsec = microsec/1000 <br>
+		. gen double timestamp = clock(datetime, "YMD#hms") + microsec <br>
+		. format timestamp %tcCCYY.NN.DD_HH:MM:SS.sss  <br>
+		. gen duration = timestamp - timestamp[_n-1] <br>
+		. gen minutes = minutes(duration)
+		</span>
+	</p>
+	<div class="more">
+		<p>
+			<a href="http://www.stata.com/manuals14/ddatetime.pdf">Read the full documentation on date and time values and variables from the Stata data management manual </a>
+		</p>
+	</div>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>	

@@ -1,0 +1,7 @@
+id,year,family,role,rating
+1,1995,1,child,A
+2,1995,1,child,B
+3,1995,1,mother,B
+1,1995,2,father,C
+2,1995,2,mother,B
+3,1995,2,child,A

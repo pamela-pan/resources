@@ -1,0 +1,365 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Binding Datasets</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Binding Datasets</h1>
+	<span class="g">append</span>, <span class="g">merge</span> and <span class="g">joinby</span> bind the datasets by attaching the “using dataset” stored on disk to the “master dataset” stored in memory. 
+
+	<h2>append</h2>
+	<p>
+		<span class="g">append</span> binds datasets vertically by adding observations from the using dataset to the master dataset. 
+	</p>
+	<p>
+		The datasets should contain mostly the same variables; absent variables from one dataset will be given missing values in the combined file. <span class="g">append</span> applies, for instance, when we want to combine datasets of different times or regions with mostly the same variables.
+	</p>
+	<p>
+		<span class="g">
+		. use file1 <br>
+		. list
+		</span>
+		<pre><code>
+     +--------------------------------------+
+     | id   year   family     role   rating |
+     |--------------------------------------|
+  1. |  1   1995        1    child        A |
+  2. |  2   1995        1    child        B |
+  3. |  3   1995        1   mother        B |
+  4. |  1   1995        2   father        C |
+  5. |  2   1995        2   mother        B |
+     |--------------------------------------|
+  6. |  3   1995        2    child        A |
+     +--------------------------------------+			
+		</code></pre>
+		<span class="g">
+		. use file2, clear <br>
+		. list
+		</span>
+		<pre><code>
+     +--------------------------------------+
+     | id   year   family     role   rating |
+     |--------------------------------------|
+  1. |  1   2005        1    child        A |
+  2. |  2   2005        1    child        A |
+  3. |  3   2005        1   mother        B |
+  4. |  1   2005        2   father        B |
+  5. |  2   2005        2   mother        C |
+     |--------------------------------------|
+  6. |  3   2005        2    child        B |
+     +--------------------------------------+			
+		</code></pre>
+	<span class="g">
+	. append using file1 <br>
+	. list
+	</span>
+	<pre><code>
+     +--------------------------------------+
+     | id   year   family     role   rating |
+     |--------------------------------------|
+  1. |  1   2005        1    child        A |
+  2. |  2   2005        1    child        A |
+  3. |  3   2005        1   mother        B |
+  4. |  1   2005        2   father        B |
+  5. |  2   2005        2   mother        C |
+     |--------------------------------------|
+  6. |  3   2005        2    child        B |
+  7. |  1   1995        1    child        A |
+  8. |  2   1995        1    child        B |
+  9. |  3   1995        1   mother        B |
+ 10. |  1   1995        2   father        C |
+     |--------------------------------------|
+ 11. |  2   1995        2   mother        B |
+ 12. |  3   1995        2    child        A |
+     +--------------------------------------+		
+	</code></pre>
+	</p>
+	<p>
+		<span class="g">. append using <em>file</em></span> <br>
+		adds the observations from <span class="g">file</span> to the master file.<br>
+	</p>
+	<p>
+		<span class="g">. append using <em>file</em>, keep (<em>var1 var2 var3</em>)</span> <br>
+		appends the <span class="g">file</span> file and keeps only the three specified variables in the combined dataset.
+	</p>
+	<p>
+		<span class="g">. append using <em>file1 file2</em>, generate (<em>filenum</em>)</span> <br>
+		appends <span class="g">file1</span> and <span class="g">file2</span> to the master file and assigns a number to the observations to indicate the source file. 
+	</p>
+	<p>
+		We can also create an id for each source file by ourselves that are meaningful to the datasets before appending the datasets.  <br>
+		<span class="g">
+		. use file, clear<br>
+		. generate str4 source = ”2016”<br>
+		. save fileb<br>
+
+		. use masterfile, clear<br>
+		. generate str4 source = ”2015”<br>
+		. append using fileb 
+		</span>
+	</p>
+	<p>
+		<span class="g">. append using file1b file2b </span> <br>
+		appends <span class="g">file1</span> and <span class="g">file2</span> to the master file. 
+	</p>
+
+	<h2>merge</h2>
+	<p><span class="g">merge</span> combines datasets horizontally by adding variables to the existing dataset. </p>
+	<p>The datasets are combined by one or more key variables. The key variables must have the same names and data type (numeric or string), otherwise we will receive an error message. </p>
+	<p>
+		If one dataset contains more observations than the other, missing values will be generated where not matched.
+	</p>
+
+	<h3>types of merges</h3>
+	<p>
+		There are three types of match merges that we frequently use. 
+	</p>
+	<p>
+		<span class="g">merge 1:1 <em>varlist</em> using <em>filename</em></span><br>
+		In one-to-one merge, we use a unique key variable in both the master and the using datasets to merge files. In both files there should be only one unique value for the key variable. 
+	</p>
+	<p>
+		<span class="g">merge 1:m <em>varlist</em> using <em>filename</em><br>
+		merge m:1 <em>varlist</em> using <em>filename</em><br></span>
+		In one-to-many and many-to-one merges, one observation from one dataset is matched to many observations in the other dataset. If the master dataset has many observations to match with the single observation in the using dataset, we use <span class="g">m:1</span>; or we use <span class="g">1:m</span> if it is the using dataset that has many to match. 
+	</p>
+	<p>
+		One-to-many or many-to-one merges are most frequently met when dealing with hierarchical data. 
+	</p>
+	<p>
+		<span class="g">
+		. use file5, clear <br>
+		. list
+		</span>
+		<pre><code>
+     +---------------------+
+     | family   area   SES |
+     |---------------------|
+  1. |      1      N     1 |
+  2. |      2      S     2 |
+     +---------------------+
+		</pre></code>
+		<span class="g">
+		. use file1, clear <br>
+		. list
+		</span>
+		<pre><code>
+     +--------------------------------------+
+     | id   year   family     role   rating |
+     |--------------------------------------|
+  1. |  1   1995        1    child        A |
+  2. |  2   1995        1    child        B |
+  3. |  3   1995        1   mother        B |
+  4. |  1   1995        2   father        C |
+  5. |  2   1995        2   mother        B |
+     |--------------------------------------|
+  6. |  3   1995        2    child        A |
+     +--------------------------------------+			
+		</code></pre>
+		<span class="g">
+		. merge m:1 family using file5
+		</span>
+		<pre><code>
+Result                           # of obs.
+-----------------------------------------
+not matched                             0
+matched                                 6  (_merge==3)
+-----------------------------------------			
+		</code></pre>
+		<span class="g">
+		. list
+		</span>
+		<pre><code>
+   +-----------------------------------------------------------------+
+   | id   year   family     role   rating   area   SES        _merge |
+   |-----------------------------------------------------------------|
+1. |  1   1995        1    child        A      N     1   matched (3) |
+2. |  2   1995        1    child        B      N     1   matched (3) |
+3. |  3   1995        1   mother        B      N     1   matched (3) |
+4. |  1   1995        2   father        C      S     2   matched (3) |
+5. |  2   1995        2   mother        B      S     2   matched (3) |
+   |-----------------------------------------------------------------|
+6. |  3   1995        2    child        A      S     2   matched (3) |
+   +-----------------------------------------------------------------+			
+		</code></pre>
+	</p>
+	<p>
+		The fourth type, many-to-many merges, can yield random results and be problematic. We will not discuss it here.
+	</p>
+
+	<h3>multiple key variables</h3>
+	<p>
+		We can merge files using more than one key variable when a single variable is not adequate to match the two datasets. 
+	</p>
+	<p>
+		<span class="g">
+		. use file3, clear <br>
+		. list
+		</span>
+		<pre><code>
+     +----------------------+
+     | id   family     role |
+     |----------------------|
+  1. |  1        1    child |
+  2. |  2        1    child |
+  3. |  3        1   mother |
+  4. |  1        2   father |
+  5. |  2        2   mother |
+     |----------------------|
+  6. |  3        2    child |
+     +----------------------+			
+		</code></pre>
+		<span class="g">
+		. use file4, clear <br>
+		. list
+		</span>
+		<pre><code>
+     +-----------------------------+
+     | id   year   family   rating |
+     |-----------------------------|
+  1. |  1   1995        1        A |
+  2. |  2   1995        1        B |
+  3. |  3   1995        1        B |
+  4. |  1   1995        2        C |
+  5. |  2   1995        2        B |
+     |-----------------------------|
+  6. |  3   1995        2        A |
+     +-----------------------------+			
+		</code></pre>
+		<span class="g">
+		. merge 1:1 id family using file3
+		</span>
+		<pre><code>
+Result                           # of obs.
+-----------------------------------------
+not matched                             0
+matched                                 6  (_merge==3)
+-----------------------------------------
+		</code></pre>
+		<span class="g">
+		. list
+		</span>
+		<pre><code>
+   +----------------------------------------------------+
+   | id   year   family   rating     role        _merge |
+   |----------------------------------------------------|
+1. |  1   1995        1        A    child   matched (3) |
+2. |  1   1995        2        C   father   matched (3) |
+3. |  2   1995        1        B    child   matched (3) |
+4. |  2   1995        2        B   mother   matched (3) |
+5. |  3   1995        1        B   mother   matched (3) |
+   |----------------------------------------------------|
+6. |  3   1995        2        A    child   matched (3) |
+   +----------------------------------------------------+
+			
+		</code></pre>
+	</p>
+
+	<h3>_merge</h3>
+	<p>
+		After the merge the <span class="g">_merge</span> variable will be automatically created. It tells us how the observations have been matched. 
+	</p>
+	<p>
+		The  <span class="g">_merge</span> variable, in the simple cases, has three values:<br>
+		_merge == 1, observation appeared in the master file only<br>
+		_merge == 2, observation appeared in the using file only<br>
+		_merge == 3, observation appeared in both files
+	</p>
+	<p>
+		The <span class="g">_merge</span> variable must be dropped or renamed before we perform the next merge.
+	</p>
+	<p>
+		<span class="g">tab _merge</span> to find out how your merge went.
+	</p>
+
+	<h2>joinby</h2>
+	<p><span class="g">joinby</span> forms all pairwise combinations within groups. </p>
+	<p>
+		<span class="g">
+		. use file6, clear <br>
+		. list
+		</span>
+		<pre><code>
+   +---------------------------+
+   | industry   company   rank |
+   |---------------------------|
+1. |        A         a      1 |
+2. |        A         b      2 |
+3. |        A         c      3 |
+4. |        B         l      4 |
+5. |        B         m      5 |
+   |---------------------------|
+6. |        B         n      6 |
+   +---------------------------+	
+		</code></pre>
+		<span class="g">
+		. use file7, clear <br>
+		. list
+		</span>
+		<pre><code>
+   +-----------------+
+   | industry   year |
+   |-----------------|
+1. |        A   1995 |
+2. |        A   2005 |
+3. |        B   1995 |
+4. |        B   2005 |
+   +-----------------+		
+		</code></pre>
+		<span class="g">
+		. use file6, clear <br>
+		. joinby industry using file7 <br>
+		. list
+		</span>
+		<pre><code>
+     +----------------------------------+
+     | industry   company   rank   year |
+     |----------------------------------|
+  1. |        A         a      1   1995 |
+  2. |        A         a      1   2005 |
+  3. |        A         b      2   1995 |
+  4. |        A         b      2   2005 |
+  5. |        A         c      3   1995 |
+     |----------------------------------|
+  6. |        A         c      3   2005 |
+  7. |        B         l      4   2005 |
+  8. |        B         l      4   1995 |
+  9. |        B         m      5   1995 |
+ 10. |        B         m      5   2005 |
+     |----------------------------------|
+ 11. |        B         n      6   1995 |
+ 12. |        B         n      6   2005 |
+     +----------------------------------+
+
+		</code></pre>
+	</p>
+	<p>
+		For the unmatched observations from the datasets, the default is to be ignored. But you can also set them to be kept in different ways by the <span class="g">unmatched(both/master/using)</span> option.
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Subscripting</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Subscripting</h1>
+	<p>
+		We can refer to observations by subscripting the variables. <span class="g"><em>var</em>[<em>exp</em>]</span> does the explicit subscripting. 
+	</p>
+	<p>
+		When the expressions are the internal variables <span class="g">_n</span> and <span class="g">_N</span>: <br>
+		 <span class="g">_n</span> gives the number of current observations; <br>
+		 <span class="g">_N</span> gives the total number of observations. <br>
+		 <span class="g"><em>var</em>[_n]</span> refers to the current observation; <br>
+		 <span class="g"><em>var</em>[_N]</span> refers to the last observation.
+	</p>
+	<p>
+		<span class="g">
+		. sysuse auto <br>
+		. sort price <br> </span>
+		<span class="g">. price[1]</span> refers to the first observation of <span class="g">price</span> and is now the lowest value of <span class="g">price</span> after sorting. <br>
+		<span class="g">. price[0]</span> is missing since there is no such observation. <br>
+		<span class="g">. price[_N]</span> refers to the last observation of <span class="g">price</span> and is now the largest value of <span class="g">price</span>.
+	</p>
+	<h2>Cases</h2>
+	<p>
+		Subscripting can be useful in hierarchical data. We will see some cases below.
+	</p>
+	<p>
+		Suppose we have a dataset with variables of companies, analyst ids, some event dates and times, analyst scores and ranks, ratings on companies etc. <br>
+		<span class="g">
+		.list in 1/10
+		</span> 
+		<pre><code>
+     +------------------------------------------------------------------------------------------------------------+
+     | company                               sector       id              datetime   rank   score   year   rating |
+     |------------------------------------------------------------------------------------------------------------|
+  1. |    0000                         Banks/Midcap    79092   2014.03.10 00:25:00      1   15.61   2013        3 |
+  2. |    0001                       Integrated Oil   132083   2014.02.28 19:22:00      4    9.89   2013        2 |
+  3. |    0001   Oil & Gas Exploration & Production    71894   2014.02.26 00:17:00      4    5.57   2013        3 |
+  4. |    0001   Oil & Gas Exploration & Production     9928   2014.02.28 04:15:00      2    8.76   2013        3 |
+  5. |    0001   Oil & Gas Exploration & Production   122739   2014.02.26 03:05:00      3    8.11   2013        3 |
+     |------------------------------------------------------------------------------------------------------------|
+  6. |    0001   Oil & Gas Exploration & Production   122739   2014.11.10 04:13:00      3    8.11   2014        2 |
+  7. |    000R                             Internet   142116   2014.02.27 01:10:00      4    9.14   2013        3 |
+  8. |    000R                             Internet   142116   2014.02.18 00:18:00      4    9.14   2013        2 |
+  9. |    000R                             Internet    73111   2014.02.19 15:21:00      1   14.96   2013        2 |
+ 10. |    000R                             Internet    73111   2014.10.31 06:50:00      1   14.96   2013        1 |
+     +------------------------------------------------------------------------------------------------------------+
+
+		</code></pre>	
+	</p>
+
+	<h3>Creating group identifier</h3>
+	<p>
+		<span class="g">
+		. by company, sort: gen ingroup_id = _n </span> <br>
+		gives us a unique identifier to each observation within each company. 
+	</p>
+	<p>
+		<span class="g">
+		. list company id datetime ingroup_id in 1/6
+		</span> 
+		<pre><code>
+     +---------------------------------------------------+
+     | company       id              datetime   ingrou~d |
+     |---------------------------------------------------|
+  1. |    0000    79092   2014.03.10 00:25:00          1 |
+  2. |    0001   132083   2014.02.28 19:22:00          1 |
+  3. |    0001    71894   2014.02.26 00:17:00          2 |
+  4. |    0001     9928   2014.02.28 04:15:00          3 |
+  5. |    0001   122739   2014.02.26 03:05:00          4 |
+     |---------------------------------------------------|
+  6. |    0001   122739   2014.11.10 04:13:00          5 |
+     +---------------------------------------------------+		
+		</code></pre>
+	</p>
+
+	<h3>First / last several cases within a group</h3>
+	<p>
+		Say we want to get the mean of the 3 most recent ratings by <span class="g">id</span> and <span class="g">company</span>: <br>
+		<span class="g">
+		. by id company (datetime), sort: gen rating_3rec_avg = (rating[1] + rating[2] + rating[3]) / 3 
+		</span> 
+	</p>
+	<p>
+		Alternatively, if we want to obtain the mean of the 3 most latest ratings: <br>
+		<span class="g">
+		. by id company (datetime), sort: gen rating_3last_avg = (rating[_N] + rating[_N-1] + rating[_N-2]) / 3 
+		</span> 
+	</p>
+
+	<h3>Checking if values are consistent within a group</h3>
+	<p>
+		If a group contains all the same values, then the first should be equal to the last one. <br> 
+		<span class="g">
+		. by id company, sort: gen flag = rating[1] == rating[_N]
+		</span> 
+	</p>
+
+	<h3>Checking if the pairs exist for t tests within a group</h3>
+	<p>
+		Say we want to perform t tests on each pair (1 vs 2; 2 vs 3 etc.) of ratings for each sector with year. Before we do that, we want to make sure that each pair exists. Otherwise Stata will throw a warning message at us saying only one group of the pair found. 
+	</p>
+	<p>	
+		If a pair exists, then the first obsrvation should be of value i and the last of value i + 1 (i.e. <span class="g">rank[1] == `i' & rank[_N] == `i'+1</span> ). 
+		<pre><code>
+foreach i in 1 2 3{
+	//make sure the pairs for t tests exist
+	gen rk`i' = .
+	by sector year (rank), sort: ///
+	replace rk`i' = rank if rank[1] == `i' & rank[_N] == `i'+1
+
+	//create score_diff variables by sector*year
+	egen group`i' = group(sector year) if !missing(rk`i')
+	qui levelsof group`i', local(g)
+	gen score_diff`i' = .
+	foreach x of local g{
+		qui estpost ttest score if group`i' == `x', by(rk`i')
+		matrix b = e(b)
+		replace score_diff`i' = b[1,1] if group`i' == `x'
+	}
+
+	//drop the temp vars
+	drop rk`i' group`i'
+}			
+		</code></pre> 
+	</p>
+
+	<h3>Carrying forward non-missing values</h3>
+	<div class="more">
+		<p>
+		<a href="http://www.stata.com/support/faqs/data-management/replacing-missing-values/">Nicholas J. Cox, How can I replace missing values with previous or following nonmissing values or within sequences?</a></p>
+	</div>
+
+	<h2>Lags and leads</h2>
+	<p> 
+		Subscripting with <span class="g">_n</span> and <span class="g">_N</span> can be used to create lags and leads. <span class="g">[_n-1]</span> refers to the previous observation; <span class="g">[_n+1]</span> refers to the next observation.  Use time-series operators <span class="g">L</span> for lag and <span class="g">F</span> for lead if you are dealing with time-series data. 
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

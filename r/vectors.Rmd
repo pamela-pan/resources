@@ -1,0 +1,777 @@
+---
+title: "Vectors"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+***
+R operates on named *data structures*. In R we have vectors, factors, matrices, arrays, lists and data frames. For now let's think about data structures as containers that store different types of data. 
+
+But vectors are not just another data structure; they are a central component of R. 
+
+***
+## 3.1 Generating sequences
+The simplest structure in R is the numeric vector; it consists of an ordered collection of numbers.
+
+A vector can also contain strings, or logical values, but not a mixture. Let's look at numbers first.
+
+***
+### `:` 
+`:` operator generates a sequence from a number to another number in steps of 1 or -1. 
+```{r}
+1:4
+1:-4 # count backward
+8.5:4
+4:8.5
+```
+
+***
+### `c()` 
+`c()` function combines values into a vector. 
+```{r}
+c(1,2,3,4,5)
+c(18, 9:5)
+```
+
+If the arguments to `c()` are themselves vectors, it flattens them and combines them into one single vector.
+```{r}
+c0 <- c()
+c1 <- 1:3
+c2 <- c(4, 5, 6)
+c3 <- c(c0, c1, c2)
+c3
+```
+
+***
+### `seq(from, to)` 
+`seq(from, to)` is a generic function to generate regular sequences. It has five arguments; not all of them will be specified in one call. The first two arguments specify the beginning and end of the sequence; if these are the only two arguments given, then the result is the same as the colon operator. 
+
+```{r}
+seq(from = 0, to = 20)
+0:20
+```
+
+The colon operator works for sequences that grow by 1 only. But the `seq()` function supports optional arguments.
+```{r}
+seq(from = 0, to = 20)
+```
+
+`by` specifies the increment of the sequence.
+```{r}
+seq(from = 0, to = 20, by = 2)
+```
+
+`length.out` specifies a length for the output sequence and then R will calculate the necessary increment. The increment need not be an integer; R can create sequences with fractional increments.
+
+```{r}
+seq(from = 0, to = 20, length.out = 9)
+```
+
+There are three other specialist sequence functions that are faster and easier to use, covering specific use cases.
+
+***
+### `seq.int()`
+`seq.int()` lets us create a sequence from one number to another. 
+
+```{r}
+seq.int(from = 1, to = 10) 
+seq.int(from = 1, to = 10, by = 2) 
+seq.int(from = 1, by = 2, length.out = 10)
+```
+
+***
+### `seq_len()` 
+`seq_len()` creates a sequence from 1 up to its input.
+```{r}
+seq_len(5) ## 1:5
+seq_len(0)
+```
+
+***
+### `seq_along()`
+`seq_along()` creates a sequence from 1 up to the length of its input.
+
+```{r}
+x <- c(10.4, 5.6, 3.1, 6.4, 21.7)
+for(i in seq_along(x)) print(x[i])
+```
+
+This is the same as:
+```{r}
+for(i in 1:length(x)) print(x[i])
+```
+
+***
+### `rep()`
+`rep()` replicates the values in a vector.
+```{r}
+rep(1:4, times = 2)
+rep(1:4, each = 2)
+rep(1:4, times = c(1,2,3,4))
+rep(1:4, each = 2, times = 3)
+rep(1:4, length.out = 10)
+```
+
+
+***
+## 3.2 Arithmetic operations
+Vectors can be used in arithmetic expressions. In these cases the operations are performed element by element on entire vectors. 
+
+The arithmetic operators are  `+`, `-`, `*`, `/` and `^` for raising to a power.
+
+```{r}
+1:5 + 6:10
+c(1, 3, 6, 10, 15) + c(0, 1, 3, 6, 10)
+```
+
+The colon operator has high priority within an expression.
+```{r}
+1:5-1
+1:(5-1)
+-2:2*-2:2
+```
+
+***
+### common arithmetic functions
+Common arithmetic functions are available. e.g. `log()`, `exp()`, `sin()`, `cos()`, `tan()`, `sqrt()`. 
+
+`max()` and `min()` select the largest and smallest elements of a vector respectively. `range()` is a function whose value is a vector of length two, namely `c(min(x), max(x))`. `length(x)` is the number of elements in `x`. `sum(x)` gives the total of the elements in `x`.
+
+```{r}
+u <- c(0,1,1,2,3,5,8,13,21,34)
+mean(u)
+median(u)
+sd(u) # sample standard deviation
+var(u) # sample variance
+```
+
+***
+### vector recycling
+So far the vectors we've seen occurring in the same expression are of the same length. What happens if we try to do arithmetic on vectors of different lengths? R will recycle elements in the shorter vector to match the longer one.
+
+```{r}
+1:5 + 1:15
+```
+
+The operations below are performed between every vector element and the scalar. The scalar is repeated. (In R a "scalar" is simply a numeric vector with one element. )
+```{r}
+c(2, 3, 5, 7, 11, 13) - 2
+1:10 / 3
+(1:5) ^ 2
+```
+
+If the length of the longer vector isn’t a multiple of the length of the shorter one, a warning will be given.
+```{r}
+1:5 + 1:7
+```
+
+***
+### R is vectorized
+All the arithmetic operators in R are vectorized. Vector operations are one of R’s great strengths. Okay, but what does that mean?
+
+This means, first and foremost, that an operator or a function will act on each element of a vector without the need for us to explicitly write a loop. 
+
+For example, if we want to write an R program to multiply two vectors of integers type and length 6, we can write a `for` loop.
+```{r}
+vec1 <- 1:6
+vec2 <- c(4,5,6,7,8,9)
+
+vec<- c()
+for (i in seq_along(vec1)){
+  vec <- c(vec, vec1[i] * vec2[i])
+}
+
+print(vec)
+```
+
+Except that we don't actually need a `for` loop! The built-in implicit looping over elements is much faster than explicitly writing our own loop. As we see, the operator is applied to corresponding elements from both vectors.
+```{r}
+# vectorized
+vec1 <- 1:6
+vec2 <- c(4,5,6,7,8,9)
+vec <- vec1 * vec2
+vec
+```
+
+For another example, we can recenter an entire vector in one expression simply by subtracting the mean of its content.
+```{r}
+u <- c(0,1,1,2,3,5,8,13,21,34)
+u - mean(u)
+```
+
+
+Besides, we see vectorized operations when a function takes a vector as an input and calculates a summary statistic. The functions apply themselves to every element of a vector and return a vector of results.
+
+```{r}
+x <- c(0,1,1,2,3,5,8,13,21,34)
+y <- log(x + 1)
+cor(x, y)
+cov(x, y)
+```
+
+***
+### some useful built-in functions operating on vectors
+ `head()`, `tail()` returns the first or last parts of a vector.
+```{r}
+head(letters)
+head(letters, 10)
+tail(letters)
+```
+
+***  
+ `sort()` sorts a vector into ascending or descending order.
+```{r}
+sort(c(10:3, 2:12))
+sort(c(10:3, 2:12), decreasing = TRUE)
+```
+
+***
+ `union()`, `intersect()`,` setdiff()`, `setequal()`, `is.element()` performs set union, intersection, difference, equality and membership on two vectors.
+
+```{r}
+x <- c(1:15)
+y <- c(10:25)
+union(x, y)
+intersect(x, y)
+setdiff(x, y)
+setdiff(y, x)
+setequal(x, y)
+is.element(x, y)
+is.element(y, x)
+```
+
+***  
+`unique()` returns a vector with duplicate elements removed.
+```{r}
+unique(c(10:3, 2:12))
+```
+
+
+***
+## 3.3 Logical vectors
+R also allows manipulation of logical values. Logical vectors are generated by conditions. 
+
+R has two logical values, `TRUE` and `FALSE`. (Although some may say three. As we will see shortly, `NA` is also a logical value, meaning "not available".) These are often called Boolean values in other programming languages. 
+
+Note: `TRUE` and `FALSE` are often abbreviated as `T` and `F`. However, `T` and `F` are just variables which are set to `TRUE` and `FALSE` by default, but are not reserved words and hence can be overwritten by the user. Hence, we should always use `TRUE` and `FALSE`. 
+
+The logical operators are `!`, `&` and `|`. 
+
+The comparison operators compare two values and return `TRUE` or `FALSE`. The comparison operators are `<`, `<=`, `>`, `>=`, `==` for exact equality and `!=` for inequality. 
+```{r}
+pi > 3
+```
+
+We can also compare a vector against a single scalar, as in arithmetic operations. R will expand the scalar to the vector's length and then perform the element-wise comparison. 
+```{r}
+c(3, 4 - 1, 1 + 1 + 1) == 3
+1:3 != 3:1
+(1:5) ^ 2 >= 16
+```
+
+Again, as in arithmetic operations, we can compare entire vectors at once. R will perform an element-by-element comparison and return a vector of logical values, one for each comparison. 
+```{r}
+v <- c(3, pi, 4)
+w <- c(pi, pi, pi)
+v <= w
+```
+
+`c1` and `c2` are logical expressions. 
+
+```{r}
+v <- c(3, pi, 4)
+w <- c(pi, pi, pi)
+c1 <- v<=w
+c2 <- v>=w
+c1
+c2
+```
+
+`c1 & c2` is their intersection, `c1 | c2` is their union, and `!c1` is the negation of `c1`.
+
+```{r}
+c1 & c2
+c1 | c2
+!c1
+```
+
+
+***
+### logical vectors coerced into numeric vectors
+Logical vectors may be used in ordinary arithmetic, in which case they are coerced into numeric vectors. `FALSE` becomes 0 and `TRUE` becomes 1. 
+
+```{r}
+TRUE + TRUE
+TRUE * FALSE
+```
+
+This trick may be useful to evaluate if at least one of the conditions is true, in which case the sum of the conditions would be larger than or equal to one.
+```{r}
+sum(c(TRUE, FALSE, FALSE)) 
+sum(c(FALSE, FALSE, FALSE)) 
+sum(c(TRUE, TRUE, FALSE)) 
+```
+
+Similarly, if all the conditions are true, then the mean of these conditions would be 1.
+```{r}
+mean(c(TRUE, TRUE, TRUE)) 
+mean(c(TRUE, FALSE, TRUE))
+mean(c(FALSE, FALSE, FALSE))
+```
+
+
+***
+### `any()` and `all()`
+Two useful functions for dealing with logical vectors are `any()` and `all()`. Both test a logical vector. `any()` returns `TRUE` if the given vector contains at least one `TRUE` value. `all()` returns `TRUE` if all of the values are `TRUE` in the given vector. 
+
+```{r}
+v <- c(3, pi, 4)
+any(v == pi) 
+all(v == pi)
+```
+
+
+***
+## 3.4 Operators
+So far we have discussed assignment, arithmetic, logical and comparison operations. We use these operators to perform operations on variables and values. 
+
+More formally, an *operator* is a function that takes one or two arguments and can be written without parentheses.
+
+To sum up, the assignment operator is `<-`. 
+
+The arithmetic operators are: 
+
+*  `+` addition
+*  `-` subtraction	
+*  `*` multiplication 
+*  `/` division 
+*  `^` exponentiation 
+*  `%%` modulus 
+*  `%/%` integer division
+*  `%*%` matrix multiplication
+
+The comparison operators are:
+
+* `<` less than 
+* `<=` less than and equal to 
+* `>` larger than 
+* `>=` larger than and equal to 
+* `==` exactly equal to 
+* `!=` not equal to
+
+The logical operators are: 
+
+* `!` not 
+* `&` and 
+* `|` or 
+
+R also has special operators like `%in%`, which returns a logical vector indicating if there is a match or not for its left operand.
+
+```{r}
+c(1:10) %in% c(1:5)
+!c("a","b") %in% letters
+```
+
+***
+### operator precedence
+When we enter an expression in R, R always evaluates some expressions first. We call this order of operations *operator precedence*. Operator with higher precedence is evaluated first and operator with lowest precedence is evaluated at last. Operators of equal precedence are evaluated from left to right. Use `?Syntax` to check the precedence of operators. 
+
+The operator precedence, from high to low, is: 
+
+* `[`, `[[` indexing
+* `^` exponentiation
+* `:` sequence operator
+* special operators
+* `*`, `/` multiply, divide
+* `+`, `-` add, subtract
+* `<`, `>`, `<=`, `>=`, `==`, `!=` comparison
+* `!` negation
+* `&` and
+* `|` or
+* `<-` assignment
+* `?` help 
+
+
+***
+## 3.5 Character vectors
+In R, we can also enter expressions with characters, using a pair of double or single quotes. 
+
+```{r}
+"Hello World!"
+```
+
+This is called a character vector. In R, character vector is the basic unit of text.
+
+Characters are printed using double quotes.
+```{r}
+'Hello again!'
+```
+
+You may also have heard of "strings". In R, "string" is an informal term meaning "element of a character vector". Most string manipulation functions operate on vectors of strings, in the same way that arithmetic operations are vectorized.
+
+***
+### `c()`, `paste()`
+Strings may be concatenated into a vector by the `c()` function.
+
+```{r}
+c("this", "is", "a", "character", "vector", ".")
+c("string", "string", "string")
+```
+
+***
+We can also use the `paste()` function to concatenate strings. `paste()` concatenates one or more objects; by default they are separated in the result by a single blank character. We can change how the resulting character is separated by the named argument, `sep`, which takes a character string.
+
+```{r}
+paste("1st", "2nd", "3rd", sep = ", ")
+paste(c("X","Y"), 1:10, sep = "") 
+paste(c("NYU"), c("Shanghai", "New York", "Abu Dhabi")) 
+```
+
+Note: Recycling of short vectors takes place here as well. Thus `c("X", "Y")` is repeated 5 times to match the sequence `1:10`.
+
+***
+### `nchar()`, `length()`
+Unlike in some languages, "character" in R does not refer to an individual character. R does not distinguish between whole strings and individual characters; a string containing one character is treated the same as any other string.
+
+To count the number of single characters in a string, we use `nchar()`. To get the length of a character vector, we use `length()`.
+
+```{r}
+string <- "Hello"
+nchar(string)
+length(string)
+```
+
+***
+## 3.6 Missing values
+`NA` and `NaN` are special values in R indicating missing values.
+
+***
+### `NA`
+In some cases, the elements of a vector may not be completely known. R assigns the special value `NA` to these elements to indicate that they are "not available" or "missing", which is common in data analysis.
+
+`NA` is a logical constant of length 1. 
+
+In general, any operation on an `NA` becomes an `NA`. The motivation for this rule is that if the specification of an operation is incomplete, the result cannot be known and hence is not available.
+```{r}
+NA + 5
+NA > 5
+```
+
+***
+The function `is.na()` evaluates whether an element is `NA`. 
+```{r}
+x <- c(1:3, NA)
+is.na(x)
+```
+
+Note: The logical expression `x == NA` is different from `is.na(x)`. As we said earlier, any operation on an `NA` becomes an `NA`; so `x == NA` will return a vector of the same length as `x`, whose values are all `NA`.  
+
+***
+Functions are very careful about values that are not available. `NA` value in the vector as an argument may cause a function to return `NA` or an error.
+```{r}
+x <- c(0,1,1,2,3,NA)
+mean(x)
+sd(x)
+```
+
+We can decide if we want to ignore the `NA`s by setting `na.rm` to be `TRUE`.
+
+```{r}
+x <- c(0,1,1,2,3,NA)
+mean(x, na.rm = TRUE)
+sd(x, na.rm = TRUE)
+```
+
+***
+### `NaN`
+There is a second kind of "missing" values which are produced by numerical computation,`NaN`. `NaN` is short for "not-a-number". It means that our calculation either does not make mathematical sense or cannot be performed properly. 
+
+```{r}
+0/0
+Inf - Inf
+```
+
+***
+### `NULL`
+In R, we also have a special value `NULL`. It represents an empty variable. Unlike `NA`, it takes up no space. 
+```{r}
+length(NA)
+length(NaN)
+length(NULL)
+```
+
+Note that `NULL` represents null objects and does not indicate missing values. 
+
+***
+## 3.7 Indexing
+Sometimes we want to access part of a vector. This is called indexing, subsetting, subscripting, or slicing. 
+
+We can access the vector elements by referring to its index number inside brackets `[]`. `[]` is the indexing operator.  
+
+***
+Index vector and rules of indexing vectors:
+
+```
+v[index vector]
+```
+
+
+***
+### A vector of positive numbers selects elements by their position. 
+The corresponding elements of the vector are selected, concatenated, and returned in the order that they are referenced. 
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[1] #selects the first element
+x[1:3] #selects elements 1 through 3
+x[c(7, 5, 3, 1)]
+```
+
+Very important: The first element has an index of 1, not 0, as in some other programming languages.
+
+***
+### A vector of negative numbers excludes elements at specified locations. 
+All other values will be returned.
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[-2] 
+x[c(-2, -4)]
+x[-(1:5)]
+```
+
+Note: Mixing positive and negative values is not allowed.
+```
+x[c(1, -1)]
+```
+
+***
+### A logical vector selects elements based on a condition. 
+This returns the slice of the vector containing the elements where the index is `TRUE`. 
+
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[x < 10]
+```
+
+This is essentially doing:
+```{r}
+x[c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)]
+```
+
+Remember that logical operation are element-wise. The index vector is recycled to the same length as `x`. Values corresponding to `TRUE` in the index vector are selected and those corresponding to `FALSE` are omitted.
+
+More examples:
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[x > mean(x)]
+x[(x < quantile(x, 0.1)) | (x > quantile(x, 0.9))] #all elements in the lower and upper 10%
+x[!is.na(x)] #non-missing values
+
+x[x %% 2 == 0] #even numbers
+x[x %% 2 == 1] #odd numbers
+```
+
+***
+### Using names to access named elements
+This only applies to named vectors. It works in the same way as using positive numbers to select elements. We can use a character vector of names to access the part of the vector containing the elements with those names.
+
+```{r}
+#Nobel laureates in Literature
+years <- c(2016, 2012, 1954, 1953, 1950)
+names(years) <- c("Bob Dylan", "Mo Yan", "Ernest Hemingway", "Winston Churchill", "Bertrand Russell")
+years
+years["Bob Dylan"]
+years[c("Bob Dylan", "Winston Churchill")]
+```
+
+This option is particularly useful in connection with data frames, as we shall see later.
+
+***
+### Not passing any index will return the whole of the vector.
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[]
+```
+
+***
+### To change the value of a specific item, refer to the index number.
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[6] <- -36
+x
+```
+
+Another example:
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100, NA)
+x[is.na(x)] <- 0
+x
+```
+
+***
+### Appending value(s) to a vector
+Vector constructor:
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x <- c(x, 121, 144)
+x
+```
+
+Element assignment:
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[c(11,12)] <- c(121, 144)
+x
+```
+
+If we assign value(s) to the position past the end of the vector, R extends the vector and fills it with `NA`s.
+```{r}
+x <- c(1, 4, 9, 16, 25, 36, 49, 64, 81, 100)
+x[15] <- 225
+x
+```
+
+***
+### `which()`
+The **`which()`** function returns the locations where a logical vector is `TRUE`. 
+
+```{r}
+which(c(TRUE, FALSE, TRUE, NA, FALSE, FALSE, TRUE))
+which(x > 10)
+which(LETTERS == "R")
+```
+
+
+***
+## 3.8 Data types
+A vector can contain numbers, strings, or logical values, but not a mixture of them. Vectors must have their values all of the same mode. Thus any given vector must be either logical, numeric, complex, character or raw.
+
+In R, every object has a *mode*. It indicates how an object is stored in memory. Is it a number, a character string, a function, or something else? 
+
+More often, you may hear *class*. In R, every object also has a class, which determines what information an object contains, and how an object will be interpreted and used. For instance, to confuse you further, an object may have a mode "numeric", but it has the class "Date". As shown below, `d` consists of a single number (the number of days since January 1, 1970), but is interpreted as a date.
+
+```{r}
+d <- as.Date("2010-03-15")
+mode(d)
+class(d)
+```
+
+Does this sound complicated? Don’t worry! Modes mostly exist for legacy purposes, so in practice you should only ever need to use an object’s class. 
+
+***
+### `class()`
+To get a vector's class, we use `class()`. 
+
+The five atomic object classes are numeric, integer, complex, factor, logical, and character. Objects of atomic classes can only contain elements of the same class. Vectors, factors, arrays, and matrices belong to the atomic class.
+
+Objects of recursive classes, on the other hand, can contain objects of the same class as themselves. Lists can contain lists, for instance. Lists, data frames and functions are of the recursive class.
+
+There are three numeric object classes: numeric, integer and complex.
+
+```{r}
+class(1:10*3) ## floating point numbers
+```
+
+```{r}
+class(1:10) ## integers
+```
+
+```{r}
+class(1L)  ## adding the suffix "L" can make the number an integer
+```
+
+```{r}
+class(2+3i)  ## complex numbers
+```
+
+***
+To evaluate a vector's class, we use `is.*` functions.
+```{r}
+is.logical(TRUE)
+is.character("a")
+is.numeric(2021)
+```
+
+
+***
+### coercion
+If we create a vector from mixed elements, R will convert them to a single type. The rule is to convert from more specific types to more general types.
+```{r}
+v1 <- c(1,2,3)
+v2 <- c("A","B","C")
+v3 <- c(TRUE, FALSE)
+
+c(v1, v3)
+c(v1, v2)
+c(v2, v3)
+c(v1,v2,v3)
+```
+
+Coercion rules, as exemplified in this example:
+
+* Logical values are converted to numbers: `TRUE` is converted to `1` and `FALSE` to 0.
+* The ordering is roughly logical < numeric < character.
+
+Note: Beyond this example, the output type is determined from the highest type of the components in the hierarchy NULL < raw < logical < integer < double < complex < character < list < expression. Object attributes will be dropped when an object is coerced from one type to another. 
+
+***
+We can change the type of an object explicitly using `as.*` functions.
+```{r}
+as.character(1)
+as.numeric(TRUE)
+as.numeric("1")
+```
+
+***
+### empty vectors
+A vector can be empty and still have a mode.
+```{r}
+character(0)
+numeric(0)
+```
+
+***
+We can create empty vectors of a specified data type and a specified length using `vector()`. 
+```{r}
+vector("numeric", 6)
+vector("logical", 6)
+vector("character", 6)
+vector("complex", 6)
+vector("raw", 6)
+```
+
+
+***
+## 3.9 Attributes
+Attributes are properties of an object. *Mode* is a special case of an attribute of an object. 
+
+All vectors also have a *length* attribute, which tells us how many elements they contain.
+```{r}
+length(1:5)
+length(c(TRUE, FALSE, NA))
+length(NA)
+length(c("banana", "apple", "orange", "mango", "lemon")) 
+```
+
+
+***
+Named vectors have a name attribute. 
+```{r}
+x <- 1:4
+names(x) <- c("banana", "apple", "kiwi fruit", "")
+x
+names(x)
+```
+
+The `names()` function can also be used to set the names of a vector in addition to retrieving the names of a vector.
+
+***
+Other attributes of objects could be levels (factors) and dimensions (arrays), which we will discuss in [data structures](https://shanghai.hosting.nyu.edu/data/r/data-structures.html).  
+
+To get the attributes of an object, use the function `attributes()`.

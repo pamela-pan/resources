@@ -1,0 +1,233 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Stored Results</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Stored Results</h1>
+	<h2>r-class and e-class commands</h2>
+	<p>
+		Results of calculations are stored by Stata commands so that they can be accessed in other commands and calculations later.  
+	</p>
+	<p>
+		There are five classes of Stata commands:<br>
+		<b>r-class</b>&ensp;&ensp;general commands that store results in <span class="g">r()</span><br>
+		<b>e-class</b>&ensp;&ensp;estimation commands that store results in <span class="g">e()</span><br>
+		<b>s-class</b>&ensp;&ensp;parsing commands that store results in <span class="g">s()</span> used by programmers<br>
+		<b>n-class</b>&ensp;&ensp;commands that do not store in <span class="g">r()</span>, <span class="g">e()</span>, or <span class="g">s()</span><br>
+		<b>c-class</b>&ensp;&ensp;system parameters and settings that store in <span class="g">c()</span>
+	</p>
+	<p>
+		Commands producing statistical results are either r-class or e-class: e-class for estimation results and r-class otherwise.
+	</p>
+	<p>
+		Following the r-class or e-class commands, we can obtain all the stored results of a command by typing <span class="g">return list</span> or <span class="g">ereturn list</span> respectively. 
+	</p>
+	<p>
+		Results will be replaced the next time you execute another command of the same class. If we need to store the returned results, we need to use a macro. We will see an example below.
+	</p>
+	
+	<h2>Types of results</h2>
+	<p>
+	There are four types of results:<br>
+	<b>Scalars:</b> numbers<br>
+	<b>Macros:</b> strings<br>
+	<b>Matrices:</b> <span class="g">e(b)</span> coefficient vector and <span class="g">e(V)</span> variance–covariance matrix of the estimates (VCE)<br>
+	<b>Functions:</b> the only function existing is <span class="g">e(sample)</span>, which evaluates to 1 (true) if the observation was used in the previous estimation and to 0 (false) otherwise.
+	</p>	
+	<p>
+		To see what the result lists actually look like, try typing <br>
+		<span class="g">
+		. sysuse auto <br>
+		. regress price mpg <br>
+		. ereturn list <br>
+		</span>
+		which gives us the full lists of the results that the command <span class="g">regress</span> offers.
+	</p>
+	<p>
+		Let’s review some examples below where we use the stored results for various purposes.
+	</p>
+
+	<h3>centering on the mean</h3>
+	<p>
+		<span class="g">
+		. sysuse auto <br>
+		. sum mpg <br>
+		. gen mpg_c = mpg-r(mean)
+		</span>
+	</p>
+	<p>
+		The results will be lost the next time you run another r-class command. In order to be able to use the mean of <span class="g">mpg</span> later, we can:<br>
+		<span class="g">
+		. sum mpg <br>
+		. local mpg_mean = `r(mean)'<br>
+		. gen mpg_c = mpg-`mpg_mean'
+		</span>
+	</p>
+
+	<h3>using saved results in graphs</h3>
+	<p>
+		<span class="g">
+		. sysuse auto <br>
+		. reg mpg weight<br>
+		. ereturn list<br>
+		. local r2 = e(r2)<br>
+		. twoway (lfitci mpg weight) (scatter mpg weight), note(R-squared =`r2')
+		</span>
+	</p>
+
+	<h3>adding stats from postestimation in tables</h3>
+	<p>
+		<span class="g">
+		. sysuse auto <br>
+		. reg mpg weight foreign<br>
+		. test foreign weight<br>
+		. outreg2 using myfile, adds(F-test, r(F), Prob > F, r(p)) replace
+		</span>
+	</p>
+
+	<h3>predicted probabilities on samples used in the previous estimation</h3>
+	<p>
+		<span class="g">
+		. sysuse auto <br>
+		. reg mpg weight if foreign & rep78 <=4 <br>
+		. predict fv if e(sample)
+		</span>
+	</p>
+
+	<h2>Storing results in a matrix</h2>
+	<p>
+		To list the matrices of stored results, we can<br>
+		<span class="g">
+		. sysuse auto <br>
+		. reg price mpg <br>
+		. matrix list e(b)<br>
+		. matrix list e(V)
+		</span>
+	</p>
+	<p>
+		To use the matrices later, we need to first store the matrices:<br>
+		<span class="g">
+		. matrix b = e(b)<br>
+		. local increment = b[1,1]<br>
+		. display "increment `increment'"
+		</span>
+	</p>
+
+	<h2>System variables</h2>
+	<p>
+		We can use Stata system variables to obtain coefficients and standard errors: <br>
+		<span class="g">_b[<em>var</em>]</span> coefficient<br>
+		<span class="g">_se[<em>var</em>]</span> standard error
+	</p>
+	<p>
+		For instance, <br>
+		<span class="g">
+		. sysuse auto <br>
+		. reg price weight <br>
+		. dis _b[weight] <br>
+		. dis _se[weight] 
+		</span>
+	</p>
+	
+	<h2>levelsof</h2>
+	<p>
+		In loops, <span class="g">levelsof</span> is useful to store the values of a variable in a local macro for later use by specifying the <span class="g">local()</span> option. <br>
+		<span class="g">
+		. levelsof writing_level, local(wlevel)<br>
+		. foreach x of local w1evel{<br>
+		. &emsp;&emsp;ttest writing_gpa if writing_level == `x', by(gender)<br>
+		. }
+		</span>
+	</p>
+	<p>
+		Outside loops, <span class="g">levelsof</span> can display the unique values of a variable. <br>
+		<span class="g">
+		. levelsof writing_level <br>
+		. display “`r(levels)'”
+		</span>
+	</p>
+	
+
+	<p><br></p>
+	<div class="more">
+		<p>More on using stored results <br>
+		<a href="http://stats.idre.ucla.edu/stata/faq/how-can-i-access-information-stored-after-i-run-a-command-in-stata-returned-results/">UCLA: Statistical Consulting Group, How Can I Access Information Stored after I Run a Command in Stata (Returned Results)? | Stata FAQ</a></p>
+	</div>
+
+	<h2>tempvar</h2>
+	<p><span class="g">tempvar</span> assigns names to the specified local macro that may be used as temporary variables in a program. 
+	</p>
+	<p>What we did below is creating a temporary variable <span class="g">temp</span> that stored the residuals from regressions within each group.
+	<pre><code>
+gen residuals = .
+tempvar temp
+qui levelsof group, local(g)
+foreach x of local g{
+	qui reg return a b c d if group == `x'
+	predict `temp', residual
+	replace residuals = `temp' if group == `x'
+	drop `temp'
+}		
+	</code></pre>
+	</p>
+
+	<h2>word</h2>
+	<p>
+		What we did below is using <span class="g">word</span> to store the locations of each string in local macros, merged the files and kept the variables vertically. We merged the master file with the 1st file <span class="g">a1</span> and kept the 1st variable <span class="g">b1</span>; we then merged the last file with the 2nd file <span class="g">a2</span> and kept the 2nd variable <span class="g">b2</span>.
+	</p>
+	<pre><code>
+use masterfile
+
+local files a1 a2
+local vars b1 b2
+
+forvalues i = 1/2 {
+	local f : word `i' of `files'
+	local v : word `i' of `vars'
+	merge 1:1 id sector using `f', keepusing(`v')
+	drop _merge
+}		
+	</code></pre>
+
+	<h2>A case</h2>
+	<p>
+		We have an example where we use several techniques introduced earlier for automation: loops, <span class="g">levelsof</span>, and using matrices to store results.
+		<pre><code>
+//create score_diff variables by sector*year
+qui levelsof group, local(g)
+gen score_diff = .
+foreach x of local g{
+	qui estpost ttest score if group == `x', by(rank)
+	matrix b = e(b)
+	replace score_diff = b[1,1] if group == `x'
+}			
+		</code></pre>
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+---
+title: "Spreading Rows in Hierarchical Data"
+author: "Yun Dai"
+date: "04/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+library(readr)
+file8 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/fill.csv"))
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file9")
+```
+
+
+******
+## Filling in values
+`expand()` and `complete()` from package `tidyr` add rows of observations by filling in all combinations of the specified variables. They add all possible combinations even when some combinations do not exist in the data frame.
+
+```{r message=FALSE,warning=FALSE}
+library(tidyr)
+library(dplyr)
+```
+
+Let's use a sample dataset to illustrate their usage.
+```{r}
+file8
+```
+
+`expand()` returns a new data frame with all combinations of the specified variables `id` and `course` without the other variables.
+```{r}
+file8 %>% expand(id, course) %>% arrange(id)
+```
+
+******
+`complete()`, on the other hand, returns a new data frame with all combinations of `id` and `course`, and keeps all variables from the original data frame. 
+```{r}
+file8 %>% complete(id, course) %>% arrange(id)
+```
+
+******
+`expand(nesting())` and `complete(nesting())` add only the combinations of existing values of `id` and `course` to the new data frame.
+```{r}
+file8 %>% expand(nesting(id, course)) %>% arrange(id)
+```
+
+```{r}
+file8 %>% complete(nesting(id, course), placement) %>% arrange(id)
+```
+
+
+******
+## Replicating rows
+`rep()` from base R replicates rows by the specified number.
+
+******
+### case 1
+Let's say we want to create copies of each case by the value of `attendance`. As a result, each `id` will have a record for each `attendance` of each `course`. Later, we can, for instance, add course performance data to each `attendance` record of every `course`.
+
+```{r}
+file8[rep(row.names(file8), file8$attendance), ]
+```
+
+
+******
+### case 2
+We have a dataset with variables of companies, sectors, years and dates, analyst scores and ranks, analyst ratings on companies etc. Below is a subset of the data for demo. 
+
+```{r}
+head(file9)
+```
+
+One thing we want to do with the data is to estimate a model by `rank`: `rank` = 1 versus 2, 2 versus 3, 3 versus the first runner-up (`rank` = 4), and the last runner-up versus the first non-runner-up. In the runner-up group, there could be more than one analyst, whose `score` values could be different. 
+
+```{r}
+summary(file9$rank)
+```
+
+******
+However, there could be cases where we have only one analyst as the runner-up in each `group`, while we need at least two analysts to make the comparisons respectively with rank 3 and the first non-runner-up. Therefore, we need to expand those single runners-up. We will later recode the duplicated runners-up to rank 5, and the first non-runners-up to rank 6. 
+ Ultimately, we will compare rank 1 versus 2, 2 versus 3, 3 versus 4, and 5 versus 6. This may all sound very confusing right now; let's see it step by step. 
+
+******
+First, expand the runners-up if `rank` = 4 have only one `score` value, meaning there is only one person as the runner-up in a  `group`. There are 182 such cases marked by `expd` = 2.
+```{r}
+file9 <- file9 %>% 
+  group_by(group, rank) %>% 
+  arrange(group, rank, score) %>% 
+  mutate(expd = ifelse(first(score) == last(score) & rank == 4, 2, 1))
+
+table(file9$expd)
+```
+
+******
+Next, replicate the number of rows by the value of `expd`. The cases with only one runner-up (`expd` = 2) will be replicated, and the rest (`expd` = 1) will remain untouched. The data is then sorted.
+```{r}
+file9 <- file9[rep(row.names(file9), file9$expd), ]
+file9 <- arrange_all(file9)
+
+head(file9, 10)
+```
+
+******
+Then we create a new variable `rank2`, where `rank2` = `rank` if `rank` <= 3. For the newly created replicated runners-up marked by `expd` = 2, we assign one case to be rank 4 and another to be rank 5 by their positions (odd/even rows).
+```{r}
+file9 <- file9 %>% 
+  mutate(rank2 = case_when(
+    rank <= 3 ~ rank,
+    rank > 3 & row_number() %% 2 == 0 & expd == 2 ~ 4,
+    rank > 3 & row_number() %% 2 == 1 & expd == 2 ~ 5))
+
+head(file9, 10)
+```
+
+******
+Now we return to all runners-up to mark the first runners-up and the last runners-up in each `group`.
+```{r}
+file9 <- file9 %>% 
+  group_by(group, rank) %>% 
+  mutate(max = ifelse(rank == 4 & expd != 2, max(score), NA),
+         min = ifelse(rank == 4 & expd != 2, min(score), NA),
+         rank2 = ifelse(rank == 4 & score == max & expd != 2, 4, rank2), 
+         rank2 = ifelse(rank == 4 & score == min & expd != 2, 5, rank2)) %>% 
+  arrange(group, rank, rank2, score)
+
+head(file9, 15)
+```
+

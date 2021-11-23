@@ -1,0 +1,48 @@
+* {
+    box-sizing: border-box;
+} 
+
+/*table*/
+table.table-l{
+	display: block;
+	margin: auto;
+	width:100%;
+	text-align: left;
+	font-family: Arial, Helvetica, sans-serif;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	line-height: 150%;
+	padding: 5px;
+}
+
+@media only screen and (max-width: 768px) and (min-width: 480px){
+	table.table-m{
+	overflow: auto;
+	line-height: 150%;
+	font-size: 90%;
+	}
+}
+
+@media only screen and (max-width: 480px){
+	table.table-s{
+	overflow: auto;
+	line-height: 125%;
+	font-size: 90%;
+	}
+}
+
+table td.code{
+	font-family: "Courier New", Courier, monospace;
+}
+
+table th{
+	background-color: #f1f1f1;
+}
+
+/*div.table th:before {
+	content: "\00a0";
+}*/
+
+table td:before {
+	content: "\00a0";
+}

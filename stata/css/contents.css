@@ -1,0 +1,306 @@
+*,
+*::after,
+*::before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body{
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    background-color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/*::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #212121;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #836fa9; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #fbcb50;
+}*/
+
+
+/*border*/
+.border div{
+    display: block;
+    background: #212121;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    position: fixed;
+    z-index: 500;
+}
+
+.border div:nth-child(1){
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    margin-bottom: 20px;
+}
+
+.border div:nth-child(2){
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 100%;
+    margin-left: 20px;
+}
+
+.border div:nth-child(3){
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    margin-top: 20px;
+}
+
+.border div:nth-child(4){
+    top: 0;
+    left: 0;
+    width: 15px;
+    height: 100%;
+    margin-right: 20px;
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(1){
+    	height: 10px;
+	}
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(2){
+    	width: 10px;
+	}
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(3){
+    	height: 10px;
+	}
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(4){
+    	width: 10px;
+	}
+}
+
+/*navigation*/
+/*.fast-nav{
+	display: block;
+	position: fixed;
+	z-index: 100;
+	width: 100%;
+	top: 0px;
+	left:15px;
+	right:15px;
+	padding: 30px 0px 20px 20px;
+	font-weight: bold;
+}
+
+@media only screen and (max-width: 800px){
+	.fast-nav{
+		background-color: #fff;
+	}
+}
+
+div#back, div#home{
+	display: inline-block;
+	margin: 5px;
+}
+
+.fast-nav a:link{
+	color: #212121;
+	text-decoration: none;
+} 
+
+.fast-nav div#back a:link{
+	font-size: 120%;
+} 
+
+.fast-nav div#home a:link{
+	font-size: 100%;
+} 
+
+.fast-nav a:visited{
+	color: #212121;
+    text-decoration: none;
+}
+
+.fast-nav a:hover{
+    text-decoration: none;
+    color: #212121;
+    transition: 0.2s;
+    -webkit-transition: 0.2s;        
+}
+
+.fast-nav div#home a:hover{
+    letter-spacing: 2px;
+}
+
+.fast-nav div#back a:hover{
+	background-color: #fcd983;
+	padding: 0px 2px;
+}
+*/
+
+/* */
+h1.h1{
+	font-family: Arial, Helvetica, sans-serif;
+	margin-top: 50px;
+	line-height: 110%;
+}
+
+@media only screen and (max-width: 600px){
+	h1.h1-s{
+		font-size: 1.8em;
+		margin-top: 80px;	
+	}
+}
+
+@media only screen and (max-width: 800px) and (min-width: 600px) {
+	h1.h1-m{
+		font-size: 2em;
+		margin-top: 80px;
+	}
+}
+
+@media only screen and (min-width: 800px){
+	h1.h1-l{
+		font-size: 2.2em;
+	}
+}
+
+
+h2,h3{
+	text-align: left;
+	padding-top: 30px;
+	line-height: 120%;
+}
+
+h4{
+	text-align: left;
+	padding-top: 20px;
+}
+
+/*contents*/
+.text{
+	display: block;
+	overflow: hidden;
+	text-align: left;
+	margin: auto;
+	margin-bottom: 80px;
+	margin-top: 30px;
+	width:60%;
+	padding: 0px 7% 0px 6%;
+}
+
+@media only screen and (min-width: 800px){
+	.t-l{
+		width:60%;
+		font-size: 105%;
+		line-height: 180%;
+	}
+}
+
+@media only screen and (max-width: 800px) and (min-width: 600px) {
+	.t-m{
+		width:80%;
+		font-size: 100%;
+		line-height: 180%;
+	}
+}
+
+@media only screen and (max-width: 600px){
+	.t-s{
+		width:90%;
+		font-size: 100%;
+		line-height: 160%;
+	}
+}
+
+
+a.internal:link{
+	color:#666666;
+	text-decoration: underline;
+	font-weight:bolder;
+}
+
+a.internal:visited{
+	color:#666666;
+	text-decoration: underline;
+	font-weight:bolder;
+}
+
+a.internal:hover{
+	color:black;
+	text-decoration: none;
+}
+
+
+/*more on resource*/
+.more{
+	padding-top: 5px;
+	padding-bottom:10px;
+	padding-left: 10px;
+	background-color: #f1f1f1;
+}
+
+.more a:link{
+	color:black;
+	text-decoration: underline;
+}
+
+.more a:visited{
+	color:black;
+	text-decoration: underline;
+}
+
+.more a:hover{
+	color:black;
+	text-decoration: none;
+}
+
+/*code*/
+span.g{
+	font-family: "Courier New", Courier, monospace;
+	font-size:105%;
+	font-weight: 500;
+}
+
+pre {
+	overflow-x: auto; 
+	overflow-y: hidden;
+	line-height:130%;
+	font-size: 110%;
+}
+
+code {
+	font-family: "Courier New", Courier, monospace;
+	font-size:95%;
+}
+
+/*author*/
+.author{
+	position: relative;
+	display: block;
+	right:0;
+	bottom: 0;
+	float: right;
+	margin: 0px 80px 30px 0px;
+	font-style: italic;
+	font-size: 90%;
+}

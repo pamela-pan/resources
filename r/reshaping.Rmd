@@ -1,0 +1,139 @@
+---
+title: "Reshaping Data between Long and Wide Formats"
+author: "Yun Dai"
+date: "04/2020"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+library(readr)
+long <- read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/long.csv")
+```
+
+******
+In this post, we show two ways of converting datasets between long and wide formats: (1) using functions `spread()` and `gather()` from package `tidyr`; (2) using functions `dcast()` and `melt()` from package `data.table`.
+
+******
+## `tidyr`
+```{r message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+```
+
+******
+### long to wide
+Dataset `long` is currently in the long format. We will reshape it to the wide format with `spread()`.
+```{r}
+long
+```
+
+******
+`spread()` converts data from long to wide, spreading a key-value pair across multiple columns. The trick is to set the right `key` variable and the `value` variable. 
+
+Below we add two new variables that are `gpa` of `course` A and B. Here, `key` is `course` and `value` is from `gpa`. 
+
+```{r}
+wide1 <- long %>% spread(key = course, value = gpa)
+wide1
+```
+
+We can rename the two new columns if we want to.
+```{r}
+names(wide1)[4:5] <- c("gpa_A", "gpa_B")
+wide1
+```
+
+******
+Recently, `tidyr` has updated `spread()` to `pivot_wider()`, which provides more intuitive syntax and more options. `spread()` is not going away but will not be under active development.
+
+```{r}
+wide2 <- long %>% pivot_wider(names_from = semester, values_from = participation)
+names(wide2)[4:5] <- c("participation_Fall2019", "participation_Spring2019")
+wide2
+```
+
+******
+If there are multiple variables whose values will be paired with the key variable, we can specify them with `c()` in the `values_from` argument.
+```{r}
+wide3 <- long %>% pivot_wider(names_from = course, values_from = c(gpa, participation))
+wide3
+```
+
+
+******
+### wide to long
+`gather()` converts data from wide to long format for demo. 
+
+We will use the dataset `wide1` in the wide format generated above.
+```{r}
+wide1 
+```
+
+Below we convert the dataset `wide1` back to the long format with `gather()`. Here the `key` variable to be created is `course`, and the `value` variable to be created is `gpa`. We remove the rows with `NA` in the value column.
+```{r}
+wide1 %>% gather(key = "course", value = "gpa", gpa_A, gpa_B, na.rm = T)
+```
+
+A bit more postprocessing on variable `course` to separate the course names `A` and `B` from the prefix `gpa_`.
+```{r}
+wide1 %>% 
+  gather(key = "course", value = "gpa", gpa_A, gpa_B, na.rm = T) %>%
+  separate(col = course, into = c("gpa_", "course"), sep = 4) %>%
+  select(-gpa_)
+```
+
+******
+Recently, `tidyr` has updated `gather()` to `pivot_longer()`. Like `pivot_wider()`, it provides more intuitive syntax and more options. `gather()` is not going away but will not be under active development.
+
+```{r}
+wide2
+```
+
+Using `pivot_longer()`, reshaping and postprocessing of column values can be done within itself. With arguments of `names_prefix`, `names_sep` or `names_pattern`, we no longer need `separate()` or `extract()`.
+```{r}
+wide2 %>% 
+  pivot_longer(names_to = "semester", 
+               values_to = "participation", 
+               cols = participation_Fall2019 : participation_Spring2019,
+               values_drop_na = T,
+               names_prefix = "participation_")
+```
+
+******
+## `data.table`
+Package `data.table` also offers ways to convert the data between long and wide format.
+
+```{r message=FALSE, warning=FALSE}
+library(data.table)
+```
+
+******
+### long to wide
+`dcast()` reshapes datasets from long to wide formats. 
+
+What we do below is the same as `long %>% spread(key = course, value = gpa)`.
+```{r}
+dcast(long, id + semester + participation ~ course, value.var = "gpa")
+```
+
+******
+### wide to long
+`melt()` reshapes data from wide to long. Instead of working on a key-value pair, it uses `id` and `measure`. 
+
+The example below is the same as `wide1 %>% gather(key = course, value = gpa, -id, -semester, -participation)`.
+```{r}
+melt(wide1, id = c("id", "semester", "participation"), measure = c("gpa_A", "gpa_B"))
+```
+
+We can also remove the rows with `NA` by setting `na.rm = TRUE`.
+```{r}
+melt(wide1, id = c("id", "semester", "participation"), measure = c("gpa_A", "gpa_B"), na.rm = TRUE)
+```
+

@@ -1,0 +1,7 @@
+id,family,role
+1,1,child
+2,1,child
+3,1,mother
+1,2,father
+2,2,mother
+3,2,child

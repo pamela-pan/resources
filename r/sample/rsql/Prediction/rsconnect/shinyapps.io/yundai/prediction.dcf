@@ -1,0 +1,10 @@
+name: prediction
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3215743
+bundleId: 3852218
+url: https://yundai.shinyapps.io/prediction/
+when: 1605190310.35316

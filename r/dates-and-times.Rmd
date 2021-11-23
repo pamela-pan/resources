@@ -1,0 +1,431 @@
+---
+title: "Dates and Times"
+author: "Yun Dai"
+date: "04/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+Dates and times are not the most pleasant objects to deal with. At times they can be confusing and even annoying. Base R have built-in functions that handle dates and times in their creation, conversion, extraction, and calculation. Additionally, package [`lubridate`](https://cran.r-project.org/web/packages/lubridate/lubridate.pdf) has made manipulating dates and times more intuitive in terms of conversion, accessing components and calculating time spans. Package [`zoo`](https://cran.r-project.org/web/packages/zoo/zoo.pdf) has made dealing with the neighboring values of dates and times a lot easier. 
+
+Below we will go through the fundamentals of working with dates and times with base R functions and package `lubridate`. 
+
+******
+## Dates and times classes
+There are three basic date and time classes: `Date`, `POSIXct` and `POSIXlt`. Class `Date` handles dates without times. `POSIXct` (calendar time) and `POSIXlt` (local time) represent dates and times.
+
+`Date` and `POSIXct` are internally stored as number of days and seconds from January 1, 1970. `POSIXlt` stores dates and times as a list of components: second, minute, hour, day, month, year, time zone etc. 
+
+```{r}
+now <- Sys.time()
+
+datetime1 <- as.POSIXct(now)
+unclass(datetime1)
+```
+
+```{r}
+datetime2 <- as.POSIXlt(now)
+unclass(datetime2)
+```
+
+******
+When working with dates and times, we use the simplest object that solves the problem. For instance, we use `Date` to work with dates without times, and `POSIXct` to work with date-times.
+
+******
+## Converting dates and times
+Base R functions `as.Date()`, `as.POSIXct()`, `as.POSIXlt()` and `strptime()`, and the group of `lubridate` functions `ymd()`, `yq()`, `hm()`,`ymd_hms()` etc. convert characters to dates and times objects. 
+
+******
+### `as.Date()`, `as.POSIXct()`, `as.POSIXlt()`
+`as.Date()`, `as.POSIXct()` and `as.POSIXlt()` convert dates and times in character forms to classes of dates and times.
+
+```{r}
+date_string <- "2019-01-14 14:17:30"
+
+as.Date(date_string)
+as.POSIXct(date_string)
+as.POSIXlt(date_string)
+```
+
+******
+#### input formats
+`as.Date()`, `as.POSIXct()` and `as.POSIXlt()` accept various input formats. 
+
+The default input formats are **year-month-day hour:minutes:seconds** or **year/month/day hour:minutes:seconds**. 
+
+```{r}
+as.Date("2019/01/14 14:17:30")
+as.POSIXct("2019/01/14 14:17:30")
+as.POSIXlt("2019/01/14 14:17:30")
+```
+
+******
+If the input format is not standard, we need to set the `format` argument to map the displayed format.
+
+* `%b` abbreviated month name
+* `%m` month as decimal number (01–12)
+* `%c` date and time
+* `%d` day of the month as decimal number (01–31)
+* `%e` day of the month as decimal number (1–31)
+* `%H` hours as decimal number (00–23); strings such as 24:00:00 are accepted for input
+* `%I` hours as decimal number (01–12)
+* `%M` minute as decimal number (00–59)
+* `%S` second as integer (00–61)
+* `%OS` seconds including fractional seconds
+* `%Y` year with century
+* `%y` year without century (00–99)
+* ...
+
+The full list of allowed formats can be found by `?strptime()`.
+
+******
+The first group of examples:
+```{r}
+as.Date("14jan2019 14:17:30", "%d%b%Y")
+as.POSIXct("14jan2019 14:17:30", format = "%d%b%Y %H:%M:%S")
+as.POSIXlt("14jan2019 14:17:30", format = "%d%b%Y %H:%M:%S")
+```
+
+******
+Another group of examples:
+```{r}
+as.Date("14/01/2019T14:17:30", "%d/%m/%Y")
+as.POSIXct("14/01/2019T14:17:30", format = "%d/%m/%YT%H:%M:%S", tz = "GMT")
+as.POSIXlt("14/01/2019T14:17:30", format = "%d/%m/%YT%H:%M:%S", tz = "GMT")
+```
+
+******
+To keep the fractional seconds:
+```{r}
+as.POSIXct("2016-01-24T10:51:53.798520+00:00", format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")
+```
+
+******
+#### incomplete information
+There are times we get incomplete date-time information. For instance, in this example below, we want to plot the time series but our data only contains years and months. We end up adding the first days of each month to the strings so that we can make the line plot.
+```{r}
+year_month <- c("Jan-1992", "Feb-1992", "Mar-1992", "Apr-1992", "May-1992", "Jun-1992", "Jul-1992", "Aug-1992", "Sep-1992", "Oct-1992", "Nov-1992", "Dec-1992")
+value <- c(13, 63, 53, 84, 83, 82, 90, 45, 36, 54, 53, 56)
+
+date <- as.Date(paste("01-", year_month, sep = ""), format = "%d-%b-%Y")
+
+df <- data.frame(year_month, date, value)
+head(df, 3)
+```
+
+```{r warning=FALSE, fig.width=5, fig.height=3}
+plot(df$date, df$value, type = "l", xlab = "date", ylab = "value")
+```
+
+******
+### `strptime()`
+`strptime()` converts characters to `POSIXlt` date-time objects.
+
+```{r}
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")
+strptime("14/01/2019T14:17:30", "%d/%m/%YT%H:%M:%S")
+```
+
+
+******
+### `lubridate` functions
+`lubridate` provides more intuitive ways to convert characters to dates and times. 
+
+`ymd()`, `ydm()`, `mdy()`, `myd()`, `dmy()`, `dym()`, `yq()` parses dates with year, month, and day components.
+```{r message=FALSE, warning=FALSE}
+library(lubridate)
+ymd("2019/01/14")
+ydm("2019-14-01")
+dmy("14jan2019")
+```
+
+******
+`hm()`, `ms()`, `hms()` parses periods with hour, minute, and second components.
+```{r}
+hms("14:17:30")
+hm("14:17")
+ms("17:30")
+```
+
+******
+`ymd_hms()`, `ymd_hm()`, `ymd_h()`, `dmy_hms()`, `dmy_hm()`, `dmy_h()`, `mdy_hms()`, `mdy_hm()`, `mdy_h()`, `ydm_hms()`, `ydm_hm()`, `ydm_h()` parses date-times with year, month, and day, hour, minute, and second components.
+```{r}
+ymd_hms("2019/01/14 14:17:30")
+dmy_hms("14jan2019 14:17:30")
+dmy_hms("14/01/2019T14:17:30")
+```
+
+******
+### converting from Unix timestamp
+The Unix epoch is the number of seconds that have elapsed since January 1, 1970. To convert the Unix timestamp to a date-time object, we need to set the `origin` argument. 
+```{r}
+date <- c(1304362260, 1216256400, 1311344765, 1331309010, 1297437420, 1417795235)
+date <- as.POSIXct(date, origin = "1970-01-01")
+date
+```
+
+******
+### converting date-time to date
+It is as easy as below.
+```{r}
+datetime <- Sys.time()
+class(datetime)
+
+date <- as.Date(datetime)
+class(date)
+```
+
+
+******
+### converting back to numeric
+We can reset the date-time object to the internal numeric form with `as.numeric()`.
+```{r}
+as.numeric(Sys.time())
+```
+
+******
+## Creating dates and times 
+### creating sequences
+We can use `seq()` to create date-time sequences.
+
+```{r}
+seq(from = as.Date("2019/01/14"), to = as.Date("2020/01/14"), by = "month")
+```
+
+```{r}
+seq(from = as.Date("2019/01/14"), to = as.Date("2019/07/14"), by = "week")
+```
+
+******
+### combining date and time components
+We can also use `paste()` to concatenate characters and then convert them to date and time objects. 
+```{r}
+date <- c("14jan2019", "14feb2019", "14mar2019")
+time <- c("14:17:30", "15:17:30", "16:17:30")
+datetime <- paste(date, time)
+datetime <- as.POSIXct(datetime, format = "%d%b%Y %H:%M:%S")
+datetime
+```
+
+******
+`make_datetime()` and `make_date()` from package `lubridate` create date-time objects from numeric components.
+```{r}
+make_datetime(year = 2019, month = 1, day = 14, hour = 14, min = 17, sec = 30)
+```
+
+******
+## Extracting date and time components
+### obtaining POSIXlt elements
+Earlier we've said that `POSIXlt` objects store dates and times components of second, minute, hour, day, month, year, time zone etc. as a list. To access the components, we can use the `$` operator to subset the elements we need.
+
+```{r}
+now <- Sys.time()
+now <- as.POSIXlt(now)
+now
+```
+
+```{r}
+now$year
+now$wday
+now$zone
+```
+
+******
+### `strptime()`
+Since `strptime()` returns `POSIXlt` objects, we can also use `$` to obtain `strptime()` components. The outputs are integers.
+```{r}
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$year
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$mon
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$mday
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$wday
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$yday
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$hour
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$min
+strptime("14jan2019 14:17:30", "%d%b%Y %H:%M:%S")$sec
+```
+
+******
+### `strftime()`
+We can also extract components from `strftime()`, if the string is in standard unambiguous format.
+```{r}
+strftime("2019-01-14 14:17:30", "%Y")
+strftime("2019-01-14 14:17:30", "%H:%M:%S")
+strftime("2019-01-14 14:17:30", "%H:%M")
+strftime("2019-01-14 14:17:30", "%M:%S")
+```
+
+The outputs are characters.
+
+******
+### `weekdays()`, `months()`, `quarters()`
+
+`weekdays()`, `months()`, and `quarters()` are base R functions to extract parts of a `POSIXt` or `Date` object.
+```{r}
+now <- Sys.time()
+weekdays(now)
+months(now)
+quarters(now)
+```
+
+******
+### `lubridate` accessor functions
+`year()`, `month()`, `week()`, `date()`, `day()`, `mday()` (day of the month), `wday()` (day of the week), 
+`hour()`, `minute()`, `second()`, and `tz()` (time zone) are `lubridate` accessor functions to extract components from the date-time objects. 
+
+```{r}
+now <- Sys.time()
+year(now)
+month(now)
+wday(now, label = TRUE)
+second(now)
+```
+
+******
+## Calculations with dates and times
+### time spans
+
+******
+#### `difftime()`
+```{r}
+x <- strptime("2019-01-14 14:17:30", "%Y-%m-%d %H:%M:%S")
+y <- strptime("2018-12-14 18:10:12", "%Y-%m-%d %H:%M:%S")
+x - y
+```
+
+The base R function `difftime()` calculates a difference of two date-time objects and returns a `difftime` object. 
+```{r}
+difftime(x, y)
+difftime(x, y, units = "hours")
+difftime(x, y, units = "mins")
+difftime(x, y, units = "secs")
+difftime(x, y, units = "days")
+difftime(x, y, units = "weeks")
+```
+
+`difftime` objects can be converted to numeric objects with `as.numeric()`.
+```{r}
+z<- difftime(x, y)
+as.numeric(z, unit = "hours")
+as.numeric(z, unit = "mins")
+```
+
+******
+#### `lubridate` functions
+In package `lubridate`, a time span can be measured in three ways as a duration, a period or an interval. 
+
+* *Durations* record the exact number of seconds. They do not always align with human measurements like hours and years, because the length of larger time units can be affected by conventions such as leap years and Daylight Savings Time. For example, when a leap second occurs, one minute is longer than 60 seconds. 
+* *Periods* record the change in the clock time between two date-times. They are measured in human units: years, months, days, hours, minutes, and seconds.
+* *Intervals* are point-to-point differences measured with seconds. They are calculated on the UTC timeline that do not use daylight savings.
+
+Time zones, and conventions such as daylight savings time and leap years / seconds are tricky things to watch out for when working with dates and times. 
+
+Let's look at two examples from `lubridate `[documentation](https://cran.r-project.org/web/packages/lubridate/lubridate.pdf). 
+
+The first example shows the tricky condition of the leap year, when 1 year is not 365 days, but 366 days. 
+```{r}
+leap <- interval(ymd("2016-01-01"), ymd("2017-01-01"))
+leap
+
+as.period(leap, unit = "days")
+as.period(leap, unit = "years")
+
+as.period(leap, unit = "seconds")
+as.duration(leap)
+```
+
+******
+Another example shows the tricky condition of daylight savings time. In this case, a day has 25 hours, rather than 24 hours.
+```{r}
+dst <- interval(ymd("2016-11-06", tz = "America/Chicago"), ymd("2016-11-07", tz = "America/Chicago"))
+dst 
+
+as.period(dst, unit = "hours")
+```
+
+
+******
+Like `difftime` objects, `period` objects can be converted to numeric objects.
+```{r}
+per <- period(hours = 10, minutes = 6)
+per
+as.numeric(per, unit = "hours")
+as.numeric(per, unit = "minutes")
+```
+
+******
+### rounding dates and times
+Functions `round_date()`, `floor_date()` and `ceiling_date()` from `lubridate()` round the date-time objects to a nearby unit of time.
+
+`round_date()` takes a date-time object and rounds it to the nearest value of the specified time unit. It rounds up the object when the date-time value is exactly halfway between two consecutive units. 
+```{r}
+datetime <- ymd_hms("2019/01/14 14:17:30.59")
+
+round_date(datetime)
+```
+
+******
+`floor_date()` takes a date-time object and rounds it down to the nearest boundary of the specified time unit.
+```{r}
+floor_date(datetime)
+```
+
+******
+`ceiling_date()` takes a date-time object and rounds it up to the nearest boundary of the specified time unit.
+```{r}
+ceiling_date(datetime)
+```
+
+******
+We can set units by which to round date-time. Valid units are `second`, `minute`, `hour`, `day`, `week`, `month`, `bimonth`, `quarter`, `season`, `halfyear` and `year`.
+```{r}
+round_date(datetime, "sec")
+round_date(datetime, "min")
+round_date(datetime, "15 mins")
+round_date(datetime, "hours")
+round_date(datetime, "day")
+```
+
+******
+## Working with time zones
+Time zones are stored as character strings of date-time objects in R. The time zone is an attribute that only controls printing.
+
+R relies on the user’s OS to interpret time zone names. We can get the complete list of all time zone names with `OlsonNames()`, a data base originally compiled by Arthur Olson. These names take the form "Country/City".
+```{r}
+head(OlsonNames())
+```
+
+******
+`POSIXct` and `POSIXlt` classes contain the time zone attribute. 
+```{r}
+as.POSIXct("2019-01-14 14:17:30", format = "%Y-%m-%d %H:%M:%S", tz = "GMT")
+as.POSIXlt("2019-01-14 14:17:30", format = "%Y-%m-%d %H:%M:%S", tz = "GMT")
+```
+
+******
+`with_tz()` and `force_tz()` from `lubridate` provide ways to change time zones.
+
+`with_tz()` displays the date-time in a different time zone, while the actual time has not been changed.
+```{r}
+x <- strptime("2019-01-14 14:17:30", "%Y-%m-%d %H:%M:%S")
+x
+with_tz(x, tzone = "America/New_York")
+```
+
+`force_tz()` sets the date-time to a different time zone.
+```{r}
+x
+force_tz(x, tzone = "America/New_York")
+```
+
+******
+## Read more
+* [Dates and Times in R](https://www.stat.berkeley.edu/~s133/dates.html), Phil Spector
+  + all the basics you need to know 
+* [Dates and times](https://r4ds.had.co.nz/dates-and-times.html), Hadley Wickham 
+  + using `lubridate` to work with dates and times

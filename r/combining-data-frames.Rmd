@@ -1,0 +1,152 @@
+---
+title: "Combining Data Frames"
+author: "Yun Dai"
+date: "04/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(readr)
+file1 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file1.csv"))
+file2 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file2.csv"))
+file3 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file3.csv"))
+file4 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file4.csv"))
+file5 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file5.csv"))
+file6 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file6.csv"))
+file7 <- data.frame(read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/file7.csv"))
+```
+
+******
+Combining data frames, either by rows or columns, is a common need in data frame manipulation. Base R and the package `dplyr` have offered ways to handle those tasks. 
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+```
+
+******
+## Binding by rows
+Let's use two sample datasets to show how to append one data frames to another by rows. 
+```{r}
+file1
+```
+
+```{r}
+file2
+```
+
+The task is to append the `file2` to the `file1` by rows. This can be achieved with `dplyr::bind_rows()`.
+```{r}
+bind_rows(file1, file2)
+```
+
+******
+`bind_rows()` also allows us to mark the source file by specifying the `.id` argument.
+```{r}
+bind_rows(file1, file2, .id = "source")
+```
+
+
+******
+## Merging data frames
+`merge()` merges two data frames by common columns or row names.
+
+Here we have `file1` and `file5` to merge, which share the common column `family`.
+
+```{r}
+file1
+```
+
+```{r}
+file5
+```
+
+
+******
+`by` argument sets the identification column. 
+```{r}
+merge(file1, file5, by = "family")
+```
+
+
+******
+`all` argument evaluates if unmatched cases from either data frame should be kept or dropped. Here with `all = TRUE` we have kept all observations from both files. 
+
+Compare this case below with the case above. Without `all = TRUE` in the above case, unmatched cases are dropped. 
+```{r}
+merge(file1, file5, by = "family", all = TRUE)
+```
+
+Rows in `file5` with no match in `file1` have `NA` values in the columns from `file1`.
+
+******
+If we set `all.y` to be `TRUE`, all non-missing information from `file5` (`y`) is kept, while information from `file1` (`x`) is missing.
+```{r}
+merge(file1, file5, by = "family", all.y = TRUE)
+```
+
+Compare setting `all.y = TRUE` with setting `all.x = TRUE`, where only complete cases from `file5` has been kept.
+```{r}
+merge(file1, file5, by = "family", all.x = TRUE)
+```
+
+
+******
+We can also merge data frames by multiple common columns. 
+```{r}
+file3
+```
+
+```{r}
+file4
+```
+
+To merge these two files:
+```{r}
+merge(file3, file4, by = c("id", "family"))
+```
+
+******
+## Join operations 
+`inner_join()`, `left_join()`, `right_join()`, and `full_join()` from `dplyr` join data frames together in different ways.
+
+The sample data frames we have are `file6` and `file7`. Note that these two data frames cannot be merged one-to-one or one-to-many, but need to be joined many-to-many.
+```{r}
+file6
+```
+
+```{r}
+file7
+```
+
+******
+`inner_join()` returns all rows from `x` where there are matching values in `y`, and all columns from
+`x` and `y`. If there are multiple matches between `x` and `y`, all combinations of the matches are returned.
+```{r}
+file6 %>% inner_join(file7, by = "industry")
+```
+
+******
+`left_join()` returns all rows from `x`, and all columns from `x` and `y`. Rows in `x` with no match in `y` will have `NA` values in the new columns. If there are multiple matches between `x` and `y`, all combinations of the matches are returned.
+```{r}
+file6 %>% left_join(file7, by = "industry")
+```
+
+******
+`right_join()` returns all rows from `y`, and all columns from `x` and `y`. Rows in `y` with no match in `x` will have `NA` values in the new columns. If there are multiple matches between `x` and `y`, all combinations of the matches are returned.
+```{r}
+file6 %>% right_join(file7, by = "industry")
+```
+
+******
+`full_join()` returns all rows and all columns from both `x` and `y`. Where there are unmatched values, it returns `NA` for the missing one.
+```{r}
+file6 %>% full_join(file7, by = "industry")
+```
+

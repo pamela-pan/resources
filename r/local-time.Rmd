@@ -1,0 +1,153 @@
+---
+title: 'Extracting Information from IP Addresses to Get Local Time'
+author: "Yun Dai"
+date: "04/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE}
+rm(list = ls())
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/local")
+```
+
+******
+We have some tracking logs from an online platform that recorded user behaviors with timestamps (UTC time), IP addresses, server events, pages visited, and device information, among others. Ultimately, we want to visualize the local peak hours of online access globally. What we need to do first is find a way to transform the UTC timestamp to the local time by matching the geolocation with each timestamp. The question is, therefore, how to get the geolocations. 
+
+This is when the IP addresses come to rescue. One of the solutions is to use function `ip_api()` from package `rgeolocate` to obtain information on time zone, together with city, country, latitude, longgitude and others, via ip-api.com. With the time zone, we can then use function `with_tz()` from package `lubridate` to get the local time from the UTC time. 
+
+Below is the subset of data that we are going to use for this post. 
+```{r warning=FALSE, message=FALSE}
+head(local, 3)
+```
+
+******
+As usual, let's first load all the packages that we are going to use for this task.
+
+```{r warning=FALSE, message=FALSE}
+library(dplyr)
+library(rgeolocate)
+library(lubridate)
+library(jsonlite)
+library(ggplot2)
+```
+
+******
+## Converting timestamp to date-time objects
+First, we convert the timestamp `time` from character to date and date-time objects. 
+
+```{r warning=FALSE, message=FALSE}
+local$date <- as.Date(local$time, format="%Y-%m-%d", tz = "UTC")
+local$datetime <- as.POSIXct(local$time, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+options(digits.secs = 0)
+head(local)
+```
+
+******
+## Geolocating IP addresses
+The next step is to call API with `ip_api()` from package `rgeolocate`, which returns a data frame with information on geolocations. `ip_api()` consumes a vector of IP addresses and geolocates them via ip-api.com.
+
+To make the calculations faster, we take the unique IP addresses to call the API and later merge them back to the original data frame.
+```{r warning=FALSE, message=FALSE}
+ipinfo <- distinct(local, ip)
+ipinfo$loc <- ip_api(ipinfo$ip)
+```
+
+******
+The output is a nested data frame with 2 variables `ip` and `loc`. The geolocations are stored in a data frame nested within `loc`.
+```{r warning=FALSE, message=FALSE}
+str(ipinfo)
+```
+
+******
+To flatten the nested structure to a flat data frame, we use function `flatten()` from package `jsonlite`.
+```{r warning=FALSE, message=FALSE}
+ipinfo <- flatten(ipinfo)
+head(ipinfo, 3)
+```
+
+We then only keep the variables we need. In this case, it is the time zone.
+```{r}
+ipinfo <- ipinfo %>% select(ip, loc.timezone) %>% distinct()
+```
+
+******
+We then merge the data frame `ipinfo` back to `local`. 
+```{r}
+local <- merge(local, ipinfo, by = "ip", all = TRUE)
+```
+
+Some more cleaning needs to be done. `time` is dropped. Time zone variable is renamed. 
+```{r}
+local <- local %>% 
+  select(-time) %>%
+  rename(timezone = loc.timezone)
+```
+
+******
+## Getting the local times
+With the time zone at hand, we can use function `with_tz()` from `lubridate` to get the local times.  
+```{r}
+local <- local %>% rowwise() %>% mutate(localtime = with_tz(datetime, timezone))
+```
+
+It is straightforward to also get the dates, hours, and minutes thereafter.
+```{r}
+local$localdate <- as.Date(local$localtime)
+local$localhour<-strptime(local$localtime, format="%Y-%m-%d %H:%M:%S")$hour 
+local$localmin <- as.numeric(strftime(local$localtime, format="%M"))
+```
+
+
+Here we go.
+```{r}
+head(local)
+```
+
+******
+For peak hours, we want to round the local times by the unit of 30 mins.
+```{r}
+local <- local %>% mutate(localhour2 = ifelse(localmin > 30, localhour + 1, localhour)) 
+```
+
+We also recode the `localdate` whose hour is 24 to the next day, so that we don't have both 0 and 24 in `localhour`.
+```{r}
+local$localdate[local$localhour2 == 24] <- local$localdate[local$localhour2 == 24] + 1
+local$localhour2[local$localhour2 == 24] <- 0
+
+head(local)
+```
+
+******
+## Plotting peak hours
+To plot the peak hours, we first calculate how many users were online at each hour for each day. 
+```{r message=FALSE, warning=FALSE}
+local2 <- local %>% 
+  distinct(localdate, id, localhour2) %>% 
+  group_by(localdate, localhour2) %>% 
+  add_count(localhour2) %>% 
+  arrange(localdate, localhour2) %>%
+  select(localdate, localhour2, n) %>%
+  distinct()
+
+head(local2)
+```
+
+******
+After that, we are ready to visualize the global peak hours with a heat map.
+```{r message=FALSE, warning=FALSE}
+ggplot(local2, aes(localdate, localhour2)) + 
+  geom_tile(aes(fill = n), colour = "white") + 
+  scale_fill_gradient(low = "#f3da4c", high = "blue", breaks = seq(0, 13, 2)) +
+  scale_x_date(breaks = seq(as.Date("2016-01-26 UTC"), as.Date("2016-04-02 UTC"), "7 days"), 
+               date_labels = "%b %d") + 
+  scale_y_continuous(breaks = seq(0, 23, 1)) +
+  labs(x = "Date", y = "Hour", fill = "Freq of Online Access") +
+  ggtitle("Peak Hour of Studying Online (Local Time)") 
+```
+

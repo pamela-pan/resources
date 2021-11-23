@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Stata Interface</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Stata Interface</h1>
+
+	<h2>Graphical User Interface</h2>
+		<p>The five main windows in Stata are Review, Results, Variables, Properties and Command. 
+			<ul>
+				<li>To set the windows to the way we prefer, go to <span class="g">Preferences</span>.</li>
+				<li>To reveal a hidden window, go to the <span class="g">Window</span> menu and select the window’s name.</li>
+			</ul>
+		</p>
+		<p>The Review window shows the history of commands, both the successful ones and the errors indicated by “<span class="g">_rc</span>”, the error codes. 
+			<ul>
+				<li>Click <span class="g">Command</span> or <span class="g">_rc</span> to sort commands by alphabetical order.</li>
+				<li>Use <span class="g">Page Up</span> and <span class="g">Page Down</span> keys to select, copy, run, and export the commands. </li>
+			</ul>
+		</p>
+		<p>The Results window displays the past commands and the textual results.
+			<ul>
+				<li>Click the search icon, the magnifier, to find texts in the Results window.</li>
+			</ul>
+		</p>
+		<p>The Variables window lists the variables’ names and their labels. 
+			<ul>
+				<li>Select a variable and its other properties will be reflected in the Properties window simultaneously.</li>
+			</ul>
+		</p>
+		<p>The Properties window, by definition, summarizes the various properties of a variable. 
+			<ul>
+				<li>Click the lock icon to unlock the ability to change the variable properties directly.</li>
+				<li>Use the arrows to the right of the lock icon to select variables in the Variables window.</li>
+			</ul>
+		</p>
+		<div class="more"><p><a href="http://www.stata.com/manuals14/gsm2.pdf">More on the Stata user interface from the Stata manual</a></p></div>
+
+		<p>
+			The Toolbar on top of the Results window gives us easy access to several features, most of which are self-explanatory. 
+			<ul>
+				<li>In the middle of the bar, <span class="g">Log</span> allows us to record all the outputs we produced in a log file. We wil explain the usage of a log in the next chapter. </li>
+				<li><span class="g">Viewer</span> does many things. One of the common uses is a help system and a place to find and download the user-written packages. The Stata manual details its other uses.</li>
+				<li><span class="g">Do-file Editor</span> is a text editor specific to Stata, where we write the commands. </li>
+				<li><span class="g">Data Browser</span> lets you view the data in a spreadsheet. You can also open the Browser by typing <span class="g">browse</span>.</li>
+				<li><span class="g">Data Editor</span> lets us actually modify the data, which is highly not recommended. If you do have edited data munually in the editor, remember to copy the codes produced in the Results window and paste it to your do-file to save a copy of what you did. You can also open the Datat Editor by typing <span class="g">edit</span>.</li>
+				<li>To the right, <span class="g">More</span> asks Stata to continue to run the program if it pauses; <span class="g">Break</span> asks it to stop the current session.</li>
+			</ul>
+		</p>
+
+	<h2>Getting Help</h2>
+		<p>Type <span class="g">help <em>command</em></span> to look for the syntax and usage of a command.</p>
+		<p>Type <span class="g">search <em>keyword</em></span> to 1) search a topic in Stata’s local keyword databases and the net materials; 2) if we do not know the exact command name; or 3) if we want to search for a user-written package to download.</p>
+
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+	
+</body>
+</html>

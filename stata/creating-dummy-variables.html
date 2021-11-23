@@ -1,0 +1,177 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Creating Dummy Variables</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Creating Dummy Variables</h1>
+		<p>
+		A dummy variable denotes whether something is true, which is 1, or false, which is 0. Dummy variables are also called indicator variables. 
+	<p>
+		For instance, <span class="g">foreign</span> in Stata's <span class="g">auto</span> dataset is a dummy variable: 1 if the car is foreign made and 0 if domestic made. <br>
+		<span class="g">
+		. sysuse auto <br>
+		. codebook foreign 
+		</span>
+		<pre><code>
+-------------------------------------------------------------------------------
+foreign                                                                Car type
+-------------------------------------------------------------------------------
+
+                  type:  numeric (byte)
+                 label:  origin
+
+                 range:  [0,1]                        units:  1
+         unique values:  2                        missing .:  0/74
+
+            tabulation:  Freq.   Numeric  Label
+                            52         0  Domestic
+                            22         1  Foreign
+			
+		</code></pre>
+	</p>
+	<p>
+		In Stata we can state something as true like below: use the dummy variable without explicitly specifying the condition but with the variable name alone. Stata will know that it means <span class="g">if foreign == 1</span> or <span class="g">if foreign ~= 1</span>. <br>
+		<span class="g">
+		. list make if foreign <br>
+		. list make if ~ foreign
+		</span> 
+	</p>
+		
+	<h2>generate</h2>
+	<p>
+		One way to create a dummy variable is to use <span class="g">generate</span> with an statement. <br>
+		<span class="g">
+		. sysuse auto <br>
+		. gen rep78In = rep78 >= 5 if !missing(rep78) <br></span>
+		The result would be 1 where the condition is true (repair record is more than or equal to 5) and 0 elsewhere.
+	</p>
+	<p>
+		In hierarchical data, in combination with the <span class="g">by</span> prefix , <span class="g">generate</span> and <span class="g">egen</span> can be used to create indicator variables on lower levels. <br>
+		<span class="g">
+		. sysuse citytemp <br>
+		. by region (division),sort: gen heat_Ind1 = heatdd > 8000 <br></span>
+		defines if each division, a subcategory under a region,  has heating degree days larger than 8000.
+	</p>
+	<p>
+		<span class="g">
+		. sysuse citytemp<br>
+		. by region (division), sort: egen heat_Ind2 = max(heatdd > 8000)<br></span>
+		defines if a region has divisions whose heating degree days are larger than 8000.
+	</p>
+
+	<h2>tabulate</h2>
+	<p>
+		We can also use <span class="g">tabulate <em>var</em>, generate(<em>newvar</em>)</span> to create a series of indicator variables. <br>
+		<span class="g">. tab foreign, gen(import)</span> generates two new variables <span class="g">import1</span>, indicating whether the car is domestic, and <span class="g">import2</span>, indicating whether the car is foreign made.
+	</p>
+	<div class="more">
+		<p>
+			More on creating indicator variables:<br>
+			<a href="http://www.stata.com/support/faqs/data-management/creating-dummy-variables/">William Gould, StataCorp, How do I create dummy variables?</a>
+		</p>
+	</div>
+
+	<h2>Factor variables</h2>
+	<p>Factor variables create indicator variables from categorical variables. </p>
+	<p>
+		The example below contains several factor variables: <br>
+		<span class="g">
+		. sysuse auto<br>
+		. reg price mpg c.weight##c.weight ib3.rep78 i.foreign
+		</span>
+	</p>
+	<p>
+		<span class="g">c.weight##c.weight</span> gives us the squared <span class="g">weight</span>, in addition to the main effect of <span class="g">weight</span>. 
+	</p>
+	<p>
+		<span class="g">ib3.rep78</span> sets the base value at <span class="g">rep78</span>=3 and creates indicators at each value of <span class="g">rep78</span>. 
+	</p>
+	<p>
+		<span class="g">i.foreign</span> creates indicators at each value of <span class="g">foreign</span>. 
+	</p>
+
+	<h3>operators</h3>
+	<p>
+		<span class="g">i.</span> indicates unique values/levels of a group<br>
+		<span class="g">c.</span> indicates a continuous variables<br>
+		<span class="g">o.</span> omits a variable or indicator<br>
+		<span class="g">#</span> specifies interactions<br>
+		<span class="g">##</span> specifies interactions including main effects
+	</p>
+
+	<h3>what factor variables actually mean</h3>
+	<p>
+		<span class="g">i.foreign</span> <br> indicator variables for each level of <span class="g">foreign</span>
+	</p>
+	<p>
+		<span class="g">i.foreign#i.rep78</span> <br> indicator variables for all combinations of each value of <span class="g">foreign</span> and <span class="g">rep78</span> 
+	</p>
+	<p>
+		<span class="g">i.foreign##i.rep78</span> <br> the same as <span class="g">i.foreign i.rep78 i.foreign#i.rep78</span>
+	</p>
+	<p>
+		<span class="g">i.foreign#i.rep78#i.make</span> <br> indicator variables for all combinations of each value of <span class="g">foreign</span>, <span class="g">rep78</span> and <span class="g">make</span> (not saying <span class="g">i.make</span> would make sense since it has 74 unique levels)
+	</p>
+	<p>
+		<span class="g">i.foreign##i.rep78##i.make</span> <br> the same as <span class="g">i.foreign i.rep78 i.make i.foreign#i.rep78 i.rep78#i.make i.foreign#i.make i.foreign#i.rep78#i.make </span>
+	</p>
+	<p>
+		<span class="g">i.rep78#c.mpg</span>  <br>variables created for the number of the levels of <span class="g">rep78</span>. For each variable, it will be the value of <span class="g">mpg</span> if at the level of <span class="g">rep78</span> and it will be 0 otherwise. 
+	</p>
+	<p>
+		For instance, if the first observation has <span class="g">rep78</span>=3 and <span class="g">mpg</span>=22, then <span class="g">3.rep78#c.mpg</span> will be 22 and it will be 0 for <span class="g">1b.rep78#c.mpg</span>, <span class="g">2.rep78#c.mpg</span>, <span class="g">4.rep78#c.mpg</span> and <span class="g">5.rep78#c.mpg</span>.
+	</p>
+
+	<h3>selecting levels</h3>
+	<p>
+		<span class="g">3.rep78</span> at the level where <span class="g">rep78</span>=3
+	</p>
+	<p>
+		<span class="g">i3.rep78</span> the same as above
+	</p>
+	<p>
+		<span class="g">i(2/4).rep78</span> selects the levels from <span class="g">rep78</span>=2 through <span class="g">rep78</span>=4
+	</p>
+	<p>
+		<span class="g">i(1 5).rep78</span> selects the levels where <span class="g">rep78</span>=1 and <span class="g">rep78</span>=5
+	</p>
+	<p>
+		<span class="g">o(1 5).rep78</span> omits the levels where <span class="g">rep78</span>=1 and <span class="g">rep78</span>=5
+	</p>
+
+	<h3>changing the base level</h3>
+	<p>
+		<span class="g">ib#.<em>var</em></span> changes the base level of the variable, where <span class="g">b</span> is the marker indicating the base value. 
+	</p>
+	<p>
+		For instance, <span class="g">ib3.rep78</span> sets the base value at <span class="g">rep78</span>=3.
+	</p>
+
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

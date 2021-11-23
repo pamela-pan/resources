@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Using Comments Smartly</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+	
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Using Comments Smartly</h1>
+		<p>
+			Comments can be more useful than you think. While the commands tell Stata what to do, the comments remind ourselves or the readers what we have been doing. 
+		</p>
+		
+	<h2>Adding comments</h2>
+		<p>
+			Depending on one's preference, there are three ways to indicate comments in Stata. 
+		</p>
+		<p>
+			<span class="g">*this is a comment<br>
+		//this is a comment<br>
+		/* this is a comment */ </span>
+		</p>
+		<p>
+			<span class="g">//this is a comment</span> and <span class="g">/* this is a comment */</span> are used in do-files. 
+		</p>
+		<p>
+			Anything commented by <span class="g">//</span> and <span class="g">/* */</span> will not be executed.
+		</p>
+
+	<h2>Annotating codes</h2>
+		<p>
+			We use comments to annotate our codes, reminding ourselves of why we did one thing and helping our collaborators understand what we did. <br>
+			<span class="g">. sum length if price > 10000 & !missing(price) //make sure only nonmissing cases are used</span>.
+		</p>
+
+	<h2>Commenting out commands</h2>
+		<p>
+			<span class="g">/* */</span> can be used in the middle of the commands to comment out the commands. For instance, <br>
+			<span class="g">. list make if price > 10000 /*|rep78 <= 2 */ </span> if we are testing alternative codes and not sure yet if we want to run the piece of codes in <span class="g">/**/</span>.
+		</p>
+		
+	<h2>Making long commands readable</h2>
+		<p>
+			To make our long commands readable, use <span class="g">///</span> to tell Stata that the command continues to the next line and everything following the continuation lines is part of the commands.<br>
+		<span class="g">. sum length if price > 10000 ///<br>
+		& rep78 <= 2 ///<br>
+		& make !="Audi Fox"</span>
+		</p>
+		
+	<h2>Starting a do-file properly</h2>
+		<p>
+			We may want to start our do-files with the information of title, author, date etc. using comments.<br>
+		<span class="g">
+		* project<br>
+		* author, date</span>
+		</p>
+		<p>
+	
+	<h2>Dividing long scripts</h2>
+		<p>
+		Comments can divide our codes into different parts to make long scripts more readable.<br>
+		<span class="g">**************<br>
+		//model1<br>
+		<em>some commands</em><br>
+		<br>
+		**************<br>
+		//model2<br>
+		<em>more commands</em><br></span>
+		</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

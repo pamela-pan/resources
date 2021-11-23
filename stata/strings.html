@@ -1,0 +1,427 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Strings</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Strings</h1>
+	<p>
+		Common tasks with string variables include matching a pattern or searching a location in a string, parsing or subsetting a string, concatenating strings, converting a string to a number etc. 
+	</p>
+	<div class="more">
+		<p><a href="http://www.stata.com/manuals14/fnstringfunctions.pdf">A full list of string functions.</a></p>
+	</div>
+
+	<h2>Matching and searching </h2>
+	<h3>regexm(); regexr(); regexs()</h3>
+	<p>
+		These are the three functions that use regular expressions to perform matching. Regular expression is a method that allows for systematic searching, matching and replacing within strings using operators and letters.
+	</p>
+	<div class="more">
+		<p>Read how Stata’s regular expressions work: <br>
+		<a href="http://www.stata.com/support/faqs/data-management/regular-expressions/">Kevin S. Turner, What are regular expressions and how can I use them in Stata?</a>
+		</p>
+	</div>
+
+	<h4><span class="g"><b>regexm()</b></span></h4>
+	<p>
+		<span class="g">regexm(<em>s,re</em>)</span> performs matching on the string <span class="g">s</span> by regular expression <span class="g">re</span>. If the matching is successful, it returns 1; otherwise it returns 0. 
+	</p>
+	<p>
+		For instance, <span class="g">gen flag = regexm(id, "[^0-9 .]") </span> marks observations that contain numeric characters. Then if we want to drop cases with non-numeric characters, we can easily do that.
+	</p>
+
+	<h4><span class="g"><b>regexr()</b></span></h4>
+	<p>
+		<span class="g">regexr(<em>s1,re,s2</em>)</span> replaces the string <span class="g">s1</span> that matches the regular expression <span class="g">re</span> with <span class="g">s2</span>. 
+	</p>
+	<p>
+		<span class="g">
+			. gen id2 = regexr(id, "[^0-9 .]", "marked")</span> generates a new variable <span class="g">id2</span>. Cases with all numeric characters have been replaced by <span class="g">"marked"</span>.
+	</p>
+
+	<h4><span class="g"><b>regexs()</b></span></h4>
+	<p>
+		<span class="g">regexs(<em>n</em>)</span> must appear after <span class="g">regexm(<em>s,re</em>)</span> and returns the <span class="g">n<sup>th</sup></span> substring from what is previously matched by <span class="g">regexm(<em>s,re</em>)</span>.  
+	</p>
+	<p>
+		<span class="g">
+			. sysuse auto <br>
+			. gen make2 = regexs(1) if regexm(make, "([a-zA-Z]+)([ ]|[.])*([a-zA-Z]+)")</span> takes out the car make, the first part from its make and model combination in <span class="g">make</span> strings. 
+	</p>
+	<p>
+		<span class="g">
+			. list make make2 in 5/15
+		</span>
+			<pre><code>
+     +------------------------+
+     | make             make2 |
+     |------------------------|
+  5. | Buick Electra    Buick |
+  6. | Buick LeSabre    Buick |
+  7. | Buick Opel       Buick |
+  8. | Buick Regal      Buick |
+  9. | Buick Riviera    Buick |
+     |------------------------|
+ 10. | Buick Skylark    Buick |
+ 11. | Cad. Deville       Cad |
+ 12. | Cad. Eldorado      Cad |
+ 13. | Cad. Seville       Cad |
+ 14. | Chev. Chevette    Chev |
+     |------------------------|
+ 15. | Chev. Impala      Chev |
+     +------------------------+
+			</code></pre>
+	</p>
+	<p>
+		In this example above: <br>
+		<span class="g">[]</span> matches at least one of the values in the bracket; <br>
+		<span class="g">a-zA-Z</span> matches any value of the letters, uppercase or lowercase; 0-9, similarly, will match any numbers in the specified numeric range; <br>
+		<span class="g">*</span> matches zero or more of the preceding expression; <br>
+		<span class="g">|</span> is the logical operator “or”.
+	</p>
+	<p><br></p>
+	<div class="more">
+		<p>More examples on the three functions: <br>
+		<a href="http://stats.idre.ucla.edu/stata/faq/how-can-i-extract-a-portion-of-a-string-variable-using-regular-expressions/">UCLA: Statistical Consulting Group, How can I extract a portion of a string variable using regular expressions? | Stata FAQ</a></p>
+	</div>
+
+	<h3>strpos(); strrpos()</h3>
+	<p>
+		<span class="g">strpos(<em>s1, s2</em>)</span> returns the position of <span class="g">s2</span> where <em>first</em> found in <span class="g">s1</span>; <br>
+		 <span class="g">strrpos(<em>s1, s2</em>)</span> returns the position of <span class="g">s2</span> where <em>last</em> found in <span class="g">s1</span>；<br>
+		 when positions are not found they return 0.  
+	</p>
+	<p>
+		<span class="g">
+			. sysuse auto <br>
+			. gen position = strpos(make,".")</span> creates the new variable <span class="g">position</span> that gives us the position of “.” in <span class="g">make</span>. 
+	</p>
+	<p>
+		<span class="g">
+			. list make position in 5/15
+		</span>
+			<pre><code>
+     +---------------------------+
+     | make             position |
+     |---------------------------|
+  5. | Buick Electra           0 |
+  6. | Buick LeSabre           0 |
+  7. | Buick Opel              0 |
+  8. | Buick Regal             0 |
+  9. | Buick Riviera           0 |
+     |---------------------------|
+ 10. | Buick Skylark           0 |
+ 11. | Cad. Deville            4 |
+ 12. | Cad. Eldorado           4 |
+ 13. | Cad. Seville            4 |
+ 14. | Chev. Chevette          5 |
+     |---------------------------|
+ 15. | Chev. Impala            5 |
+     +---------------------------+
+			</code></pre>
+	</p>
+
+	<h2>Parsing and extracting</h2>
+	<h3>split</h3>
+	<p>
+		<span class="g">split</span> splits string variables by separators into several components, and generates new string variables for each component taken out from the original string.  The default separator is the space. 
+	</p>
+	<p>
+		The <span class="g">parse()</span> option allows one to specify the separator. The <span class="g">generate()</span> option allows one to change the prefix of the new variables to be generated. 
+	</p>
+	<p>
+		<span class="g">
+			. sysuse auto <br>
+			. split make, p("." " ") gen(substr)</span> splits <span class="g">make</span> by “<span class="g">.</span>” and space into four new variables <span class="g">substr1-substr4</span>.
+	</p>
+	<p>
+		<span class="g">
+			. list make substr1-substr4 in 10/20
+		</span>
+			<pre><code>
+     +------------------------------------------------------------+
+     | make                substr1   substr2    substr3   substr4 |
+     |------------------------------------------------------------|
+ 10. | Buick Skylark         Buick   Skylark                      |
+ 11. | Cad. Deville            Cad              Deville           |
+ 12. | Cad. Eldorado           Cad             Eldorado           |
+ 13. | Cad. Seville            Cad              Seville           |
+ 14. | Chev. Chevette         Chev             Chevette           |
+     |------------------------------------------------------------|
+ 15. | Chev. Impala           Chev               Impala           |
+ 16. | Chev. Malibu           Chev               Malibu           |
+ 17. | Chev. Monte Carlo      Chev                Monte     Carlo |
+ 18. | Chev. Monza            Chev                Monza           |
+ 19. | Chev. Nova             Chev                 Nova           |
+     |------------------------------------------------------------|
+ 20. | Dodge Colt            Dodge      Colt                      |
+     +------------------------------------------------------------+
+			</code></pre>
+	</p>
+
+	<h3>substr()</h3>
+	<p>
+		<span class="g">substr(<em>s, n1, n2</em>)</span> extracts the substring of <span class="g">s</span> from <span class="g">n1</span> for the length of <span class="g">n2</span>. 
+	</p>
+	<p>
+		Let's say we have a dataset with a string variable <span class="g">time</span> and we want to extract the date and time components to the seconds. <br>
+		<span class="g">
+			. list time in 1/5
+		</span>
+			<pre><code>
+     +----------------------------------+
+     |                             time |
+     |----------------------------------|
+  1. | 2016-03-31T04:20:00.122823+00:00 |
+  2. | 2016-03-31T04:24:25.447985+00:00 |
+  3. | 2016-03-31T04:24:25.683670+00:00 |
+  4. | 2016-03-31T04:24:27.338571+00:00 |
+  5. | 2016-03-31T04:24:27.552821+00:00 |
+     +----------------------------------+
+			</code></pre>
+	</p>
+	<p>
+		<span class="g">. gen datetime = substr(time, 1, 19) </span> generates a new variable <span class="g">datetime</span> with the first 19 characters of <span class="g">time</span>. From there we can convert it to a date and time variable. <br>
+		<span class="g">
+			. list datetime in 1/5
+		</span>
+			<pre><code>
+     +---------------------+
+     |               clock |
+     |---------------------|
+  1. | 2016-03-31T04:20:00 |
+  2. | 2016-03-31T04:24:25 |
+  3. | 2016-03-31T04:24:25 |
+  4. | 2016-03-31T04:24:27 |
+  5. | 2016-03-31T04:24:27 |
+     +---------------------+
+			</code></pre>
+	</p>
+
+	<h3>subinstr()</h3>
+	<p>
+		<span class="g">subinstr(<em>s1, s2, s3, n</em>)</span> replaces the first <span class="g">n</span> occurrences in <span class="g">s1</span> of <span class="g">s2</span> with <span class="g">s3</span>. If <span class="g">n</span> is missing, all occurrences are replaced.
+	</p>
+	<p>
+		Here we have a dataset with a variable <span class="g">rank</span>: <br>
+		<span class="g">
+			. tab rank
+		</span>
+			<pre><code>
+               rank |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+                  1 |        506       10.44       10.44
+             1 (1T) |        262        5.40       15.84
+              1(1T) |        122        2.52       18.36
+            1(1T)   |         72        1.49       19.84
+                  2 |        509       10.50       30.34
+             2 (2T) |        262        5.40       35.75
+              2(2T) |        122        2.52       38.26
+             (2T)   |         72        1.49       39.75
+                  3 |        503       10.38       50.12
+             3 (3T) |        260        5.36       55.49
+              3(3T) |        121        2.50       57.98
+             (3T)   |         72        1.49       59.47
+                  4 |        442        9.12       68.58
+             4 (RU) |        228        4.70       73.29
+              4(RU) |        107        2.21       75.50
+             4(RU)  |         63        1.30       76.79
+                  5 |        324        6.68       83.48
+             5 (RU) |        162        3.34       86.82
+              5(RU) |         82        1.69       88.51
+            5(RU)   |         46        0.95       89.46
+
+      ......
+			</code></pre>
+	</p>
+	<p>
+		We want to remove all the spaces, <span class="g">(1T)</span>, <span class="g">(2T)</span>, <span class="g">(3T)</span> and <span class="g">(RU)</span>. Here is what we would do:
+		<pre><code>
+local n (1T) (2T) (3T) (RU) " "
+foreach x in `n'{
+	replace rank = subinstr(rank,"`x'", "",.) 
+}			
+		</code></pre>
+	</p>
+	<p>
+		<span class="g">
+		. tab rank
+		</span>
+		<pre><code>
+        rank |      Freq.     Percent        Cum.
+-------------+-----------------------------------
+           1 |        962       19.84       19.84
+           2 |        965       19.91       39.75
+           3 |        956       19.72       59.47
+           4 |        840       17.33       76.79
+           5 |        614       12.67       89.46
+           6 |        333        6.87       96.33
+           7 |        127        2.62       98.95
+           8 |         44        0.91       99.86
+           9 |          7        0.14      100.00
+-------------+-----------------------------------
+       Total |      4,848      100.00			
+		</code></pre>
+	</p>
+
+	<h3>egen <em>newvar</em> = ends()</h3>
+	<p>
+		<span class="g">egen <em>newvar</em> = ends()</span> takes out whatever precedes the first space in the string, or the entire string if the string variable does not contain a space. Space is the default separator.
+	</p>
+	<p>
+		<span class="g">. egen make3 = ends(make)</span> takes out the car make from the combination of make and model by the space between the two. <br>
+		<span class="g">
+			.  list make make3 in 5/15
+		</span>
+			<pre><code>
+     +------------------------+
+     | make             make3 |
+     |------------------------|
+  5. | Buick Electra    Buick |
+  6. | Buick LeSabre    Buick |
+  7. | Buick Opel       Buick |
+  8. | Buick Regal      Buick |
+  9. | Buick Riviera    Buick |
+     |------------------------|
+ 10. | Buick Skylark    Buick |
+ 11. | Cad. Deville      Cad. |
+ 12. | Cad. Eldorado     Cad. |
+ 13. | Cad. Seville      Cad. |
+ 14. | Chev. Chevette   Chev. |
+     |------------------------|
+ 15. | Chev. Impala     Chev. |
+     +------------------------+
+			</code></pre>
+	</p>
+	<p>
+		The <span class="g">punct()</span> option allows one to change where to parse the substring; the default is to parse on the space. <br>
+		<span class="g">. egen make4 = ends(make), punct(.)</span> takes out either the portion precedes the “<span class="g">.</span>”, or the entire string without “<span class="g">.</span>”. <br>
+		<span class="g">
+			.  list make make4 in 5/15
+		</span>
+			<pre><code>
+     +--------------------------------+
+     | make                     make4 |
+     |--------------------------------|
+  5. | Buick Electra    Buick Electra |
+  6. | Buick LeSabre    Buick LeSabre |
+  7. | Buick Opel          Buick Opel |
+  8. | Buick Regal        Buick Regal |
+  9. | Buick Riviera    Buick Riviera |
+     |--------------------------------|
+ 10. | Buick Skylark    Buick Skylark |
+ 11. | Cad. Deville               Cad |
+ 12. | Cad. Eldorado              Cad |
+ 13. | Cad. Seville               Cad |
+ 14. | Chev. Chevette            Chev |
+     |--------------------------------|
+ 15. | Chev. Impala              Chev |
+     +--------------------------------+
+			</code></pre>
+	</p>
+	<p>
+		The <span class="g">punct() trim head|last|tail</span> option further allows one to choose the portion of the string to take out: <span class="g">head</span>, the first substring; <span class="g">last</span>, the last substring; or <span class="g">tail</span>, the remaining substring following the first parsing character. <br>
+		<span class="g">. egen make5 = ends(make), trim last</span> parses out the last portion from <span class="g">make</span>. <br>
+		<span class="g">
+			.  list make make5 in 5/15
+		</span>
+			<pre><code>
+     +---------------------------+
+     | make                make5 |
+     |---------------------------|
+  5. | Buick Electra     Electra |
+  6. | Buick LeSabre     LeSabre |
+  7. | Buick Opel           Opel |
+  8. | Buick Regal         Regal |
+  9. | Buick Riviera     Riviera |
+     |---------------------------|
+ 10. | Buick Skylark     Skylark |
+ 11. | Cad. Deville      Deville |
+ 12. | Cad. Eldorado    Eldorado |
+ 13. | Cad. Seville      Seville |
+ 14. | Chev. Chevette   Chevette |
+     |---------------------------|
+ 15. | Chev. Impala       Impala |
+     +---------------------------+
+			</code></pre>
+	</p>
+	
+	<h3>strtrim(); stritrim();strltrim();strrtrim()</h3>
+	<p>
+		The four functions trim the strings by removing the spaces.
+	</p>
+	<p>
+		<span class="g">strtrim(<em>s</em>)</span> removes the leading or trailing spaces. <br>
+		e.g. strtrim(“ nyush ”) = “nyush”
+	</p>
+	<p>
+		<span class="g">stritrim(<em>s</em>)</span> removes the multiple internal spaces. <br>
+		e.g. stritrim(“nyu &nbsp&nbsp&nbsp&nbspsh”) = “nyu sh”
+	</p>
+	<p>
+		<span class="g">strltrim(<em>s</em>)</span> removes the leading spaces. <br>
+		e.g. strltrim(“ nyush”) = “nyush”
+	</p>
+	<p>
+		<span class="g">strrtrim(<em>s</em>)</span> removes the trailing spaces. <br>
+		e.g. strrtrim(“nyush ”) = “nyush”
+	</p>
+
+	<h2>Conversion</h2>
+	<p>
+		<span class="g">string(<em>n</em>)</span> and <span class="g">real(<em>s</em>)</span> are two string functions that convert numeric/string to string/numeric variables. Note that <span class="g">real()/string()</span> are functions and must be used in conjunction with a Stata command. 
+	</p>
+	<h3>string()</h3>
+	<p>
+		<span class="g">string(<em>n</em>)</span> is a synonym for <span class="g">strofreal(<em>n</em>)</span> and converts numeric or missing values to strings. <br>
+		<span class="g">
+			. sysuse auto <br>
+			. gen rep78_str = string(rep78)</span> converts the numeric and missing values of <span class="g">rep78</span> to strings.
+	</p>
+
+	<h3>real()</h3>
+	<p>
+		<span class="g">real(<em>s</em>)</span> converts strings to numeric or missing values. The string variable must contain number characters, otherwise missing values will be generated. <br>
+		<span class="g">. gen rep78_str_num = real(rep78_str)</span>  converts the string variable <span class="g">rep78_str</span> created above by <span class="g">string(<em>n</em>)</span> back to numeric again. <br>
+		<span class="g">. gen make_real = real(make)</span>  will create the new variable <span class="g">make_real</span>  with all missing values.
+	</p>
+
+	<h2>Concatenation</h2>
+	<p>
+		<span class="g">egen <em>newvar</em>, concat(<em>varlist</em>)</span> concatenates a variable list and generates a new string variable. <br>
+		<span class="g">
+			. sysuse auto <br>
+			. egen make_foreign = concat(foreign make)</span> 
+	</p>
+	<p>
+		Or simply use <span class="g">+</span> to concatenate several strings when the variables are already strings. <br>
+		<span class="g">. gen make_foreign2 = string(foreign) + make</span> 
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>	

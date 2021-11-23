@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Variable Names, Labels, and Values</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Variable Names, Labels, and Values</h1>
+		<h2>Variable names</h2>
+		<p>
+			When it comes to naming variables, some people prefer camel casing (e.g. GearRatio); some prefer underscore (e.g. gear_ratio); and others prefer lowercase abbreviations (e.g. gr). We may also develop our own naming convention. But whichever we use, we should keep to one style throughout.
+		</p>
+		<p>
+			To change a variable's name, use <span class="g">rename <em>oldvar newvar</em></span>. <br>
+			<span class="g">. rename rep78 repair_record</span>
+		</p>
+
+		<h2>Variable labels</h2>
+		<p>
+			Each variable can have a label attached to it, which provides more information of a variable.
+		</p>
+		<p>
+		<span class="g">label variable <em>varname “label”</em></span> attaches a label to a variable.<br>
+		<span class="g">. label variable rep78 “repair_record_78”</span><br>
+		</p>
+
+		<h2>Value labels</h2>
+		<p>
+			When browsing the <span class="g">auto</span> data, you may have noticed that the <span class="g">foreign</span> variable has values of characters in blue. This means that it is a numeric variable with labeled values. If you see the values in red, then it is a string variable. The black values are numbers. 
+		</p>
+		<p>
+			We will discuss how to define variable value labels below.
+		</p>
+
+		<h3>label define; label values</h3>
+	<p>
+		<span class="g">label define</span> and <span class="g">label values</span> attach value labels to a numeric variable in two steps: 
+	</p>
+	<p>
+		<span class="g">label define <em>labelname # label # label …</em></span> first creates a label name for all the labels we are going to attach to the variable values .<br>
+		<span class="g">label values <em>var labelname</em></span> then matches the labels to the values.
+	</p>
+	<p>
+		For instance, <br>
+		<span class="g">
+		. sysuse auto <br>
+		. gen priceIndicator = (price >= 5000 & price < .)<br>
+		. label define priceLabel 0 affordable 1 expensive <br>
+		. label values priceIndicator priceLabel <br></span>
+		first creates an indicator variable based on an arbitrary standard of affordability (price<5000), and then attaches the labels of “affordable” to the numeric value 0 and “expensive” to 1. 
+	</p>
+	<p>
+		<span class="g">. codebook priceIndicator</span> <br>
+		<pre><code>
+------------------------------------------------------------------------------------------
+priceIndicator                                                                 (unlabeled)
+------------------------------------------------------------------------------------------
+
+                  type:  numeric (float)
+                 label:  priceLabel
+
+                 range:  [0,1]                        units:  1
+         unique values:  2                        missing .:  0/74
+
+            tabulation:  Freq.   Numeric  Label
+                            37         0  affordable
+                            37         1  expensive
+			
+		</code></pre>
+		We can see how each value of <span class="g">priceIndicator</span> is labeled. The label name is "priceLabel".
+	</p>
+
+	<h3>label list</h3>
+
+	<p>
+		Once we got the value label name, we can list the labels for each value of the variable. 
+	</p>
+	<p>
+		<span class="g">label list <em>labelname</em></span> returns a list.<br>
+		<span class="g">. label list priceLabel</span> <br>
+		<pre><code>
+priceLabel:
+           0 affordable
+           1 expensive
+		</code></pre>
+	</p>
+	<p>
+		In fact, in the auto data, variable <span class="g">foreign</span> came with attached value lables. 
+	</p>
+	<p>
+		<span class="g">. codebook foreign </span>
+		<pre><code>
+--------------------------------------------------------------------------------------
+foreign                                                                       Car type
+--------------------------------------------------------------------------------------
+
+                  type:  numeric (byte)
+                 label:  origin
+
+                 range:  [0,1]                        units:  1
+         unique values:  2                        missing .:  0/74
+
+            tabulation:  Freq.   Numeric  Label
+                            52         0  Domestic
+                            22         1  Foreign	
+		</code></pre> <br>
+		We can see the label name is "origin", and the value labels are "Domestic" and "Foreign".
+	</p>
+	<p>
+		<span class="g">. label list origin </span> <br>
+		<pre><code>
+origin:
+           0 Domestic
+           1 Foreign			
+		</code></pre>
+	</p>
+
+	<h3>label drop</h3>
+	<p>
+		<span class="g">label drop <em>labelname</em></span> removes the value labels from a variable.<br>
+		<span class="g">. label drop priceLabel</span>
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+	
+</body>
+</html>

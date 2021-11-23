@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Stata</title>
+	<link rel="stylesheet" href="css/overall.css">
+	<link rel="stylesheet" href="css/tools.css">
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<script src="js/menu.js"></script>
+
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+	<header>
+		<div class="title">Stata</div> 
+		<div class="subtitle"><a href="home.html">Home</a> | <a href="r.html">R</a> | <a href="stata.html">Stata</a> | <a href="rshiny.html">Shiny</a></div> 
+	</header>
+
+	<nav>
+		<div class="menu">
+			<div class="menu-container">
+			<ul>
+				<li class="menu-item"><a href="home.html"><span class="menu-num">00</span>HOME</a></li>
+				<li class="menu-item"><span class="menu-num">01</span>DATA TOOLS & SKILLS
+					<ul>
+						<li class="menu-sub-item"><a href="r.html">R</a></li>
+						<li class="menu-sub-item"><a href="stata.html">Stata</a></li>
+						<li class="menu-sub-item"><a href="rshiny.html">Shiny</a></li>						
+					</ul>
+				</li>
+				<li class="menu-item"><span class="menu-num">02</span>DATA VISUALIZATION
+					<ul>
+						<li class="menu-sub-item"><a href="viz/state-of-the-art.html" target="_blank">state of the art</a></li>
+						<li class="menu-sub-item"><a href="viz/resources.html" target="_blank">read more</a></li>
+					</ul>
+				</li>
+				<li class="menu-item"><span class="menu-num">03</span>DATA LITERACY
+					<ul>
+						<li class="menu-sub-item"><a href="workshops.html">workshops</a></li>
+						<li class="menu-sub-item"><a href="events.html">events</a></li>
+					</ul>
+				</li>				
+				<li class="menu-item"><a href="https://datascience.shanghai.nyu.edu/datasets"><span class="menu-num">04</span>CHINESE DATASETS</a></li>
+				<li class="menu-item"><a href="about.html"><span class="menu-num"><b>||</b></span>ABOUT</a></li>
+			</ul>
+		</div> 
+		</div> 
+
+		<div class="menu-sign">
+		<div class="menu-burger">
+			<div id="one"></div>
+			<div id="two"></div>
+			<div id="three"></div>
+		</div>
+		<div id="menu-hint">Menu</div>
+		</div> 
+	</nav>
+
+	
+		<section class="choice">
+			<div class="button button-selected" id="all">All</div>
+			<div class="button" id="intro">Coding Smartly</div>
+			<div class="button" id="cases">Cases</div>
+		</section>
+	
+	<main>
+		<section class="meat">
+			<div class="box">
+			<h3>First steps</h3>	
+			<div class="ticket">
+				<a href="stata/stata-interface.html" target="_blank">Stata Interface</a> 
+				<span>(User interface; Getting help)</span>
+			</div>
+			<div class="ticket intro">
+				<a href="stata/being-reproducible.html" target="_blank">Being Reproducible</a> 
+				<span>(Working directory; Log file; Do-file)</span>
+			</div>
+			<div class="ticket">
+				<a href="stata/syntax.html" target="_blank">Syntax, or How to Speak Stata</a> 
+				<span>(Syntax; Operators)</span>
+			</div>
+			<div class="ticket intro cases">
+				<a href="stata/reading-and-saving-files.html" target="_blank">Reading and Saving Files of Various Types</a> 
+				<span>(.dta, .xls, .xlsx, .txt, .csv; Comma/tab delimited files)</span>
+			</div>			
+			</div><!-- box -->
+
+			<div class="box">
+			<h3>Exploring data</h3>
+			<div class="ticket">
+				<a href="stata/describing-your-data.html" target="_blank">Describing Your Data</a> 
+				<span>(describe; codebook; list; count)</span>
+			</div>
+			<div class="ticket">
+				<a href="stata/summarizing-your-data.html" target="_blank">Summarizing Your Data</a> 
+				<span>(summarize; tabulate; tabstat; table)</span>
+			</div>
+			<div class="ticket">
+				<a href="stata/correlation.html" target="_blank">Correlation</a> 
+				<span>(correlate; pwcorr)</span>
+			</div>
+			<div class="ticket">
+				<a href="stata/missing-values.html" target="_blank">Missing Values</a>
+			</div>
+			</div>
+
+			<div class="box">
+			<h3>Transforming variables</h3>
+			<div class="ticket intro">
+				<a href="stata/creating-and-recoding-variables.html" target="_blank">Creating and Recoding Variables</a> 
+				<span>(generate; recode; replace; egen; autocode)</span>
+			</div>	
+			<div class="ticket intro">
+				<a href="stata/variable-names-labels-values.html" target="_blank">Variable Names, Labels, and Values</a> 
+				<span>(rename; label variable; label define; label values; label list; label drop)</span>
+			</div>
+			<div class="ticket intro">
+				<a href="stata/converting-numeric-string-variables.html" target="_blank">Converting Numeric/String Variables</a> 
+				<span>(encode/decode; real()/string(); destring/tostring)</span>
+			</div>
+			<div class="ticket intro">
+				<a href="stata/creating-dummy-variables.html" target="_blank">Creating Dummy Variables</a> 
+				<span>(Dummy variables/indicator variables; Factor variables)</span>
+			</div>
+			</div>
+
+			<div class="box">
+			<h3>Transforming dataset</h3>
+			<div class="ticket">
+				<a href="stata/subsetting.html" target="_blank">Subsetting</a> 
+				<span>(keep; drop)</span>
+			</div>
+			<div class="ticket">
+				<a href="stata/arranging-your-data.html" target="_blank">Arranging Your Data</a> 
+				<span>(sort; gsort; order)</span>
+			</div>
+			<div class="ticket cases">
+				<a href="stata/binding-datasets.html" target="_blank">Binding Datasets</a> 
+				<span>(append; merge; joinby)</span>
+			</div>	
+			<div class="ticket cases">
+				<a href="stata/reshaping-your-data.html" target="_blank">Reshaping Your Data</a> 
+				<span>(reshape; collapse)</span>
+			</div>
+			</div>
+
+			<div class="box">
+			<h3>Useful tricks in hierarchical data</h3>
+			<div class="ticket intro cases">
+				<a href="stata/subscripting.html" target="_blank">Subscripting</a> <br>
+				<span>(Creating group identifier; </span>
+				<span>First/last cases within a group; </span>
+				<span>Checking if values are consistent within a group; </span>
+				<span>Checking if t test pairs exist within a group; </span>
+				<span>Lags and leads)</span>
+			</div>
+			<div class="ticket intro cases">
+				<a href="stata/spreading-rows-in-hierarchical-data.html" target="_blank">Spreading Rows in Hierarchical Data</a> 
+				<span>(fill; expand; by prefix with sum(), max(), min(), mean() etc.)</span>
+			</div>	
+			</div>			
+			
+			<div class="box">
+			<h3>Strings</h3>				
+			<div class="ticket intro cases">
+				<a href="stata/strings.html" target="_blank">Strings</a> <br>
+				<span>Matching and searching: <em>regexm(); regexr(); regexs(); strpos(); strrpos();</em></span> <br>
+				<span>Parsing and extracting: <em>split; substr(); subinstr(); egen, ends(); strtrim(); stritrim();strltrim();strrtrim(); </em></span><br> 
+				<span>Conversion: <em>string(); real(); </em></span><br> 
+				<span>Concatenation: <em>egen, concat(); + operator</em></span>
+			</div>
+			</div>
+	
+			<div class="box">
+			<h3>Dates and times</h3>				
+			<div class="ticket intro cases">
+				<a href="stata/dates-and-times.html" target="_blank">Dates and Times</a> <br>
+				<span>(Data types and storage types; Display format; Conversion; Extraction; Concatenation; Calculation)</span>
+			</div>	
+			</div>
+
+			<div class="box">
+			<h3>Automating your work</h3>				
+			<div class="ticket intro cases">
+				<a href="stata/automating-your-work.html" target="_blank">Automating Your Work</a> 
+				<span>(Macros; The many uses of macros; Loops: foreach/forvalues/while)</span>
+			</div>	
+			<div class="ticket intro cases">
+				<a href="stata/stored-results.html" target="_blank">Stored Results</a> <br>
+				<span>(r-class and e-class commands; Types of results; Storing results in a matrix; levelsof; System variables; tempvar; word)</span> 
+			</div>	
+			<div class="ticket intro cases">
+				<a href="stata/useful-commands-in-programs.html" target="_blank">Useful Commands in Programs</a> <br>
+				<span>(quiet; preserve/restore)</span> 
+			</div>							
+			</div>			
+
+			<div class="box">
+			<h3>Miscellaneous</h3>
+			<div class="ticket intro cases">
+				<a href="stata/table-output.html" target="_blank">Table Outputs</a>
+			</div>			
+			<div class="ticket">
+				<a href="stata/duplicates.html" target="_blank">Duplicates</a>
+			</div>
+			<div class="ticket intro">
+				<a href="stata/comments.html" target="_blank">Using Comments Smartly</a> 
+			</div>	
+			<div class="ticket intro">
+				<a href="stata/display.html" target="_blank">display</a> 
+			</div>				
+			<div class="ticket">
+				<a href="stata/assert.html" target="_blank">assert</a>
+			</div>					
+			</div>		
+
+			<div class="box">
+			<h3>Recommended Resources</h3>
+			<div class="ticket">
+				<a href="stata/resources.html" target="_blank">Resources for Self-Paced Learning</a>
+				<span>(Introduction to Stata; Practical guides; Statistical analysis examples)</span> 
+			</div>			
+
+			</div>					
+			</div>		
+
+		</section>
+	</main>	
+</body>
+</html>

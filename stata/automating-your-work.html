@@ -1,0 +1,466 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Automating Your Work</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Automating Your Work</h1>
+	<p>
+		Why and when would we want to use automation tricks, such as macros, loops, saved results or even writing a program by ourselves? Automating your work saves you from repeating very similar codes over and over again.  It also reduces chances of mistakes whenever you try to tweak the codes in each step. Spending time learning the programming basics can do more for us. 
+	</p>
+
+	<div class="more">
+		<p>
+			Overview of Stata programming <br>
+			<a href="http://stats.idre.ucla.edu/stata/seminars/stata-programming/">UCLA: Statistical Consulting Group, Introduction to Stata Programming </a> <br>
+			<a href="http://gabrielr.bol.ucla.edu/stataprogramming.pdf">Gabriel Rossman, Introduction to Stata Programming</a>
+		</p>
+	</div>
+
+	<h2>Macros</h2>
+	<h3>Local and global macros</h3>
+	<p>
+		Macros are strings we assign to represent variables, values, texts, commands, statements etc. Macros can be local and global.  
+	</p>
+	<h4>local macro</h4>
+	<p>
+		Local macros only work in the current do-file or program. <br>
+		<span class="g">local <em>localmacro</em> = <em>exp</em></span> 
+	</p>
+	<p>
+		This is how you refer to a local macro: <span class="g"><em>`localmacro'</em></span>.  Note that the left side is a backtick(`) usually found on the top left corner of the keyboard, and the right side is a apostrophe(').
+	</p>
+	<p>
+		Usually we can define macros of strings with or without the quotation marks. However, if the strings contain spaces in between, we need to enclose <span class="g">`" "'</span>. For instance,  
+		<pre><code>
+local reason `" "Work on a class assignment/paper" "Use specialized databases (e.g. Bloomberg, Wind)" "'			
+		</code></pre>
+	</p>
+
+	<h4>global macro</h4>
+	<p>
+		Global macros work across the programs in Stata. <br>
+		<span class="g">global <em>globalmacro</em> = <em>exp</em></span>
+	</p>
+	<p>
+		We use a dollar sign to refer to a global macro: <span class="g">$<em>globalmacro</em></span>.
+	</p>
+	<p>
+		Be careful with the global macros that are accessible from all do-files and programs. Make sure you remember all the global macros you created elsewhere. 
+	</p>
+	<h4>modifying and dropping macros</h4>
+	<p>
+		To change the contents of a macro, we simply redefine the contents where they are. <br>
+		<span class="g">
+		. local container apple orange <br>
+		. local container apple melon papaya<br>
+		</span>
+		first defines the local macro <span class="g">container</span> and then modifies the contents of <span class="g">container</span> simply by reassigning the variables. 
+	</p>
+	<p>
+		To drop a macro, use <span class="g">macro drop <em>macro</em></span>. <br>
+		<span class="g">. macro drop container</span>
+	</p>
+
+	<h3>The many uses of macros</h3>
+	<h4>defining variable lists</h4>
+	<p>
+		A common use of macros is to hold variable lists for later use. 
+	</p>
+	<p>
+		Below we created a local macro <span class="g">control</span> to hold all control variables, and macros <span class="g">application</span>, <span class="g">open_day</span> and <span class="g">placement</span> to hold variable lists on application, open day performance and placement tests. 
+	</p>
+	<p>
+		We can then use the macros in the OLS regressions where <span class="g">application</span>, <span class="g">open_day</span> and <span class="g">placement</span> have all the relevant independent variables and <span class="g">control</span> has all the control variables. 
+	</p>
+	<p>
+		<span class="g">
+		. local control gender country <br>
+		. local application personality academic <br>
+		. local open_day writing interview participation <br>
+		. local placement math english <br>
+		. reg gpa `application' `open_day' `placement' `control'
+		</span>
+	</p>
+	<p>
+		In the case of holding long variable lists in a macro, we can extend the macro each time by referring to itself from the last iteration: <br>
+		<span class="g">
+		. local control gender country <br>
+		. local control `control' high_school entrance_exam admission_track <br>
+		. local control `control' major class 
+		</span>
+	</p>
+
+	<h4>storing commands</h4>
+	<p>
+		Macros can hold commands.
+	</p>
+	<p>
+		To use macros to hold conditions: <br>
+		<span class="g">
+		. local condition “if level == 1 & track != 2” <br>
+		. local placement math english <br>
+		. summarize `placement' `condition'
+		</span>
+	</p>
+	<p>
+		To use macros to hold multiple options to make a graph: <br>
+		<span class="g">
+		. local option1 msymbol(o) mcolor(cranberry) clcolor(cranberry) connect(l) <br>
+		. local option2 msymbol(th) mcolor(cranberry) clcolor(cranberry) connect(l) <br>
+		. local option3 msymbol(o) mcolor(dknavy) clcolor(dknavy) connect(l) <br>
+		. local option4 msymbol(th) mcolor(dknavy) clcolor(dknavy) connect(l) <br>
+		. graph twoway (scatter length_video week [w = click_video] if group == 1, xlabel(0 (1) 10) `option1') /// <br>
+		(scatter length_video week [w = click_video] if group == 2, xlabel(0 (1) 10) `option2') ///<br>
+		(scatter length_text week [w = click_text] if group == 1, xlabel(0 (1) 10) `option3') /// <br>
+		(scatter length_text week [w = click_text] if group == 2, xlabel(0 (1) 10) `option4'), /// <br>
+		legend (order(1 "Average User: Video" 2 "Heavy User: Video" 3 "Average User: Text" 4 "Heavy User: Text"))
+		</span> 
+	</p>
+
+	<h4>storing values</h4>
+	<p>
+		Macros can store values, especially constants, to be used in -
+	</p>
+	<p>
+		algorithms, <br>
+		<span class="g">
+		. local a = 1.232425 <br>
+		. local b = 3.899878 <br>
+		. local c = 2.566556 <br>
+		. display (-`b'+sqrt((`b')^2 - 4*`a'*`c'))/(2*`a')
+		</span> 
+	</p>
+	<p>
+		or creating new variables. <br>
+		<span class="g">
+		. local 8hrs = 1000*60*60*8 <br>
+		. gen double gmt = utc + `8hrs' <br>
+		</span> 
+		which is equivalent to  <br>
+		<span class="g">
+		. gen double gmt = utc + msofhours(8) <br>
+		</span> 
+		if the function <span class="g">msofhours()</span> did not come to your mind.
+	</p>
+
+	<h4>model specifications</h4>
+	<p>
+		Using macros will give us a clear structure in model specifications. 
+	</p>
+	<p>
+		When we need to add groups of variables in nested regression models: <br>
+		<span class="g">
+		. local control gender country <br>
+		. local application personality academic <br>
+		. local open_day writing interview participation <br>
+		. local placement math english <br>
+		. eststo clear <br>
+		. eststo: reg gpa `control' `application' <br>
+		. eststo: reg gpa `control' `application' `open_day'<br>
+		. eststo: reg gpa `control' `application' `open_day' `placement'<br>
+		. esttab, b(%9.1f) t(%9.1f) r2(%9.6f)
+		</span> 
+	</p>
+	<p>
+		In different models: <br>
+		<span class="g">
+		. reg offer `rubric1' `rubric2' `rubric3' `control' <br>
+		. logit offer `rubric1' `rubric2' `rubric3' `control'
+		</span> 
+	</p>
+	<p>
+		We will see below how macros can be useful in loops and programs.
+	</p>
+
+	<h2>Loops</h2>
+	<h3>foreach</h3>
+	<p>
+		<span class="g">foreach</span> stores the list and loops over the items.
+	</p>
+	<span class="g">
+	<p>
+		foreach <em>loopname</em> in <em>list</em>{ <br>
+		&emsp;&emsp; ...<br>
+		}
+	</p>
+	<p>
+		foreach <em>loopname</em> of varlist <em>varlist</em>{ <br>
+		&emsp;&emsp; ...<br>
+		}
+	</p>
+	<p>
+		foreach <em>loopname</em> of numlist <em>numlist</em>{ <br>
+		&emsp;&emsp; ...<br>
+		}
+	</p>
+	<p>
+		foreach <em>loopname</em> of local <em>localmacro</em>{ <br>
+		&emsp;&emsp; ...<br>
+		}
+	</p>
+	<p>
+		foreach <em>loopname</em> of global <em>globalmacro</em>{ <br>
+		&emsp;&emsp; ...<br>
+		}
+	</p>
+	</span> 
+
+	<p>
+		For each item of the list, the loop <span class="g">loopname</span>  executes the commands specified in the brackets for each value of the item (variable/number/local macro/global macro etc.). 
+	</p>
+	<p>
+		When we need to refer to the specified <span class="g">loopname</span>, we must use the pair of quotes <span class="g">`loopname'</span>. Note the difference of the backtick (`) and the apostrophe ('). 
+	</p>
+	
+	<h4>a quick note on the loop format</h4>
+	<p>
+		Each loop starts with an open curly bracket that must stay on the same line as <span class="g">foreach</span>. Nothing should follow the bracket on that line. 
+	</p>
+	<p>
+		Another curly bracket should appear on a line by itself to conclude the loop. 
+	</p>
+	<p>
+		Between the brackets are the commands. You may notice the indentation before the commands: this is not mandatory for the commands to run, but it is a good programming habit to give yourself and readers a clear structure of the commands’ logic.
+	</p>
+	<p>
+		We will see examples below.
+	</p>
+	
+	<h4>t-tests with the variable names displayed for each loop</h4>
+	<p>
+		Quite often we need to perform t-tests on a group of variables with very similar commands. Instead of changing the variable names one by one, we could simply write a loop to do the work for us. 
+	</p>
+	<p>
+		<span class="g">
+		. local course calculus writing1 writing2 <br>
+		. foreach var in `course'{ <br>
+		. &emsp;&emsp;display _newline "ttest `var', by(gender)"<br>
+		. &emsp;&emsp;ttest `var', by(gender)<br>
+		. }
+		</span>
+	</p>
+	<p>
+		Alternatively, we can say: <br>
+		<span class="g">
+		. local course calculus writing1 writing2 <br>
+		. foreach var of local course{ <br>
+		. &emsp;&emsp; display _newline "ttest `var', by(gender)" <br>
+		. &emsp;&emsp; ttest `var', by(gender)<br>
+		. }
+		</span>
+	</p>
+	<p>
+		The difference is that the second method is faster and uses less memory. Besides, in case one would like to change the contents of the local macro <span class="g">course</span>, it also allows adding new elements to the end of the list in the loop.
+	</p>
+
+
+	<h4>appending many files</h4>
+	<p>
+		In some cases we have hundreds of files to append. Using a loop to automatically append all files in the directory for us could save us a lot of time otherwise spent on manually appending one file to another.
+	</p>
+	<p>
+		<span class="g">
+		. local dtafiles: dir . files "*.dta" <br>
+		. foreach file of local dtafiles{ <br>
+		. &emsp;&emsp;preserve <br>
+		. &emsp;&emsp;use `file', clear<br>
+		. &emsp;&emsp;save temp, replace<br>
+		. &emsp;&emsp;restore<br>
+		. &emsp;&emsp;append using temp<br>
+		. }<br>
+		. rm temp.dta<br>
+		. save filename, replace<br>
+		</span>
+	</p>
+	<p>
+		In this example, <span class="g">local dtafiles: dir . files "*.dta"</span> lists all Stata files in the current working directory. 
+	</p>
+	<p>
+		<span class="g">dir [“]<em>dir</em>[”] {files|dirs|other} [“]<em>pattern</em>[”]</span> is the macro extended function for file names.  Type <span class="g">help extended_fcn</span> to find out more.
+	</p>
+	<p>
+		<span class="g">rm [“]<em>filename</em>[”]</span> removes files stored on disk for Mac and Unix users. For Windows it is <span class="g">erase [“]<em>filename</em>[”]</span>.
+	</p>
+
+	<h3>forvalues</h3>
+	<p>
+		<span class="g">forvalues</span> loops over consecutive values.
+	</p>
+	<p>
+		<span class="g">
+		forvalues <em>loopname</em> = <em>range</em>{ <br>
+		&emsp;&emsp; ...<br>
+		}
+		</span>
+	</p>
+	<p>
+		Suppose we want to perform a series of t-tests on a single variable for each of its level: <br>
+		<span class="g">
+		. forvalues level = 1/3{ <br>
+		. &emsp;&emsp;display _newline "ttest calculus, level = `level'"<br>
+		. &emsp;&emsp;ttest calculus if cal_placement == `level', by(gender)<br>
+		. }
+		</span>
+	</p>
+	<p>
+		For this specific example, in fact we have a more efficient way to loop over each level, which is to use <span class="g">levelsof</span>. We will discuss below.
+	</p>
+
+	<h4>a quick note on number lists</h4>
+	<p>
+		<span class="g">#1(#2)#3</span>&emsp; from <span class="g">#1</span> to <span class="g">#3</span> with the increment of <span class="g">#2</span>; <span class="g">#2</span> can be negative<br>
+		<span class="g">#1/#2</span>&emsp;&emsp;&ensp;  <span class="g">#1</span> through <span class="g">#2</span><br>
+		<span class="g">#1 #2 #3</span>&emsp; <span class="g">#1</span>, <span class="g">#2</span> and <span class="g">#3</span>
+	</p>
+
+	<h3>Nested loops</h3>
+	<p>
+		Loops can be nested. 
+	</p>
+	<p>
+		To explain how it works let's perform another t-test.
+	</p>
+	<p>
+		<span class="g">
+		. local course calculus writing1 writing2<br>
+		. levelsof HSrank, local(level)<br>
+		. foreach x of local course{<br>
+		. &emsp;&emsp;foreach y of local level{ <br>
+		. &emsp;&emsp;&emsp;&emsp;display _newline "ttest `x' if HSrank =`y',by(gender)"<br>
+		. &emsp;&emsp;&emsp;&emsp;ttest `x' if HSrank == `y', by(gender)<br>
+		. &emsp;&emsp;}<br>
+		. }
+		</span>
+	</p>
+	<p>
+		Here we performed a t-test by <span class="g">gender</span> for every <span class="g">course</span> at each level of <span class="g">HSrank</span>. 
+	</p>
+	<p>
+		Let’s take a look at another example using nested loops to clean each file before appending, expanding on the example we have seen above.
+	</p>
+	<p>
+		<span class="g">
+		. local csvfiles: dir . files "tracking.log-*.csv"<br>
+		. foreach file of local csvfiles {<br>
+		. &emsp;&emsp;preserve<br>
+		. &emsp;&emsp;import delimited `file',clear<br>
+		. &emsp;&emsp;foreach id in "a" "b" "c" "d" "e" "f" "g"{<br>
+		. &emsp;&emsp;&emsp;&emsp;drop if username == "`id'"<br>
+		. &emsp;&emsp;}<br>
+		. &emsp;&emsp;drop event* context* page session host<br>
+		. &emsp;&emsp;save temp.dta, replace<br>
+		. &emsp;&emsp;restore<br>
+		. &emsp;&emsp;append using temp<br>
+		. }<br>
+		. rm temp.dta<br>
+		. save test, replace
+		</span>
+	</p>
+
+	<h3>while</h3>
+	<p>
+		<span class="g">while</span> runs and repeats the commands as long as the condition specified is true. 
+	</p>
+	<p>
+		<span class="g">
+		while <em>exp</em>{ <br>
+		&emsp;&emsp;... <br>
+		}
+		</span>
+	</p>
+	<p>
+		Here we have an example in the simplest form of how we may use <span class="g">while</span>. <br>
+		<span class="g">
+		. local i = 1<br>
+		. while `i'<=3{<br>
+		. &emsp;&emsp;display _newline "`i'"<br>
+		. &emsp;&emsp;sum gpa if placement == `i'<br>
+		. &emsp;&emsp;local i = `i'+1<br>
+		. }
+		</span>
+	</p>
+	<p>
+		We can further include <span class="g">else</span> statements. 
+	</p>
+	<p>
+		<span class="g">
+		while <em>exp</em>{<br>
+		&emsp;&emsp;if{<br>
+		&emsp;&emsp;&emsp;&emsp;...<br>
+		&emsp;&emsp;}<br>
+		&emsp;&emsp;else{<br>
+		&emsp;&emsp;&emsp;&emsp;...<br>
+		&emsp;&emsp;}<br>
+		&emsp;&emsp;...<br>
+		}
+		</span>
+	</p>
+	<p>
+		To expand on the last example: <br>
+		<span class="g">
+		. local i = 1<br>
+		. while `i'<=5{<br>
+		. &emsp;&emsp;if `i'<=3{<br>
+		. &emsp;&emsp;&emsp;&emsp;sum writing if interview == `i'<br>
+		. &emsp;&emsp;}<br>
+		. &emsp;&emsp;else{<br>
+		. &emsp;&emsp;&emsp;&emsp;sum application if interview == `i' <br>
+		. &emsp;&emsp;}<br>
+		. &emsp;&emsp;display _newline "`i'"<br>
+		. &emsp;&emsp;local i = `i'+1<br>
+		. }
+		</span>
+	</p>
+	<p>
+		Note the difference between the branching <span class="g">if</span> in <span class="g">if `i'<=3{}</span> and the conditional <span class="g">if</span> in <span class="g">if rep78 == `i'</span>.
+	</p>
+	<p>
+		We can include <span class="g">if/else</span> statements within <span class="g">if/else</span> statements.
+	</p>
+	<p>
+		<span class="g">
+		while <em>exp</em>{<br>
+		&emsp;&emsp;if{<br>
+		&emsp;&emsp;&emsp;&emsp;…<br>
+		&emsp;&emsp;}<br>
+		&emsp;&emsp;else{<br>
+		&emsp;&emsp;&emsp;&emsp;if{<br>
+		&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;…<br>
+		&emsp;&emsp;&emsp;&emsp;}<br>
+		&emsp;&emsp;&emsp;&emsp;else{<br>
+		&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;…<br>
+		&emsp;&emsp;&emsp;&emsp;}<br>
+		&emsp;&emsp;&emsp;&emsp;…<br>
+		&emsp;&emsp;}<br>
+		&emsp;&emsp;…<br>
+		}
+		</span>
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

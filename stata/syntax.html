@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Syntax, or How to Speak Stata</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+	
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Syntax, or How to Speak Stata</h1>
+	
+	<h2>Syntax</h2>
+	<p>Syntax is the grammar of Stata commands.</p>
+		<p><span class="g">
+			[by <em>varlist</em>]: <em>command</em> [<em>varlist</em>] [=<em>exp</em>] [if <em>exp</em>] [in <em>range</em>] [<em>weight</em>] [using <em>filename</em>][, <em>options</em>] 
+		</span></p>
+		<p>Except for the <span class="g">command</span> itself, everything else in the brackets are optional.</p>
+		<p>
+			<span class="g">[by <em>varlist</em>]</span> repeats the command on each subset of data. Data must be sorted by <span class="g">varlist</span> (variable list) before we use <span class="g">by</span>. If no variable list is specified, Stata assumes all variables will be used.  Alternatively, use <span class="g">bysort</span> to do both <span class="g">by</span> and <span class="g">sort</span>. <br>
+			<span class="g">
+			. sysuse auto <br>
+			. sort foreign<br>
+			. by foreign: tab rep78<br></span>
+			or <br>
+			<span class="g">. bysort foreign: tab rep78 </p></span>
+			<pre><code>
+-----------------------------------------------------------
+-&gt; foreign = Domestic
+      
+     Repair |
+Record 1978 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |          2        4.17        4.17
+          2 |          8       16.67       20.83
+          3 |         27       56.25       77.08
+          4 |          9       18.75       95.83
+          5 |          2        4.17      100.00
+------------+-----------------------------------
+      Total |         48      100.00
+      
+-------------------------------------------------------------
+-&gt; foreign = Foreign
+      
+     Repair |
+Record 1978 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          3 |          3       14.29       14.29
+          4 |          9       42.86       57.14
+          5 |          9       42.86      100.00
+------------+-----------------------------------
+      Total |         21      100.00
+      
+      		</code></pre>
+		<p>
+			The <span class="g">by</span> prefix is not the same as the <span class="g">by</span> option, which groups a variable in hierarchical data. <!-- In addition to the <span class="g">by</span> prefix, Stata has a number of other command prefixes. Type <span class="g">help prefix</span> for a thorough list. -->
+		</p>
+		<p>
+			<span class="g">[= <em>exp</em>]</span> is an algebraic expression specifying the value to be assigned to a variable.
+		</p>
+		<p>
+			<span class="g">[if <em>exp</em>]</span>  restricts  the commands to perform on a subset of observations that satisfy the conditions.
+			</p>
+		<p>
+			<span class="g">[in <em>range</em>]</span> specifies an observation range. Negative integers mean “from the end of the data” (e.g. <span class="g">-1</span> refers to the last observation).  <span class="g">f</span> refers to the first observation, and <span class="g">l</span> refers to the last observation. <br>
+			<span class="g">. sort price <br>
+			. list make-rep78 in f/10 <br></span>
+			lists the make and model, repair record, price and mileages of ten cars whose prices are the lowest.
+			<pre><code>
+     +--------------------------------------+
+     | make             price   mpg   rep78 |
+     |--------------------------------------|
+  1. | Merc. Zephyr     3,291    20       3 |
+  2. | Chev. Chevette   3,299    29       3 |
+  3. | Chev. Monza      3,667    24       2 |
+  4. | Toyota Corolla   3,748    31       5 |
+  5. | Subaru           3,798    35       5 |
+     |--------------------------------------|
+  6. | AMC Spirit       3,799    22       . |
+  7. | Merc. Bobcat     3,829    22       4 |
+  8. | Renault Le Car   3,895    26       3 |
+  9. | Chev. Nova       3,955    19       3 |
+ 10. | Dodge Colt       3,984    30       5 |
+     +--------------------------------------+
+      		</code></pre>
+		</p>
+		<p>
+			<span class="g">[<em>weight</em> = <em>exp</em>]</span> is a weighting expression to attach weight to each observation. <br>
+			<span class="g">. sysuse census <br>
+			. sum medage [weight = pop] <br></span>
+			summarizes the median age weighted by the population in 50 states of the U.S. 
+			<pre><code>
+(analytic weights assumed)
+      
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      medage |      50   225907472    30.11047    1.66933       24.2       34.7
+      
+      	</code></pre>
+		</p>
+<!-- 		<p>Type <span class="g">help weight</span> for more instructions.</p>
+ -->		<p>
+			<span class="g">[using <em>filename</em>]</span> reads or writes files. We have introduced how Stata reads and writes files <a class="internal" href="Reading-and-Saving-Files.html">here</a>.
+		</p>
+		<p>
+			<span class="g">[,<em>options</em>]</span> gives a list of options following the comma. Search the help files to learn more for each command that allows for different options.
+		</p>
+
+		<h3>Abbreviation</h3>
+		<p>
+			Stata commands can be abbreviated. For instance, instead of using <span class="g">summarize</span>, we can use <span class="g">sum</span>.</p>
+		<p>
+			Type <span class="g">help <em>command</em></span> to find out how each command can be abbreviated by looking at where they are underlined (e.g. <span class="g"><u>su</u>mmarize</span> means that the shortest legitimate form of <span class="g">summarize</span> is <span class="g">su</span>).</p>
+	
+	<h3>Case-sensitivity</h3>
+		<p>Stata commands are case-sensitive and must all be in lowercase. </p>
+
+	
+	<h2>Operators</h2>
+		<h3>Arithmetic</h3>
+		<p>
+			<span class="g">+</span> addition<br>
+			<span class="g">-</span> subtraction or negation<br>
+			<span class="g">*</span> multiplication<br>
+			<span class="g">/</span> division<br>
+			<span class="g">^</span> exponentiation
+		</p>
+		<h3>String</h3>
+		<p>
+			<span class="g">+</span> concatenation<br>e.g. “nyu”+”sh” produces “nyush” <br> <br>
+			<span class="g">*</span> duplication<br>e.g. “nyu”*2 produces “nyunyu” <br> <br>
+			<span class="g">
+				. input str20 A str20 B <br>
+				. "nyu" "sh" <br>
+				. "nyu" "ny" <br>
+				. end <br>
+				. gen C = A + B <br>
+				. gen D = A*2 <br>
+				. list
+			</span>	
+			<pre><code>
+     +---------------------------+
+     |   A    B       C        D |
+     |---------------------------|
+  1. | nyu   sh   nyush   nyunyu |
+  2. | nyu   ny   nyuny   nyunyu |
+     +---------------------------+
+      
+      		</code></pre>
+		</p>
+
+		<h3>Relational</h3>
+		<p>Relational expressions return results that are either true or false.</p>
+		<p>
+			<span class="g">==</span> equal<br>
+			<span class="g"><</span> less than<br>
+			<span class="g">></span> greater than<br>
+			<span class="g">>=</span> greater than or equal to<br>
+			<span class="g"><=</span> less than or equal to <br>
+			<span class="g">!=</span> (or <span class="g">~=</span>) not equal to 
+		</p>
+		<p>Relational operators can be used on both numbers and strings. For instance, both 2>1 and “newyork”>”abudhabi” are true.</p>
+		<p>Note that <span class="g">= <em>exp</em></span> is for assignment and <span class="g">==</span>  is for comparison. <br>
+			<span class="g">
+				. sysuse auto <br>
+				. replace rep78 = 99 if rep78 == . <br>
+			</span>
+			first evaluates if the value is missing and then assigns 99 to replace the missing values.
+		</p>
+		<h4>Logical</h4>
+		<p>The logical operators return 1 for true and 0 for false.</p>
+		<p><span class="g">&</span> and<br>
+			<span class="g">|</span> or (called the “pipe”)<br>
+		<span class="g">!</span> (or <span class="g">~</span>) not
+		</p>
+		<p><span class="g">. list make price mpg rep78 if price > 10000 & mpg > 30 |rep78 <= 2</span> lists car models that meet all the conditions. <br> <br>
+			It is the same as <br>
+			<span class="g">. list make price mpg rep78 if (price > 10000 |rep78 <= 2) & (mpg > 30 |rep78 <= 2)</span>
+		<pre><code>
+    +------------------------------------------+
+    | make                 price   mpg   rep78 |
+    |------------------------------------------|
+12. | Cad. Eldorado       14,500    14       2 |
+17. | Chev. Monte Carlo    5,104    22       2 |
+18. | Chev. Monza          3,667    24       2 |
+21. | Dodge Diplomat       4,010    18       2 |
+22. | Dodge Magnum         5,886    16       2 |
+    |------------------------------------------|
+23. | Dodge St. Regis      6,342    17       2 |
+40. | Olds Starfire        4,195    24       1 |
+46. | Plym. Volare         4,060    18       2 |
+48. | Pont. Firebird       4,934    18       1 |
+52. | Pont. Sunbird        4,172    24       2 |
+    +------------------------------------------+
+      	</code></pre>
+		Note how it differs from what we would get if we run <br>
+		<span class="g">. list make price mpg rep78 if price > 10000 & (mpg > 30 | rep78 <= 2) </span>
+		<pre><code>
+    +--------------------------------------+
+    | make             price   mpg   rep78 |
+    |--------------------------------------|
+12. | Cad. Eldorado   14,500    14       2 |
+    +--------------------------------------+
+      </code></pre>
+		</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+name: popup
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3200695
+bundleId: 3842082
+url: https://yundai.shinyapps.io/popup/
+when: 1604999799.65322

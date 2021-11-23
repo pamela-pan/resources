@@ -1,0 +1,223 @@
+---
+title: "global"
+author: "Yun Dai"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+---
+
+```{r echo=FALSE}
+knitr::opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/websites/new web/archived/r sample files/globalR") 
+```
+
+******
+This page includes a small portion of the global.R script for running the App, but should be representative of many scenarios discussed in the series of posts.
+
+******
+Load all libraries that will be needed.
+```{r message=FALSE}
+library(readxl)
+library(dplyr)
+library(stringr)
+library(data.table)
+library(ggplot2)
+```
+
+******
+Load data. Define the color palette that will be used later in plotting.
+```{r message=FALSE}
+load("survey")
+
+# color palette
+palette <- list(purple = c("#351F39", "#351C4D", "#6c1f55", "#765285", "#8a6899" ),
+                turquoise = c("#709FB0", "#849974", "#A0C1B8"),
+                golden = c("#D1A827", "#f3da4c"))
+```
+
+******
+### Summary table
+```{r message=FALSE}
+set <- survey[c("Q7.3", "Q7.2", "Q7.4", "country")]
+tb <- replicate(length(set), data.frame(), simplify=FALSE)
+for (m in 1:length(set)){
+  tb[m] <- list(data.frame(table(set[m])))
+  tb[[m]]$`%` <- round(tb[[m]]$Freq/320 *100, 2)
+  names(tb[[m]]) <- c("", "#", "%")
+  tb[[m]] <- tb[[m]][order(tb[[m]]$`#`,decreasing = T),]
+}
+## replicate() creates a list of 4 df; each df for one summary table
+## tb[m] <- list() adds one df by another
+## tb[[m]] extracting df
+## tb[[m]][order(tb[[m]]$`#`,decreasing = T),] orders rows by freq
+
+for (i in 1:4){
+  colnames(tb[[i]])[1] <- c("Student Status", "Country / Region", "Major", "country")[i]
+}
+
+tb[[2]][,2:3] <- NULL 
+
+tb
+```
+
+******
+### Service use
+Define groups for questions of multiple choices.
+```{r message=FALSE}
+g <- list(status = c("Freshman", "Sophomore", "Junior", "Senior", "Study Away", "Graduate/Joint Program") ,
+          country = c("China", "U.S.", "Other"),
+          major = c("Science, CS, Engineering, Mathematics", 
+                    "Business, Finance, Economics", 
+                    "Humanities, Social Sciences", 
+                    "Data Science, Interactive Media Business", 
+                    "Interactive Media Arts"))
+```
+
+******
+#### Visiting Library 
+```{r message=FALSE}
+## Q2.2: My top reasons for visiting Library
+
+Reason <- c("Work on a class assignment/paper", 
+            "Watch video or listen audio", "Use specialized databases \\(e.g. Bloomberg, Wind\\)",
+            "Use a library computer",  "Use a group study room", "Print, photocopy, scan",  "Other", 
+            "Meet up with friends" , "Hang out between classes", 
+            "Get readings from Course Reserve", "Get help from a librarian", "Find a quiet place to study",
+            "Borrow books and materials", "Attend a library workshop")
+
+r <- data.frame(survey$status, survey$country, survey$major2)
+for (m in 1: length(Reason)){
+  r[,Reason[m]] <- str_extract(survey$Q2.2, Reason[m])
+}
+
+dtset <- replicate(3, data.frame(Reason), simplify = FALSE)
+for (i in 1:3){
+  levels(dtset[[i]]$Reason)[levels(dtset[[i]]$Reason) == "Use specialized databases \\(e.g. Bloomberg, Wind\\)"] <- "Use specialized databases (e.g. Bloomberg, Wind)"
+}
+
+for (m in 1:length(dtset)){
+  for (n in 1:length(g[[m]])){
+    subgroup <- r[r[,m] == g[[m]][n], (length(g)+1):(length(Reason) + length(g))]
+    dtset[[m]][,g[[m]][n]] <- apply(subgroup, 2, function(x) length(which(!is.na(x))))
+  }
+  dtset[[m]]$Total<- rowSums(dtset[[m]][,2:n], na.rm = TRUE, dims = 1)
+  dtset[[m]] <- dtset[[m]][order(dtset[[m]]$Total,decreasing = T),]
+}
+
+## m denotes how many groups we have. We have 3 groups: country/status/major
+## n denotes how many elements we have in each group. e.g. 3 elements in the group "country" (China, U.S., Other)
+
+Reason2 <- c("Work on a class assignment/paper", "Watch video or listen audio", 
+             "Use specialized databases (e.g. Bloomberg, Wind)",
+             "Use a library computer",  "Use a group study room", "Print, photocopy, scan",  "Other", 
+             "Meet up with friends", "Hang out between classes", "Get readings from Course Reserve", 
+             "Get help from a librarian", "Find a quiet place to study",
+             "Borrow books and materials", "Attend a library workshop")
+l <- data.frame(Reason = Reason2, Level = c("High","Low","Low","Medium","Medium","High","Low","Medium","Low","Medium","Low","High","High","Low"))
+
+for (i in 1:3){
+  dtset[[i]] <- dtset[[i]] %>% left_join(l, by = "Reason")
+}
+## labeling; for grouping in graphing
+
+dtset
+```
+
+******
+### Space and study habit
+#### Space Preference: Most Days - ranking
+```{r message=FALSE}
+survey <- survey %>% mutate(
+  mostdays_crowded = ifelse(is.na(Q2.5_0_15_RANK), Q2.5_0_1_RANK, NA),
+  mostdays_crowded = ifelse(is.na(Q2.5_0_1_RANK), Q2.5_0_15_RANK, mostdays_crowded),
+  mostdays_modpop = ifelse(is.na(Q2.5_0_16_RANK), Q2.5_0_9_RANK, NA),
+  mostdays_modpop = ifelse(is.na(Q2.5_0_9_RANK), Q2.5_0_16_RANK, mostdays_modpop),
+  mostdays_noisy = ifelse(is.na(Q2.5_0_17_RANK), Q2.5_0_3_RANK, NA),
+  mostdays_noisy = ifelse(is.na(Q2.5_0_3_RANK), Q2.5_0_17_RANK, mostdays_noisy),
+  mostdays_quiet = ifelse(is.na(Q2.5_0_18_RANK), Q2.5_0_4_RANK, NA),
+  mostdays_quiet = ifelse(is.na(Q2.5_0_4_RANK), Q2.5_0_18_RANK, mostdays_quiet),
+  mostdays_silent = ifelse(is.na(Q2.5_0_19_RANK), Q2.5_0_5_RANK, NA),
+  mostdays_silent = ifelse(is.na(Q2.5_0_5_RANK), Q2.5_0_19_RANK, mostdays_silent),
+  mostdays_relaxed = ifelse(is.na(Q2.5_0_20_RANK), Q2.5_0_6_RANK, NA),
+  mostdays_relaxed = ifelse(is.na(Q2.5_0_6_RANK), Q2.5_0_20_RANK, mostdays_relaxed),
+  mostdays_focused = ifelse(is.na(Q2.5_0_21_RANK), Q2.5_0_7_RANK, NA),
+  mostdays_focused = ifelse(is.na(Q2.5_0_7_RANK), Q2.5_0_21_RANK, mostdays_focused)
+)
+## keep only if one of the pair is missing and the other non-missing
+## this is due to how the Qualtrics survey was designed; not important for our purpose here
+
+days_status <- 
+  data.frame(survey %>% group_by(status) %>% summarise(mostdays_crowded = round(mean(mostdays_crowded, na.rm =TRUE),2))) %>% 
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(mostdays_modpop = round(mean(mostdays_modpop, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(mostdays_noisy = round(mean(mostdays_noisy, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(mostdays_quiet = round(mean(mostdays_quiet, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(mostdays_silent = round(mean(mostdays_silent, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(mostdays_relaxed = round(mean(mostdays_relaxed, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(mostdays_focused = round(mean(mostdays_focused, na.rm =TRUE),2)))) %>%
+  rename(`crowded` = mostdays_crowded, `moderately populated` = mostdays_modpop, 
+         `noisy` = mostdays_noisy, `quiet (occasional whispers)` = mostdays_quiet, 
+         `(close to) silent` = mostdays_silent, `relaxed, cozy or homey` = mostdays_relaxed,
+         `focused` = mostdays_focused, `G` = status) %>% 
+  melt()
+
+## same for creating the country and major matrices 
+```
+
+******
+#### Space Preference: Most Days - multiple options
+```{r message=FALSE}
+## Q2.5_0_GROUP: most days
+
+Place <- c("crowded", "moderately populated", "noisy", "quiet \\(occasional whispers\\)", "\\(close to\\) silent", "relaxed, cozy or homey", "focused")
+
+p1 <- data.frame(survey$status, survey$country, survey$major2)
+for (m in 1:length(Place)){
+  p1[,Place[m]] <- str_extract(survey$Q2.5_0_GROUP, Place[m])
+}
+
+dtset4 <- replicate(3, data.frame(Place), simplify = FALSE)
+for (m in 1:length(dtset4)){
+  for (n in 1:length(g[[m]])){
+    subgroup4 <- p1[p1[,m] == g[[m]][n], (length(g)+1):(length(Place) + length(g))]
+    dtset4[[m]][,g[[m]][n]] <- apply(subgroup4, 2, function(x) length(which(!is.na(x))))
+  }
+  dtset4[[m]]$Total<- rowSums(dtset4[[m]][,2:n], na.rm = TRUE, dims = 1)
+}
+
+for (i in 1:3){
+  levels(dtset4[[i]]$Place)[levels(dtset4[[i]]$Place) == "quiet \\(occasional whispers\\)"] <- "quiet (occasional whispers)"
+  levels(dtset4[[i]]$Place)[levels(dtset4[[i]]$Place) == "\\(close to\\) silent"] <- "(close to) silent"
+}
+
+dtset4
+```
+
+```{r message=FALSE}
+## grand matrix - most days
+days_status <- days_status %>% 
+  left_join(rename(melt(dtset4[[1]]), `G` = variable, `variable` = Place, `count` = value ), by = c("G", "variable")) 
+days_status$G <- factor(days_status$G, levels = c("Freshman", "Sophomore", "Junior", "Senior", 
+                                                  "Graduate/Joint Program", "Study Away"))
+
+## same for creating the country and major matrices 
+```
+
+
+******
+#### Space Preference: Student Submissions
+```{r message=FALSE}
+lib <- unlist(strsplit(survey$Q2.3.y, ","))
+lib <- str_trim(lib, side = "both")
+lib <- lib[!lib %in% c("NULL")]
+lib <- data.frame(table(lib)) %>% arrange(-Freq)
+
+color1 <- rep(c(palette[[1]][4], palette[[2]][1], palette[[3]][1], palette[[2]][2], palette[[2]][3], palette[[3]][2]),
+              length.out=nrow(lib))
+
+## for later use in wordcloud2 package
+
+lib
+```
+

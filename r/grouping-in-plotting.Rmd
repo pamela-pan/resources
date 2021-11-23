@@ -1,0 +1,196 @@
+---
+title: "Grouping in Plotting"
+author: "Yun Dai"
+date: "08/2018"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+This post was adapted from a section in [The Jigsaw Puzzle Pieces - Creating the Graphs with ggplot2](https://shanghai.hosting.nyu.edu/data/r/case-1-2-ggplot2.html), Part II of a series of posts on building Shiny App. There we introduced several ways of grouping in plotting. 
+
+## First Steps
+As usual, before we begin, let's load all the packages we will need.
+```{r warning=FALSE, message=FALSE}
+library(dplyr)
+library(stringr)
+library(data.table)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+```
+
+### Sample data 
+```{r message=FALSE, warning=FALSE}
+## setwd()
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/survey")
+
+head(survey)
+```
+
+### Color palette 
+We'll create a list of a color palette. This will make working with colors more easily later in plotting.
+```{r message=FALSE, warning=FALSE}
+palette <- list(purple = c("#351F39", "#351C4D", "#6c1f55", "#765285", "#8a6899"),
+                turquoise = c("#709FB0", "#849974", "#A0C1B8"),
+                golden = c("#D1A827", "#f3da4c"))
+```
+
+******
+## Visually Grouping Data
+Let's say we want to visualize the distribution of top reason of visiting library (`top_reason`) by groups. We will use this subsample as a demo to show ways of visually grouping data.
+
+[Previously](https://shanghai.hosting.nyu.edu/data/r/case-1-1-preprocessing.html) we've created a data frame `dtset` summarizing top reason of visiting library by country. We did quite some work of reshaping (copied and pasted below).
+```{r message=FALSE, warning=FALSE}
+Reason <- c("Work on a class assignment/paper", "Watch video or listen audio", "Use specialized databases \\(e.g. Bloomberg, Wind\\)", "Use a library computer", "Use a group study room", "Print, photocopy, scan", "Other", "Meet up with friends", "Hang out between classes", "Get readings from Course Reserve", "Get help from a librarian", "Find a quiet place to study", "Borrow books and materials", "Attend a library workshop")
+
+r <- data.frame(survey$country)
+for (m in 1: length(Reason)){
+  r[,Reason[m]] <- str_extract(survey$top_reason, Reason[m])
+}
+
+dtset <- data.frame(Reason)
+levels(dtset$Reason)[levels(dtset$Reason) == "Use specialized databases \\(e.g. Bloomberg, Wind\\)"] <- "Use specialized databases (e.g. Bloomberg, Wind)"
+
+g <- c("China", "U.S.", "Other")
+for (n in 1:length(g)){
+  dtset[,g[n]] <- apply(r[r[] == g[n], 2:15], 2, function(x) length(which(!is.na(x))))
+}
+
+dtset$Total<- rowSums(dtset[,2:4], na.rm = TRUE, dims = 1)
+dtset <- dtset[order(dtset$Total,decreasing = T),]
+
+dtset
+```
+
+We will use the data for all demos below. 
+
+******
+### Coloring
+Let's say we want to plot the distribution of top visits and make the contrast more visible among groups. One way to achieve the goal is to color the levels in groups. Specifically, we decide to group the frequencies as "high", "medium" and "low".
+
+We first code the levels.
+```{r message=FALSE, warning=FALSE}
+Reason2 <- c("Work on a class assignment/paper", "Watch video or listen audio", "Use specialized databases (e.g. Bloomberg, Wind)", "Use a library computer",  "Use a group study room", "Print, photocopy, scan",  "Other", "Meet up with friends", "Hang out between classes", "Get readings from Course Reserve", "Get help from a librarian", "Find a quiet place to study", "Borrow books and materials", "Attend a library workshop")
+
+l <- data.frame(Reason = Reason2, Level = c("High","Low","Low","Medium","Medium","High","Low","Medium","Low","Medium","Low","High","High","Low"))
+## label the frequency level
+## the standard may be a bit arbitrary
+
+dtset <- dtset %>% left_join(l, by = "Reason")
+```
+
+The rest is standard plotting.
+```{r message=FALSE, warning=FALSE}
+ggplot(dtset, aes(x = reorder(Reason, Total), y = Total, fill = factor(Level, levels = c("High","Medium","Low")))) + 
+  geom_bar(stat = "identity", alpha = 0.75) + 
+  scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1]), name="Level of\nFrequency") +
+##  \n in "Level of\nFrequency" breaks the line
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12, margin = margin(0,3,0,0)),
+        axis.title.y = element_blank(),
+        axis.title.x = element_text(size = 12, margin = margin(15,0,0,0)),
+        axis.ticks.x = element_line(size = 0),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        plot.margin = unit(c(0,0,1,0), "cm")) 
+```
+
+******
+### Facets
+Now let's say we want to plot the distribution of top visits by country. This can be done with "facets" - we will get panels within one plot for each subgroup.
+
+To support the graphing needs, we need to reshape the `dtset` data frame into long format.
+```{r message=FALSE, warning=FALSE}
+dtset2 <- dtset %>% melt()
+dtset2
+```
+
+The `facet_wrap()` option allows us to plot by groups.
+```{r message=FALSE, warning=FALSE}
+ggplot(dtset2, aes(value, reorder(Reason, value))) +
+  geom_segment(aes(x = 0, y = reorder(Reason, value), xend = value, yend = reorder(Reason, value)), size = 0.3, color = "grey50") +
+  geom_point(color = palette[[1]][4], size = 2) +
+  facet_wrap(~variable, nrow = 2) +
+## produces the facets in two rows  
+  theme(axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10, margin = margin(0,5,0,0)),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_line(size = 0),
+        strip.text = element_text(size=12)) 
+```
+
+
+******
+### Combining graphs
+Another scenario of grouping plots is "combining graphs". Facets work on subgroups, but combining puts plots of different topics and types into one graph rather than plots subgroups on one graph. 
+
+For instance, we can combine "top reason of visiting library" and "distribution of survey participants"; but we will use faceting for plotting "top reason of visiting library (U.S.)" and "top reason of visiting library (other international students)".
+
+Below we will create a combined plot on student submissions of “My favorite place to study in Library” with user preference on study environment.
+
+```{r message=FALSE, warning=FALSE}
+rank_status <- 
+  data.frame(survey %>% group_by(status) %>% summarise(rank_crowded = round(mean(rank_crowded, na.rm =TRUE),2))) %>% 
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_modpop = round(mean(rank_modpop, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_noisy = round(mean(rank_noisy, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_quiet = round(mean(rank_quiet, na.rm =TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_silent = round(mean(rank_silent, na.rm =TRUE),2)))) %>%
+  rename(`crowded` = rank_crowded, `moderately populated` = rank_modpop, `noisy` = rank_noisy, `quiet (occasional whispers)` = rank_quiet, `(close to) silent` = rank_silent) 
+
+rank_status <- rank_status %>% melt()
+
+c1 <-
+      ggplot(rank_status, aes(x = variable, y = status)) +
+        geom_tile(aes(fill = value), alpha = 0.95)+
+        scale_fill_gradient(high = "white", low = palette[[2]][1]) +
+        geom_text(aes(label = value), size = 2.5, alpha = 0.9)+
+        scale_y_discrete(limits = rev(levels(rank_status$status))) +
+        theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1),
+              axis.text.y = element_text(size = 12, margin = margin(0,3,0,0)),
+              axis.title.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.ticks.x = element_line(size = 0),
+              plot.subtitle = element_text(size = 10, margin = margin(0,0,15,0)),
+              legend.title = element_blank(),
+              legend.position = "none",
+              plot.margin = unit(c(1,1,1,1), "cm")) +
+        labs(subtitle = "  * Average scores of ranking (1 to 6). Note: limited cases in each group.") 
+
+c1
+```
+
+```{r message=FALSE, warning=FALSE}
+lib <- unlist(strsplit(survey$space_lib, ","))
+lib <- str_trim(lib, side = "both")
+lib <- lib[!lib %in% c("NULL")]
+lib <- data.frame(lib) %>% count(lib) %>% data.frame() %>% arrange(-n)
+
+c2 <-
+  ggplot(lib, aes(n, reorder(lib, -n), label = n)) +
+  geom_segment(aes(x = 0, y = reorder(lib, -n), xend = n, yend = reorder(lib, -n)), 
+               size = 0.5, color = "grey50") +
+  geom_point(size = 5) +
+  geom_text(color = "white", size = 2) +
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_line(size = 0))
+
+c2
+```
+
+```{r fig.height = 7}
+grid.arrange(c1, c2, nrow = 1, top = textGrob("Study Space Preference", gp = gpar(fontsize = 10)))
+```
+
+As you may say, the combination is a bit arbitrary and the combined plot is not so beautiful. But I want to show you the rationale of using "combining graphs" rather than "facets". 

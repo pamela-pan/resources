@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Describing Your Data</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Describing Your Data</h1>
+
+		<p>
+			We use <span class="g">describe</span>, <span class="g">codebook</span>, <span class="g">list</span>, and <span class="g">count</span> to describe variables to get a sense of our data.
+		</p>
+	
+		<h2>describe</h2>
+		<p>
+			<span class="g">describe</span> produces a summary of the dataset, including its storage type, display format, value label and variable label.  
+		</p>
+		<p>
+			If no variable is specified, <span class="g">describe</span> will describe every variable in the dataset. <br>
+			<span class="g">. sysuse auto <br>
+			. describe m* </span><br>
+			<pre><code>
+              storage   display    value
+variable name   type    format     label      variable label
+-------------------------------------------------------------------
+make            str18   %-18s                 Make and Model
+mpg             int     %8.0g                 Mileage (mpg)
+      		</code></pre>
+			This gives us all variables whose names start with <span class="g">m</span>, which are <span class="g">make</span> and <span class="g">mpg</span>. 
+		</p>
+
+		<h2>codebook</h2>
+		<p>
+			<span class="g">codebook</span> produces more information than <span class="g">describe</span> does. It gives descriptive statistics for numeric variables and a sample of observations for string variables, in addition to the variable names, labels, and data type. <br>
+			<span class="g">
+			. sysuse auto <br>
+			. codebook m* </span><br>
+			<pre><code>
+---------------------------------------------------------------------------------------------------
+make                                                                                 Make and Model
+---------------------------------------------------------------------------------------------------
+      
+                  type:  string (str18), but longest is str17
+      
+         unique values:  74                       missing &quot;&quot;:  0/74
+      
+              examples:  &quot;Cad. Deville&quot;
+                         &quot;Dodge Magnum&quot;
+                         &quot;Merc. XR-7&quot;
+                         &quot;Pont. Catalina&quot;
+      
+               warning:  variable has embedded blanks
+      
+---------------------------------------------------------------------------------------------------
+mpg                                                                                   Mileage (mpg)
+---------------------------------------------------------------------------------------------------
+      
+                  type:  numeric (int)
+      
+                 range:  [12,41]                      units:  1
+         unique values:  21                       missing .:  0/74
+      
+                  mean:   21.2973
+              std. dev:    5.7855
+      
+           percentiles:        10%       25%       50%       75%       90%
+                                14        18        20        25        29
+			</code></pre>
+		</p>
+		
+		<h2>list</h2>
+		<p>
+			<span class="g">list</span> lists values of the variables. <br>
+			<span class="g">
+				. sysuse auto <br>
+				. list make-rep78 in 10/20 if price > 6000, table</span> lists the values of the variables from <span class="g">make</span> to <span class="g">rep78</span> from the 10th to 20th rows, whose prices are greater than 6000, in the form of a table. 
+			<pre><code>
+    +--------------------------------------+
+    | make             price   mpg   rep78 |
+    |--------------------------------------|
+11. | Cad. Deville    11,385    14       3 |
+12. | Cad. Eldorado   14,500    14       2 |
+13. | Cad. Seville    15,906    21       3 |
+    +--------------------------------------+
+			</code></pre>
+		</p>
+
+		<h2>count</h2>
+		<p>
+			<span class="g">count</span> counts the number of observations that satisfy the specified conditions. <br>
+			<span class="g">
+				. sysuse auto <br>
+				. count in 10/20 if price > 6000</span> counts the number of observations from the 10th to 20th rows and whose prices are greater than 6000. We have <span class="g">3</span> such cases in the sample. 
+		</p>
+		</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+
+</body>
+</html>

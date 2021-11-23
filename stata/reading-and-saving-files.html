@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Reading and Saving Files</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+	
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Reading and Saving Files of Various Types</h1>
+		<p>
+			Reading and writing Stata binary files is much faster than using text files. We may want to work with a file in Stata format as early as possible.
+		</p>
+
+
+		<h2>Read and save Stata files (.dta)</h2>
+		<p>
+			Stata will always go to the current working directory when working with files. 
+		</p>
+		<p>
+			<span class="g">use <em>filename</em>, clear</span> loads a Stata file (.dta) from the current working directory. 
+			<span class="g">clear</span> clears the memory for Stata to load a new file. If the workspace is already clear, we can skip that as well.
+		</p>
+		<p>
+			<span class="g">save <em>filename</em>, replace</span> saves a Stata file to the current working directory. 
+			<span class="g">replace</span> overwrites the file saved earlier with the same file name. If such a file does not exist, we can skip the <span class="g">replace</span> option.
+		</p>
+		<p>
+			To load a file located in a subdirectory under the working directory, we need to specify the relative path. <br>
+			<span class="g">. use folder/mydata.dta, clear</span>
+		</p>
+		<p>
+			To tell Stata to read a file elsewhere, we need to specify a full path. <br>
+			<span class="g">. use ~/elsewhere/mydata.dta, clear</span>
+		</p>
+		<p>
+			We can also read a file over the Internet. <br>
+			<span class="g">. use http://www.stata-press.com/data/r14/auto, clear</span>
+		</p>
+		<p>
+			<span class="g">sysuse</span> loads example datasets installed with Stata <br>
+			<span class="g">. sysuse auto, clear</span>
+		</p>
+
+		<h2>Read and save delimited text files (.csv, .txt)</h2>
+		<p>
+			<span class="g">import/export delimited</span> reads/saves text-delimited files. The data can be tab-separated (often .txt) or comma-separated (.csv). If the extension is not specified, Stata assumes that it is a .csv file. <br>
+			<span class="g">. import delimited <em>filename</em>, clear</span><br>
+			<span class="g">. import delimited <em>var1 var2 var3 </em> using <em> filename.csv</em>, clear</span>
+			loads the dataset and names the three variables <span class="g">var1, var2</span> and <span class="g">var3</span>. <br>
+			<span class="g">. export delimited output.txt, delimiter(tab)</span> exports a file and saves it as a tab-delimited text file.
+		</p>
+
+		<h3>A Case</h3>
+		<p>
+			Sometimes we need to take a few more steps to read a text file. Let's look at a real case. 
+		</p>
+		<p>
+			Let's say we have a text file downloaded from a database and we tried to read it into Stata by<br>
+			<span class="g">. import delimited output.txt</span> <br>
+			<span class="g">. list in 1/10</span>
+		</p>
+		<pre><code>
+     +-------------------------------------------------------------------------------------------+
+     | v1                                                                                        |
+     |-------------------------------------------------------------------------------------------|
+  1. |                                                                                           |
+  2. |                                                                                        .. |
+  3. |                                                                                           |
+  4. | ticker      evtdate       car                                                             |
+  5. |  EGAS     12FEB2014     0.02356                                                           |
+     |-------------------------------------------------------------------------------------------|
+  6. |  EGAS     27JUL2012    -0.00276                                                           |
+  7. |  HGR      03JUL2002     0.01478                                                           |
+  8. |  HGR      03MAY2005    -0.05070                                                           |
+  9. |  HGR      05AUG2002     0.02337                                                           |
+ 10. |  HGR      20JAN2004     0.04206                                                           |
+     +-------------------------------------------------------------------------------------------+
+		</code></pre>
+		<p>
+			We can see that all variables are squeezed into one column "v1", that there are empty rows, and that the variable names actually are the fourth row. To fix those problems, first let's try <br>
+			<span class="g">. import delimited output.txt, rowrange(4:l) varnames(4) delimiters(space) </span> <br>
+			<span class="g">. list ticker-car in 1/5</span> <br> <br>
+			<span class="g">rowrange(4:l)</span> reads data from the fourth to the last row (<span class="g">l</span> stands for "last").  <span class="g">varnames(4)</span> means the fourth row is for the variable names. <span class="g">delimiters(space)</span> tells Stata to use space as the delimiters.
+		</p>
+		<pre><code>
+     +--------------------------------------------------------------------------------------------------------+
+     | ticker     v2   v3   v4   v5   v6     evtdate          v8   v9   v10       v11      v12      v13   car |
+     |--------------------------------------------------------------------------------------------------------|
+  1. |          EGAS    .    .    .    .   12FEB2014                                .   .02356        .       |
+  2. |          EGAS    .    .    .    .   27JUL2012                          -.00276        .        .       |
+  3. |           HGR    .    .    .    .               03JUL2002                    .        .   .01478       |
+  4. |           HGR    .    .    .    .               03MAY2005                    .   -.0507        .       |
+  5. |           HGR    .    .    .    .               05AUG2002                    .        .   .02337       |
+     +--------------------------------------------------------------------------------------------------------+			
+		</code></pre>
+		<p>
+			Now the first few empty rows have been removed; and (some) variables are properly named. However, there was something not right. We had three variables, and now we've got a lot more (260! if we list them all). What happened? Stata used multiple spaces as delimiters, and due to that values from one variable went to different columns. 
+		</p>
+		<p>
+			Here is what we want to do: <br>
+			<span class="g">. import delimited output.txt, rowrange(4:l) varnames(4) delimiters(space, collapse)</span> <br>
+			Here <span class="g">delimiters(space, collapse)</span> collapsed the multiple spaces into just one. 
+		</p>
+		<p>
+			<span class="g">. list in 1/5</span>
+		<pre><code>
+     +----------------------------------------+
+     | ticker   evtdate         car        v4 |
+     |----------------------------------------|
+  1. |             EGAS   12FEB2014    .02356 |
+  2. |             EGAS   27JUL2012   -.00276 |
+  3. |              HGR   03JUL2002    .01478 |
+  4. |              HGR   03MAY2005    -.0507 |
+  5. |              HGR   05AUG2002    .02337 |
+     +----------------------------------------+			
+		</code></pre>
+		</p>
+
+		<p>
+			Now it's about right. We got the correct variable names, just in the wrong places. We need to fix that. <br>
+			<span class="g">. drop ticker</span> <br>
+			<span class="g">. rename evtdate ticker</span> <br>
+			<span class="g">. rename car evtdate</span> <br>
+			<span class="g">. rename v4 car</span> <br>
+			<span class="g">. list in 1/5</span>
+		</p>
+		<pre><code>
+     +------------------------------+
+     | ticker     evtdate       car |
+     |------------------------------|
+  1. |   EGAS   12FEB2014    .02356 |
+  2. |   EGAS   27JUL2012   -.00276 |
+  3. |    HGR   03JUL2002    .01478 |
+  4. |    HGR   03MAY2005    -.0507 |
+  5. |    HGR   05AUG2002    .02337 |
+     +------------------------------+			
+		</code></pre>
+
+		<p>Done.</p>
+		
+		<h2>Read and save Excel files</h2>
+		<p>
+			<span class="g">import/export excel</span> reads/saves worksheets from Microsoft Excel (.xls and .xlsx) files. <br>
+			<span class="g">. import excel <em>filename.xlsx</em>, clear</span> loads the dataset but the variable names will be lost. What we see are Excel's column names. <br>
+			<span class="g">. import excel <em>filename.xls</em>, firstrow</span> loads the dataset with the original variable names. <br>
+			<span class="g">. export excel output.xlsx, firstrow(varlabels) sheet("output1")</span> saves the dataset as an Excel file "output.xlsx" to the sheet "output1". 
+		</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+	
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Being Reproducible</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Being Reproducible</h1>
+
+	<h2>A Few Words on Workflow</h2>
+		<p>
+			A workflow is the framework of conducting the data analysis. There is no single standard practice, but it usually involves the following steps: planning and documentation, cleaning data, analyzing data, presenting the results, and archiving. In each step, standardization and automation is the key to a good workflow. </p>
+		<p>
+			Why is the workflow important? An effective workflow will save us a lot of time and trouble. We want a workflow that is efficient for reproducing our work, group collaboration, and debugging; an efficient workflow will also keep us away from annoying retractions.</p>
+		<div class="more"><p>More on workflow in data analysis with Stata: <br>
+			J. Scott Long (2009), The Workflow of Data Analysis Using Stata, Stata Press</p></div>
+
+	<h2>The Very First Steps to Reproducible Work</h2>
+		<p>
+			For simple tasks and for exploratory purposes one can use Stata interactively by selecting and clicking the commands from the menu bar, or typing commands line-by-line in the Command window. However, for any reproducible work we will want to keep track of the codes and methods we use. To that end below are the very first steps. 
+		</p>
+
+		<h3>Set the current working directory</h3>
+		<p>
+			A working directory is the default directory where Stata reads and writes files. Usually for each project we will want to set up a different working directory. We will set the current working directory to where we work with the project before we get started. 
+		</p>
+		<p>
+			<span class="g">cd</span> changes the working directory. <br>
+			<span class="g">. cd ~/Desktop/WD/</span> 
+		</p>
+		<p>
+			If the working directory is not specified, in Mac simply typing <span class="g">cd</span> sets the home directory as the current working directory. 
+		</p>
+		<p>
+			If the directory contains spaces, we need to include quotes. <br>
+			<span class="g">. cd "~/Desktop/WD/my folder/"</span>
+		</p>
+		<p>
+			<span class="g">cd..</span> changes the working directory one level up. 
+		</p>
+		<p>
+			<span class="g">pwd</span> displays the path of the current working directory.
+		</p>
+		<p>
+			<span class="g">dir</span> or <span class="g">ls</span> lists the files in the current working directory.
+		</p>
+		<p>
+			<span class="g">sysuse dir</span> lists the names of the datasets installed with Stata and any other datasets in the working directory.
+		</p>
+
+		<h3>Open a Log File</h3>
+		<p>
+			A log file is a record of what we did with Stata in a session, including all the commands and outputs.
+		</p>
+		<p>
+			<span class="g">log using <em>filename.log</em>, text replace</span> starts logging.
+		</p>
+		<p>
+			The <span class="g">replace</span> option tells Stata to overwrite the log file if a log file with the same name already exists. 
+		</p>
+		<p>
+			The <span class="g">text</span> option saves the log file in plain text format which can be read by any text editor. 
+		</p>
+		<p>
+			If the file is not specified to be a <span class="g">.log</span> file, Stata will save it as Stata Markup and Control Language (SMCL) that can be read only by Stata’s Viewer.
+		</p>
+		<p>
+			<span class="g">log using <em>filename.log</em>, append </span> appends the outputs from the current session to the ones from the last session.
+		</p>
+
+		<h3>Use a Do-file</h3>
+		<p>
+			Stata comes with its own text editor, the Do-file editor. A do-file is a text file where we keep, edit and save our commands. 
+		</p>
+		<p>
+			To open the do-file editor, type <span class="g">doedit</span> or click the <span class="g">Do-file Editor</span> icon on the tool bar. To run the commands, click <span class="g">Do</span> on the top right.
+		</p>
+		<p>
+			We can also choose our own external editor. However, Microsoft Word, or any other word processor, is generally not recommended since it always tries to format the texts and could possibly distort the syntax and crash our codes. 
+		</p>
+		<div class="more"><p>More on a comprehensive review of the text editors specifically for Stata: <br>
+			<a href="http://fmwww.bc.edu/repec/bocode/t/textEditors.html">N. J. Cox, Some notes on text editors for Stata users</a></p></div>
+
+		<h4>Usually a do-file should start with the following commands:</h4>	
+		<p>
+			<span class="g">
+			version 14 <br>
+			clear <br>
+			capture log close <br>
+			set more off <br>
+			</span>
+		</p>
+
+		<p>
+			<span class="g">version</span> specifies the version of Stata we use. Why bother doing that? Because Stata keeps upgrading itself, and programs written in older versions may not run in later versions.  Specifying the current version will ensure that future versions will continue to interpret the codes correctly.
+		</p>
+		<p>
+			<span class="g">clear</span> removes data and value labels from the memory before Stata can read another file. Stata works with one dataset at a time in memory. 
+		</p>
+		<p>
+			<span class="g">capture log close</span> closes the open log file if we have one open and ignores it if not; this prevents the programs running in the current session from being logged to the last session's log file. <span class="g">capture</span> ignores errors, if we have any, and allows the do-file or program to continue despite errors. Therefore, <span class="g">capture log close</span> will tell Stata to continue even if we do not have an open log file from the last session.
+		</p>
+		<p>
+			<span class="g">set more off</span> tells Stata to run the commands continuously without worrying about the capacity of the Results window to display the results. Otherwise Stata will pause each time the screen is full, unless we keep hitting --more-- at the bottom of the Results window.
+		</p>
+		
+		<h4>Do-files can run other do-files.</h4>	
+		<p>
+		If we are working with a project that involves several tasks, we will probably have several do-files with each one handling one task. We will also have a master do-file running all the task-specific do-files. We can call other do-files from a master do-file: 
+		</p>
+		<p>
+			<span class="g">
+				do cleaning.do <br>
+				do models.do <br>
+				do graph.do <br>
+				...
+			</span>
+		</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+	
+</body>
+</html>

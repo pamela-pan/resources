@@ -1,0 +1,326 @@
+---
+title: "The Dirty Work - Reshaping Data for Visualization"
+author: "Yun Dai"
+date: "09/2018"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+This post is the first of the three in a series to make an interactive data visualization web app:
+
+* Part 1 - [The Dirty Work - Reshaping Data for Visualization](https://shanghai.hosting.nyu.edu/data/r/case-1-1-preprocessing.html)
+* Part 2 - [The Jigsaw Puzzle Pieces - Creating Graphs with ggplot2](https://shanghai.hosting.nyu.edu/data/r/case-1-2-ggplot2.html)
+* Part 3 - [Assembling the Pieces - Creating R Shiny App](https://shanghai.hosting.nyu.edu/data/r/case-1-3-shinyapp.html)
+
+The three posts aim to give a concrete example with a full workflow of visualizing data from preprocessing, graphing to app building. 
+
+The case is adapted from how the [R Shiny App for a Library Survey](https://yundai.shinyapps.io/2018-lib-survey/) was actually created. Due to the nature and the goal of the survey, this interactive visualization paid much attention to how different subgroups of respondents (by country/major/status) used the library services. Most tasks concern how to graph categorical data.
+
+******
+This first post deals with the dirty part, data cleaning, with a focus on reshaping data structures for visualization. It starts with reshaping data for single graphs, and extends to reshaping for R Shiny App that deals with a lot more repetition and automation. Along the way, you will also see useful techniques in data cleaning applicable in many scenarios other than graphing.
+
+Note that it is always the actual needs of plotting that determine how we reshape our data. **In this case, the challenges of data preprocessing, or reshaping data, for visualization arise from how data were collected, generated, structured and stored in ways quite far from what could be ready to use; challenges also come from how different packages require different data structures to produce the same plots.** 
+
+The codes and techniques we discuss here consist of Shiny App creation, specifically what we would call the `global.R` script. It is not part of the `ui` or `server` functions, but handle the data needs of building up a Shiny App. This [page](https://shanghai.hosting.nyu.edu/data/r/global.html) shows a very small portion of what the `global.R` script looks like for the survey Shiny App.
+
+******
+## Ready?
+First of all, let's load all the packages that we will use for this post.
+```{r message = FALSE, warning = FALSE}
+library(readxl)
+library(dplyr)
+library(stringr)
+library(data.table)
+```
+
+For illustration purposes below, I loaded the libraries each time I needed them so that it is known which package was attached. In reality, however, including the libraries at the very beginning of the script as above is recommended.
+
+******
+### sample data 
+Let's load the sample data. The data came from a library service survey, cleaned and deidentified for the purpose of this demo. 
+```{r message=FALSE, warning=FALSE}
+## setwd()
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/survey")
+```
+
+Let's take a first look at our data. `head()`, `str()` and `summary()` are all useful functions to get a sense of our data. See a brief introduction [here]().
+
+```{r message=FALSE, warning=FALSE}
+head(survey)
+```
+
+
+******
+## Reshaping Data
+We will skip all the cleaning before reshaping, such as merging files, removing missing cases, recoding etc. Below we review several scenarios that we actually encountered when visualizing the survey data.
+
+### summarizing before plotting
+There were several times that we needed to create a frequency table before visualizing. Here's how to do it.
+
+```{r message=FALSE, warning=FALSE}
+tb <- survey %>% count(major) %>% data.frame() # generates a frequency table
+tb <- tb %>% arrange(-n) 
+tb
+```
+
+Another way to do it is to create a data frame from `table()`.
+```{r message=FALSE, warning=FALSE}
+tb2 <- data.frame(table(survey$major))
+names(tb2) <- c("major", "n")
+tb2 <- tb2[order(tb2$n, decreasing = T),]
+tb2
+```
+
+******
+### extracting strings from the separators
+Have you ever got a bit annoyed when you saw a column of strings separated by the commas, tabs or spaces? Worse if we need to plot something out of the data. Data like this need to be cleaned before plotting. We will see two cases below. Each explains one situation.
+
+One note before we proceed: Because we designed the survey questions or recoded the submitted answers, all variable values were known to us. For instance, we knew all the values for "top reason of visiting the library". This makes it easier for us to deal with the strings. 
+
+******
+#### Case I
+First of all, we have data from student submissions on "My favorite place to study in Library". The messy raw data were recoded to be consisent across respondents. Most have single strings, but some have multiple ones separated by comma. 
+
+```{r message=FALSE, warning=FALSE}
+head(survey$space_lib, n = 25)
+```
+
+Let's say we want to create a frequency table counting how many times a unique value appeared. We are not too worried about this case because the strings themeselves do not contain the separator, which is the comma. So the program will not get confused which comma is what - is it a separator or part of the string. We can just split the strings by comma. 
+
+On the contrary, in the case below we will see shortly, some strings came with the separator, such as the comma in "Print, photocopy, scan". Simply splitting those strings would have been inappropriate. 
+
+Back to where we were.
+```{r message=FALSE, warning=FALSE}
+lib <- unlist(strsplit(survey$space_lib, ","))
+## strsplit() splits the elements of the character vector space_lib into substrings by the commas
+## strsplit() is from base R
+## the result is a long list of all the extracted strings in vectors
+## we need to unlist() the list, and get a data.frame after unlist()
+head(lib, n = 30)
+```
+
+```{r message=FALSE, warning=FALSE}
+lib <- str_trim(lib, side = "both")
+## str_trim() is a function from the stringr package
+## removes the trailing and leading spaces generated in spliting
+```
+
+```{r message=FALSE, warning=FALSE}
+lib <- lib[!lib %in% c("NULL")]
+## removes values coded as "NULL"
+```
+
+```{r message=FALSE, warning=FALSE}
+lib <- data.frame(lib) %>% count(lib) %>% data.frame() %>% arrange(-n)
+## counts the frequency of each unique value
+lib
+```
+
+******
+#### Case II
+In the second case, we want to visualize the distribution of visiting library by country. The data for "top reasons to visit the library" is `top_reason`. The group variable is `country`.
+
+```{r message=FALSE, warning=FALSE}
+head(survey$top_reason)
+```
+
+As we can see, each column contains multiple strings separated by commas. Ideally, we would like one column to have one unique value. Like what we did before, we need to extract the individual strings from the commas. The problem is, however, this time some strings contain ",", the separator, within themselves. For instance, "Print, photocopy, scan" has "," between the verbs. So does "Use specialized databases (e.g. Bloomberg, Wind)". 
+
+One solution is, as the first step, to create one column for each value of `top_reason`, matched with `country`. The cell would be filled if the case is true for an individual, meaning that person from a specific country voted for a reason.
+
+******
+##### Step I
+Let's first store all unique values of `top_reason` in a vector `Reason`, which will be used as a *pattern* in extracting the strings.
+```{r message=FALSE, warning=FALSE}
+Reason <- c("Work on a class assignment/paper", "Watch video or listen audio", "Use specialized databases \\(e.g. Bloomberg, Wind\\)", "Use a library computer", "Use a group study room", "Print, photocopy, scan", "Other", "Meet up with friends", "Hang out between classes", "Get readings from Course Reserve", "Get help from a librarian", "Find a quiet place to study", "Borrow books and materials", "Attend a library workshop")
+
+Reason
+```
+
+Note that I added `\\` to `"Use specialized databases (e.g. Bloomberg, Wind)"`. The reason was that to quote a metacharacter (paranthese) with special meaning, double backslashes need to come before it. 
+
+******
+##### Step II
+We can now reformat the data to a data frame with each column being a "reason".
+```{r message=FALSE, warning=FALSE}
+r <- data.frame(survey$country)
+## first we create a new data frame
+## let the first column be country because we will plot on country subsets
+```
+
+Values of each column will be extracted from the messy strings in the original dataset, if matched with the column name. For instance, if `"Find a quiet place to study"`, among the other separated strings, matches with the column `"Find a quiet place to study"` for an individual, the string will be added to the cell.
+
+```{r message=FALSE, warning=FALSE}
+for (m in 1: length(Reason)){
+  r[,Reason[m]] <- str_extract(survey$top_reason, Reason[m])
+}
+## length(Reason) counts how many elements the Reason vector contains
+## str_extract(string, pattern) is from the stringr package
+## r[,Reason[m]] adds each reason as a column to the data frame "r" one by one
+## str_extract(survey$top_reason, Reason[m]) extracts each element of reason by the pattern Reason[m]
+
+head(r)
+```
+
+```{r message=FALSE, warning=FALSE}
+table(r$`Use specialized databases \\(e.g. Bloomberg, Wind\\)`)
+## You may try in the earlier steps quoting without backlashes. No values will be carried over here. The frequency will be 0 in this table.
+```
+
+******
+##### Step III
+Thinking of our goal again - what we need is a *frequency table* by country. We need to reshape the data to that structure.
+
+We need a data frame. This time the reasons came into one column. 
+```{r message=FALSE, warning=FALSE}
+dtset <- data.frame(Reason)
+dtset
+```
+
+```{r message=FALSE, warning=FALSE}
+levels(dtset$Reason)[levels(dtset$Reason) == "Use specialized databases \\(e.g. Bloomberg, Wind\\)"] <- "Use specialized databases (e.g. Bloomberg, Wind)"
+
+## reset the values of factor Reason: we've done quoting and let's remove the backslashes
+```
+
+Next we will summarize the distribution by country for each "reason".
+```{r message=FALSE, warning=FALSE}
+g <- c("China", "U.S.", "Other")
+
+for (n in 1:length(g)){
+  dtset[,g[n]] <- apply(r[r[,1] == g[n], 2:15], 2, function(x) length(which(!is.na(x))))
+}
+## adding one group member a time to the data.frame
+## g[n]: vector elements ("China", "U.S.", "Other")
+## apply(subset[rows where elements == values of the group vector, columns applied], rows, function(counts non-missing cases)) 
+```
+
+```{r message=FALSE, warning=FALSE}
+dtset$Total<- rowSums(dtset[,2:4], na.rm = TRUE, dims = 1)
+## creates a new column to calculate the total
+
+dtset <- dtset[order(dtset$Total,decreasing = T),]
+## reorders the rows by Total
+
+dtset
+```
+
+When we need it, we can also reshape `dtset` from wide to long.
+```{r message=FALSE, warning=FALSE}
+dtset %>% melt()
+```
+
+******
+### making use of info from several columns
+It is typical that a survey has a group of questions evaluating one problem. In our survey, we have several variables `rank_crowded`, `rank_modpop`, `rank_noisy`, `rank_quiet`, and `rank_silent` asking if library users would like to study in an environment that is "crowded", "moderately populated", "noisy", "quiet (occasional whispers)", or "(close to) silent".
+
+```{r message=FALSE, warning=FALSE}
+head(survey[c("rank_crowded","rank_modpop", "rank_noisy", "rank_quiet", "rank_silent")])
+```
+
+```{r message=FALSE, warning=FALSE}
+summary(survey[c("rank_crowded","rank_modpop", "rank_noisy", "rank_quiet", "rank_silent")])
+```
+
+When plotting, we'd like to present the results altogether. Therefore, we'd like to create a matrix with all the columns grouped by student status.
+
+```{r message=FALSE, warning=FALSE}
+rank_status <- 
+  data.frame(survey %>% group_by(status) %>% summarise(rank_crowded = round(mean(rank_crowded, na.rm = TRUE),2))) %>% 
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_modpop = round(mean(rank_modpop, na.rm = TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_noisy = round(mean(rank_noisy, na.rm = TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_quiet = round(mean(rank_quiet, na.rm = TRUE),2)))) %>%
+  left_join(data.frame(survey %>% group_by(status) %>% summarise(rank_silent = round(mean(rank_silent, na.rm = TRUE),2)))) %>%
+  rename(`crowded` = rank_crowded, `moderately populated` = rank_modpop, `noisy` = rank_noisy, `quiet (occasional whispers)` = rank_quiet, `(close to) silent` = rank_silent) 
+
+## grouped by status
+
+rank_status
+```
+
+Later, we will create a heatmap out of this matrix. The current data structure does not support the graph making, so we need to further reshape the data from wide to long.
+```{r message=FALSE, warning=FALSE}
+rank_status <- rank_status %>% melt()
+## melt() is from data.table package
+## reshaping the matrix/data.frame for making the heatmap easier using melt()
+
+rank_status
+```
+
+******
+## Reshaping for Shiny
+Reshaping for R Shiny App asks for a lot more repetition and automation. In this case, repetition and automation mainly come from the idea that we want a chunk of codes to automatically produce graphs for the same purpose and repeatedly for different groups. For instance, earlier we may have created a plot by country; now we want to plot graphs by country as well as status and major. Later when we hit the "subgroup button" in Shiny App, we want to be able to dynamically choose the subgroup of data to be visualized and presented. 
+
+It may sound abstract and vague at the moment. When we get to [Part III](https://shanghai.hosting.nyu.edu/data/r/case-1-3-shinyapp.html), we will get a more concrete idea of how that works.
+
+Remember earlier we created a frequency table for `major`. Here we want to do the same thing for `status` and `country` as well. We need to repeat the previous procedure on each one of them. As a result, we will get three data frames. 
+
+One more thing we want to do is store the three data frames in one object on a higher level. A list is a good option for such a task. The reason is that later when we need to access the single data frames, we can do so by subsetting (`dtset[[i]]`).
+
+```{r message=FALSE, warning=FALSE}
+set <- survey[c("status", "country", "major")]
+tb3 <- replicate(length(set), data.frame(), simplify=FALSE)
+## create a list of data frames for each group
+
+for (m in 1:length(set)){
+  tb3[m] <- list(data.frame(table(set[m])))
+  names(tb3[[m]]) <- c("", "#")
+  tb3[[m]] <- tb3[[m]][order(tb3[[m]]$`#`,decreasing = T),]
+}
+## replicate() creates a list of 4 data frame; each data frame for one summary table
+## tb3[m] <- list() adds one data frame by another
+## tb3[[m]] works on data frame
+## tb3[[m]][order(tb3[[m]]$`#`,decreasing = T),] orders rows by freq
+
+for (i in 1:3){
+  colnames(tb3[[i]])[1] <- c("Student Status", "Country / Region", "Major")[i]
+}
+## rename the column names
+
+tb3
+```
+
+Earlier we summarized the distribution of "top reason for visiting the library" by country. We now want to do it for each group (`status`, `country` and `major`) and store them all in a list, like what we did above.
+```{r}
+g <- list(status = c("Freshman", "Sophomore", "Junior", "Senior", "Other Programs") ,
+          country = c("China", "U.S.", "Other"),
+          major = c("Business, Finance & Economics","Humanities & Social Sciences","Data Science & Interactive Media Business",                     "Interactive Media Arts","Science","CS & Engineering","Mathematics","Undefined"))
+
+Reason <- c("Work on a class assignment/paper", "Watch video or listen audio", "Use specialized databases \\(e.g. Bloomberg, Wind\\)", "Use a library computer",  "Use a group study room", "Print, photocopy, scan",  "Other", "Meet up with friends",  "Hang out between classes", "Get readings from Course Reserve", "Get help from a librarian", "Find a quiet place to study", "Borrow books and materials", "Attend a library workshop")
+
+r <- data.frame(survey$status, survey$country, survey$major)
+for (m in 1: length(Reason)){
+  r[,Reason[m]] <- str_extract(survey$top_reason, Reason[m])
+}
+## reformat dataset structure so that each column is a Reason[i]
+
+dtset <- replicate(3, data.frame(Reason), simplify = FALSE)
+for (i in 1:3){
+  levels(dtset[[i]]$Reason)[levels(dtset[[i]]$Reason) == "Use specialized databases \\(e.g. Bloomberg, Wind\\)"] <- "Use specialized databases (e.g. Bloomberg, Wind)"
+}
+## reset the values of factor Reason for each data frame dtset[[i]]: 
+## we've done quoting and let's remove the backslashes
+
+for (m in 1:length(dtset)){
+  for (n in 1:length(g[[m]])){
+    subgroup <- r[r[,m] == g[[m]][n], (length(g)+1):(length(Reason) + length(g))]
+    dtset[[m]][,g[[m]][n]] <- apply(subgroup, 2, function(x) length(which(!is.na(x))))
+  }
+  dtset[[m]]$Total<- rowSums(dtset[[m]][,2:n], na.rm = TRUE, dims = 1)
+  dtset[[m]] <- dtset[[m]][order(dtset[[m]]$Total,decreasing = T),]
+}
+
+## m denotes how many groups we have. We have 3 groups: country/status/major
+## n denotes how many elements we have in each group. e.g. 3 elements in the group "country" (China, U.S., Other)
+
+dtset
+```
+
+We will see how we actually make use of the list of data frames when we talk about building the Shiny App.
+

@@ -1,0 +1,10 @@
+name: datatable
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3111414
+bundleId: 3803061
+url: https://yundai.shinyapps.io/datatable/
+when: 1604110280.6409

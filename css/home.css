@@ -1,0 +1,702 @@
+/*header*/
+header .brand{
+    text-align: center;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+
+header .brand h1{
+    letter-spacing: 1.5px;
+    font-weight: bold;
+    line-height: 120%;
+}
+
+header .brand h3{
+    color: #666666;
+    letter-spacing: 1px;            
+}
+
+
+@media only screen and (max-width: 480px){
+    header .brand h1{
+        font-size: 120%;
+        margin: 30px 30px 15px 30px;
+    }
+
+    header .brand h3{
+        font-size: 85%;
+        margin: 0px 30px 50px 30px;
+    }
+}
+
+@media only screen and (max-width: 1280px) and (min-width: 480px){
+    header .brand h1{
+        font-size: 140%;
+        margin: 50px 30px 15px 30px;
+    }
+
+    header .brand h3{
+        font-size: 100%;        
+        margin: 0px 0px 50px 0px;
+    }
+}
+
+@media only screen and (min-width: 1280px){
+    header .brand h1{
+        font-size: 170%;
+        margin: 70px 0px 20px 0px;
+    }
+
+    header .brand h3{
+        font-size: 105%;        
+        margin: 0px 0px 60px 0px;
+    }
+}
+
+
+
+
+
+/*back-to-top*/
+.back-2-top {
+    display:none;
+    position:fixed;
+    cursor: pointer;
+    bottom: 45px;
+    left:48vw;
+    z-index: 1;
+    background: #ac9fc6;
+    opacity: 0.9;
+    height: 40px;
+    width:40px;
+    font-weight: bold;
+    transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
+
+.back-2-top:hover {
+    background: #fbd26a; 
+    opacity: 0.9;
+}
+
+.back-2-top #top{
+    color: #fff;
+    font-size: 1.25em;
+    padding-left: 10px;
+    padding-top: 5px;
+    transform:rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+@media only screen and (max-width: 600px){
+    .back-2-top {
+        height: 30px;
+        width:30px;
+        bottom:7%;
+    }
+
+    .back-2-top #top{
+        font-size: 1em;
+        padding-left: 8px;
+        padding-top: 5px;
+    }
+}
+
+/*main*/
+main{
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+section {
+    display: block;
+    position: relative;
+    left:0;
+    right: 0;
+    width: 100%;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+
+
+@media only screen and (max-width: 480px){
+    .first-half, .second-half{
+      width: 70%;  
+      display: block;
+      margin: 40px 15% 0px 15%;
+    }
+
+  section:nth-child(odd) .first-half{
+        float: left;
+    }
+
+    section:nth-child(even) .first-half{
+        float: right;
+    }
+}
+
+
+@media only screen and (max-width: 1280px) and (min-width: 480px) {
+    .first-half, .second-half{
+      width: 100%;  
+      display: block;
+      margin: 80px 0px 0px 0px;
+  }
+}
+
+@media only screen and (min-width: 1280px) {
+    .first-half, .second-half{
+        width: 50%;
+        display: inline-block;
+        margin: 50px 0px 50px 0px;
+    }
+
+    section:nth-child(odd) .first-half{
+        float: left;
+    }
+
+    section:nth-child(even) .first-half{
+        float: right;
+    }
+}
+
+
+/*board*/
+.board{
+    width: 100%;
+}
+
+/*span.board-item{
+    font-family: "Courier New", Courier, monospace;        
+}*/
+
+section:nth-child(odd) .board{
+    text-align: right;
+}
+
+section:nth-child(even) .board{
+    text-align: left;
+}
+
+span.board-num{
+    color: #C2A46A;
+    opacity: 0.45;
+    z-index: -10;
+}
+
+@media only screen and (max-width: 480px){
+    section:nth-child(odd) .board{
+        text-align: left;
+    }
+
+    section:nth-child(even) .board{
+        text-align: right;
+    }
+
+    span.board-num{
+        font-size: 250%;
+        letter-spacing: 1px;
+    }
+
+    section:nth-child(odd) span.board-num{
+        margin-right: -10px;
+    }
+
+    section:nth-child(even) span.board-num{
+        margin-left: -10px;
+    }
+
+    span.board-item{
+        font-size: 110%;
+        letter-spacing: 1px;
+    }
+}
+
+@media only screen and (max-width: 1280px) and (min-width: 480px){
+    section:nth-child(odd) .board{
+        width: 50%;
+        float: left;
+        display: inline-block;
+        text-align: right;
+        padding: 0 5%;
+    }
+
+    section:nth-child(even) .board{
+        width: 50%;
+        float: right;
+        display: inline-block;
+        text-align: left;
+        padding: 0 5%;        
+    }
+
+    span.board-num{
+        font-size: 300%;
+        letter-spacing: 1px;
+    }
+
+    section:nth-child(odd) span.board-num{
+        margin-right: -10px;
+    }
+
+    section:nth-child(even) span.board-num{
+        margin-left: -10px;
+    }
+
+    span.board-item{
+        font-size: 125%;
+        letter-spacing: 1px;
+    }
+}
+
+
+
+@media only screen and (min-width: 1280px){
+   section:nth-child(odd) .board{
+        width: 100%;
+        display: inline-block;
+        padding: 0 10% 0 0;
+        float: left;
+        text-align: right;
+    }
+
+    section:nth-child(even) .board{
+        width: 100%;
+        display: inline-block;
+        padding: 0 0 0 10%;
+        float: right;
+        text-align: left;      
+    }
+
+    span.board-num{
+        font-size: 450%;
+        letter-spacing: 2px;
+    }
+
+    section:nth-child(odd) span.board-num{
+        margin-right: -25px;
+    }
+
+    section:nth-child(even) span.board-num{
+        margin-left: -25px;
+    }
+
+    span.board-item{
+        font-size: 175%;
+        letter-spacing: 1px;
+    }
+}
+
+
+/*tools*/
+.table{
+    width: 100%;
+    color: #666666; 
+}
+
+section:nth-child(odd) .table{
+    text-align: right;
+}
+
+section:nth-child(even) .table{
+}
+
+.table li::before{
+    content: "\25CB";
+    color: #C2A46A;
+    font-weight: bolder;    
+    padding-right: 8px;
+    font-size: 110%;
+}
+
+@media only screen and (max-width: 480px){
+    .table{
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 1280px) and (min-width: 480px){
+    .table{
+        font-size: 90%;
+        line-height: 130%;
+        letter-spacing: 1.5px;
+    }    
+
+    section:nth-child(odd) .table{
+        width: 50%;
+        float: right;
+        display: inline-block;
+        text-align: left;
+        padding-right: 20px;
+    }
+
+    section:nth-child(even) .table{
+        width: 50%;
+        float: left;
+        display: inline-block;
+        text-align: right;
+        padding-left: 20px;
+    }
+}
+
+
+
+@media only screen and (min-width: 1280px){
+    .table{
+        font-size: 100%;
+        line-height: 135%;
+        letter-spacing: 1.5px;
+    }    
+
+    section:nth-child(odd) .table{
+        width: 100%;
+        display: inline-block;
+        float: left;
+        text-align: right;
+        padding: 0 10% 0 0;
+    }
+
+    section:nth-child(even) .table{
+        width: 100%;
+        display: inline-block;
+        float: right;
+        text-align: left;
+        padding: 0 0 0 10%;        
+    }
+}
+
+/*lists*/
+.list{
+    width: 100%;
+}
+
+section:nth-child(even) .list{
+    text-align: right;
+}
+
+.list a{
+    position: relative;
+    display: inline-block;
+    background-color: #fcd983;
+    opacity: 0.99;
+}
+
+.list a::after{
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top:0;
+    width: 0%;
+    height: 100%;
+    background-color: #fff;
+    transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+}
+
+section:nth-child(odd) .list a::after{
+    left:0;
+}
+
+section:nth-child(even) .list a::after{
+    right:0;
+}
+
+.list a:hover::after,
+.list a:active::after{
+    width:100%;
+}
+
+.list span.arrow{
+    padding: 0em 0.5em 0em 1em;
+    font-weight: bolder;
+    transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+}
+
+
+
+@media only screen and (max-width: 480px){
+    .list{
+        width: 100%;
+        display: inline-block;
+    }
+
+    section:nth-child(even) .list{
+        padding-right: 40px;
+    }
+
+    .list a{
+        margin-bottom: 5px;
+        line-height: 120%;
+        letter-spacing: 1.5px;
+    }
+
+    .list span.name{
+        font-size: 90%;
+    }
+
+    section:nth-child(odd) .list a{
+        padding-left: 10px;   
+    }  
+
+    section:nth-child(even) .list a{
+        padding-right: 10px;   
+    } 
+}
+
+
+@media only screen and (max-width: 1280px) and (min-width: 480px){
+    .list{
+        width: 100%;
+        display: inline-block;
+    }
+
+    section:nth-child(odd) .list{
+        padding-left: 30%;
+        padding-right: 10%;       
+    }
+
+    section:nth-child(even) .list{
+        padding-right: 30%;  
+        padding-left: 10%;           
+    }  
+
+    .list a{
+        margin-bottom: 5px;
+        line-height: 120%;
+        letter-spacing: 2px;
+    }
+
+    section:nth-child(odd) .list a{
+        padding-left: 20px;   
+    }  
+
+    section:nth-child(even) .list a{
+        padding-right: 20px;   
+    }    
+
+    .list span.name{
+        font-size: 95%;
+    }
+}
+
+
+@media only screen and (min-width: 1280px){
+    .list{
+        width: 100%;
+        display: inline-block;
+   }
+
+    section:nth-child(odd) .list{
+        padding-left: 5%;
+        padding-top: 70px;        
+    }
+
+    section:nth-child(even) .list{
+        padding-right: 5%; 
+        padding-top: 40px;               
+    }  
+
+    .list a{
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+    }
+
+    section:nth-child(odd) .list a{
+        padding-left: 20px;   
+    }  
+
+    section:nth-child(even) .list a{
+        padding-right: 20px;   
+    }    
+
+    .list span.name{
+        font-size: 115%;
+    }
+}
+
+/*connect*/
+#connect{
+    display: block;
+    position: relative;
+    text-align: center;
+    color: #666666;
+}
+
+#connect #description{
+    line-height: 180%;
+    font-size: 110%;
+    letter-spacing: 3px;
+}
+
+#connect #description span{
+    font-style: italic;
+    font-size: 105%;
+}
+
+#connect li::before{
+    content:"\2023";
+    padding-right: 5px;
+    color: #C2A46A;
+}
+
+#connect #slogan{
+    width: 50%;
+    margin: auto;
+    padding-top: 20px;
+    font-size: 200%;
+    letter-spacing: 5px;
+}
+
+#connect #slogan a{
+    position: relative;
+    display: inline-block;
+    background-color: #fcd983;
+    opacity: 0.99;
+    padding: 0px 10px 0px 10px;
+}
+
+#connect a::after{
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top:0;
+    left:0;
+    width: 0%;
+    height: 100%;
+    background-color: #fff;
+    transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+}
+
+#connect a:hover::after,
+#connect a:active::after{
+    width:100%;
+}
+
+
+
+@media only screen and (max-width: 480px){
+    #connect{
+        margin: 10% 15px;
+    }
+
+    #connect #description{
+        line-height: 135%;
+        font-size: 90%;
+        letter-spacing: 1px;
+    }
+    
+    #connect #slogan{
+        font-size: 120%; 
+        letter-spacing: 2px;
+        padding-top: 0px;
+    }
+}
+
+@media only screen and (max-width: 1280px) and (min-width: 480px){
+    #connect{
+        margin: 10% 5%;
+    }
+
+    #connect #description{
+        line-height: 150%;
+        font-size: 100%;
+        letter-spacing: 1px;
+    }
+    
+    #connect #slogan{
+        font-size: 125%; 
+        letter-spacing: 2px;
+        padding-top: 0px;
+    }
+}
+
+@media only screen and (min-width: 1280px) {
+    #connect{
+        margin: 50px;
+    }
+
+    #connect #description{
+        line-height: 150%;
+        font-size: 110%;
+        letter-spacing: 2px;
+    }
+    
+    #connect #slogan{
+        font-size: 135%; 
+        letter-spacing: 2px;
+        padding-top: 10px;
+    }    
+}
+
+/*footer*/
+footer{
+    display: block;
+    left: 0;
+    right:0;
+    width: 100%;
+    padding: 30px 0px 15px 0px;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    font-size: 80%;
+    letter-spacing: 1.5px;
+}
+
+footer a{
+    font-weight: bolder;
+    font-size: 105%;
+}
+
+footer div:nth-child(1){
+    display: inline-block;
+    width: 50%;
+    padding: 0px 10px 0px 30px;
+}
+
+footer div:nth-child(2){
+    display: inline-block;
+    position: relative;
+    width: 50%;
+    float:right;
+    text-align: right;
+    padding: 0px 30px 0px 10px;
+}
+
+
+
+@media only screen and (max-width: 480px){ 
+    footer div:nth-child(1){
+        width: 100%;
+        margin: 0px;
+        text-align: center;
+        font-size: 75%;
+    }
+
+    footer div:nth-child(2){
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 1280px) and (min-width: 480px){
+    footer div:nth-child(1){
+        width: 100%;
+        margin: 0px;
+        text-align: center;
+        font-size: 90%;
+    }
+
+    footer div:nth-child(2){
+        display: none;
+    }
+}

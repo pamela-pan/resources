@@ -1,0 +1,172 @@
+---
+title: "Reading Data" 
+author: "Yun Dai"
+date: "11/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE}
+setwd("/Volumes/GoogleDrive/My Drive/websites/new web/data/r")
+```
+
+******
+First of all, make sure you have read [R Data Import/Export](https://cran.r-project.org/doc/manuals/R-data.html). The document is an comprehensive introduction of reading and saving files of various formats with R. 
+
+In addition to what has been documented there, below we have a few short notes.
+
+******
+## Importing data with RStudio
+RStudio offers the click-and-select menu dropdown options of importing data. On the Enviroment Pane, we can find **Import Dataset**, with which we can import data easily of various formats, including delimited text files (e.g. csv, tsv), Excel files, and files from other statistical software (SPSS, SAS, Stata). The Data Import feature provides many import options (e.g. skipping lines, setting the delimiter, treating the first row as variable names or not, trimming spaces or not, setting what would be considerd as `NA`). It also provides a Code Preview window where we can review the R code as given and make edits. 
+
+RStudio has a full guide on [importing data with RStudio](https://support.rstudio.com/hc/en-us/articles/218611977-Importing-Data-with-RStudio).
+
+******
+## Loading pre-installed R datasets
+There are quite a few pre-installed sample R datasets available for us to play with. 
+
+```{r eval=FALSE}
+## lists all datasets in the package datasets
+data() 
+
+## loads the singer dataset in the package lattice
+data("singer", package = "lattice")
+
+## lists all datasets in all available packages
+data(package = .packages(all.available = TRUE))
+```
+
+Read the help files for descriptions of the pre-installed datasets.
+```{r eval=FALSE}
+library(datasets) 
+?sleep
+```
+
+******
+## Reading rectangular text data
+Package `readr` provides faster ways to read rectangular text data than using base R functions. For instance, `read_delim()` reads a delimited file. `read_csv()` and `read_tsv()` are special cases of the general `read_delim()` function to read comma separated and tab separated files.  
+
+Below we have a .txt file downloaded from a database delimited by space, where the first three rows are empty and need to be skipped. `delim` argument sets the separator, and `col_names` argument tells R to treat the first row as contaning the column names.
+```{r eval=FALSE}
+library(readr)
+data <- read_delim(file = "file.txt", delim = " ", col_names = TRUE, skip = 3)
+```
+
+If we have a file where all missing cases are denoted by character value "NULL", we can handle that while reading the file by setting the `NA`s to be `"NULL"`.
+```{r eval=FALSE}
+data <- read_csv(file = "file.csv", na = "NULL")
+```
+
+
+******
+## Reading data from other software
+### Excel spreadsheets
+Package `readxl`and package `xlsx` allow us to deal with Excel files of different versions conveniently. `xlsx` requires Java. Check the package documentations for more details.  
+
+### Stata, SPSS, SAS etc.
+Package `haven` provides methods to read data from the major statistical software Stata, SPSS and SAS.
+
+Package `foreign` reads data stored by Minitab, S, SAS, SPSS, Stata, Systat, Weka, and dBase. But note that `foreign` does not support Stata after version 12.
+
+******
+## Reading JSON files
+
+JSON (JavaScript Object Notation) is a lightweight data-interchange format. [Introducing JSON](http://www.json.org/) introduces what is JSON and how various programming languages support it.
+
+In R, `rjson` and `jsonlite`, among other packages, read and write JSON data. `jsonlite` has additional cleaning functionalities (e.g. flattening nested data frames) and can read [ndjson](http://ndjson.org/) data.
+
+Below we discuss a case.
+
+***
+### using `jsonlite`
+The sample file is a server log. Our JSON data is of the ndjson format that `jsonlite::fromJSON` does not support. So we read the file line-by-line first. The output is a large character vector.
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(jsonlite)
+
+con <- read_lines("sample/tracking.log")
+head(con, 1)
+```
+
+We then use `jsonlite::stream_in()` to implement line-by-line processing of JSON data, which works over a connection (e.g. url, file). `textConnection()` inputs and outputs text connections. The output is a nested data frame.
+```{r}
+df <- stream_in(textConnection(con))
+```
+
+We use `jsonlite::flatten()` to flatten the nested data frame.
+```{r}
+df <- flatten(df)
+head(df, 1)
+```
+
+
+***
+### using `rjson`
+Using `rjson`, again we need to read the file line-by-line first. The output `lines` is a large character vector.
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(rjson) 
+library(plyr)
+
+lines <- read_lines("sample/tracking.log")
+df <- ldply(lapply(lines, function(x) t(unlist(fromJSON(json_str = x)))))
+```
+
+In the code above, `rjson::fromJSON()` reads the first JSON object from the file. The output is a list.
+```{r}
+a <- fromJSON(json_str = lines)
+head(a)
+```
+
+`unlist()` unlists the list and transforms it to a vector. `t()` transposes the vector to a matrix.
+```{r}
+b <- t(unlist(fromJSON(json_str = lines)))
+head(b)
+```
+
+`lapply()` applies a function over a list or vector. In this case, it repeats what we have done above to every JSON object in `lines`. The output is a list.
+```{r eval=FALSE}
+l <- lapply(lines, function(x) t(unlist(fromJSON(json_str = x))))
+head(l, 1)
+```
+
+As the last step, in order to get a data frame, we use the function `plyr::ldply()` that splits the list, applies a function, and returns results in a data frame.
+```{r}
+df <- ldply(lapply(lines, function(x) t(unlist(fromJSON(json_str = x)))))
+head(df, 1)
+```
+
+******
+### reading many compressed JSON files
+Below we extend the case above to read hundreds of compressed JSON files.
+
+```{r eval=FALSE}
+## creates an empty vector to store JSON objects from the file
+vec <- c()
+
+## list.files() returns a character vector storing all compressed .gz files  
+logs <- list.files(pattern = "*.gz")
+
+## vec() concatenates all JSON objects from all files in the folder
+for (i in 1:length(logs)) {
+  temp <- read_lines(logs[i])
+  vec <- c(vec, temp)   
+}
+
+## use the same method in the above section 
+df <- ldply(lapply(vec, function(x) t(unlist(fromJSON(x)))))
+```
+
+******
+## Working with databases
+
+RStudio has a website on [Databases using R](https://db.rstudio.com/) that talks about [how to connect to databases](https://db.rstudio.com/getting-started/connect-to-database), how to [run queries](https://db.rstudio.com/getting-started/database-queries), and [packages to work with different databases](https://db.rstudio.com/databases/).  
+
+
+

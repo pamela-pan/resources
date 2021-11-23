@@ -1,0 +1,155 @@
+---
+title: "A Lot of Bars"
+author: "Yun Dai"
+date: "08/2018"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+This post was adapted from a section in [The Jigsaw Puzzle Pieces - Creating the Graphs with ggplot2](https://shanghai.hosting.nyu.edu/data/r/case-1-2-ggplot2.html), Part II of a series of posts on building Shiny App. We created many bar plots there and the variations of bar plots. For summary purposes, I want to bring all of them together here.
+
+## First Steps
+As usual, before we begin, let's load all the packages we will need.
+```{r warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+### Sample data 
+First we'll load the sample survey data.
+```{r message=FALSE, warning=FALSE}
+## setwd()
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/survey")
+
+head(survey)
+```
+
+### Color palette 
+We'll create a list of a color palette. This will make working with colors more easily later in plotting.
+```{r message=FALSE, warning=FALSE}
+palette <- list(purple = c("#351F39", "#351C4D", "#6c1f55", "#765285", "#8a6899"),
+                turquoise = c("#709FB0", "#849974", "#A0C1B8"),
+                golden = c("#D1A827", "#f3da4c"))
+```
+
+******
+## A Lot of Bars
+Let's say we want to present how often respondents of different majors use the library website to search for articles. The data on website usage is `Q1.3` ("I use our library website to (how often) - Search for articles"). The data for major is `major`. 
+
+`Q1.3` and `major` both contain discrete values. Bar plots and their variations can easily achieve this goal. 
+```{r message=FALSE, warning=FALSE}
+tail(survey[c("Q1.3","major")])
+```
+
+```{r message=FALSE, warning=FALSE}
+table(survey$Q1.3)
+```
+
+```{r message=FALSE, warning=FALSE}
+table(survey$major)
+```
+
+******
+### Stacked bars (count)
+```{r message=FALSE, warning=FALSE}
+ggplot(survey, aes(major)) + 
+  geom_bar(aes(fill = Q1.3), position = position_stack(reverse = TRUE), width = 0.4, alpha = 0.75) +
+## geom_bar() adds a layer of stacked bars to the plot
+## aes(fill = Q1.3) fills the stacked bars with the counts of each value of Q1.3 (never/occasionally/often)
+## position = position_stack(reverse = TRUE) reverses the order of the stacked bars
+  scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+## manually fills the bars with the preset color scheme
+  scale_x_discrete(limits = rev(levels(survey$major))) +
+## reverse the order of levels of x axis  
+  coord_flip() +
+## flip the coordinates
+theme(axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12, margin = margin(0,3,0,0)),
+      axis.title.y = element_blank(),
+      axis.title.x = element_blank(),
+      axis.ticks.x = element_line(size = 0),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 10),
+      plot.margin = unit(c(1,1,1,1), "cm")) 
+```
+
+******
+### Stacked bars (percentage)
+Alternatively, we can fill the stacked bars with the percentage of each value of `Q1.3`.
+```{r message=FALSE, warning=FALSE}
+ggplot(survey, aes(major)) + 
+  geom_bar(aes(fill = Q1.3), position = "fill", width = 0.4, alpha = 0.75) +
+## position = "fill" sets the plot as stacked bars with filled percentages instead of counts
+  scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+  scale_x_discrete(limits = rev(levels(survey$major))) +
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12, margin = margin(0,3,0,0)),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_line(size = 0),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 10),
+        plot.margin = unit(c(1,1,1,1), "cm")) 
+```
+
+******
+### Grouped bars
+Or we can group the bars rather than stack the bars.
+
+```{r message=FALSE, warning=FALSE}
+ggplot(survey, aes(major)) + 
+  geom_bar(aes(fill = Q1.3), position = "dodge", width = 0.4, alpha = 0.75) +
+## position = "dodge" sets the plot as grouped bars
+  scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+  scale_x_discrete(limits = rev(levels(survey$major))) +
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12, margin = margin(0,3,0,0)),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_line(size = 0),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 10),
+        plot.margin = unit(c(1,1,1,1), "cm")) 
+```
+
+******
+### Lollipop chart
+Bar charts are cognitively light to process. But we could also be easily bored by bar charts. A lollipop chart, which is a variation of bar chart, can do the same thing for us with some visual diversity.
+
+To make a lollipop chart, we need a frequency table that summarizes the counts of each major. 
+```{r message=FALSE, warning=FALSE}
+tb <- survey %>% count(major) %>% data.frame() # generates a frequency table
+tb <- tb %>% arrange(-n) %>% filter(major != "Undefined") # reorder by frequency; remove undefined majors
+tb
+```
+
+Now let's plot the lollipop chart from the frequency table. 
+```{r message=FALSE, warning=FALSE}
+ggplot(tb, aes(n, reorder(major, -n), label = n)) +
+  geom_segment(aes(x = 0, y = reorder(major, -n), xend = n, yend = reorder(major, -n)), 
+               size = 0.5, color = "grey50") +
+  ## reorder Group2 by its frequency in descending order
+  geom_point(size = 8) +
+  ## geom_point() creates scatterplots that display the relationship between two variables, which takes the values of both x and y axes.
+  ## Here, if we add geom_point() before geom_segment(), we'll see the sticks stabbing the points. 
+  ## So the sequence actually matters here. 
+  geom_text(color = "white", size = 3) +
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 12, angle = 90, hjust = 1),
+  ## The label of x axis would be too wide to lay out horizontally. hjust = 1 means right-justified.
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_line(size = 0))
+```
+
+
+

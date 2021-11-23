@@ -1,0 +1,10 @@
+name: demo4
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 938226
+bundleId: 2095870
+url: https://yundai.shinyapps.io/demo4/
+when: 1558341460.7541

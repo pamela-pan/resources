@@ -1,0 +1,311 @@
+---
+title: "R Commands"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+***
+## Using R as a calculator
+To get started, we can treat R like a calculator and use R interactively in the console. If we enter an expression and hit Enter, R will evaluate that expression and print the results. Print means to display the results.  
+
+```{r}
+1 + 1
+3 ^ 3
+```
+
+If we do something wrong, R will throw us an error message.
+
+Let's continue to enter more expressions in the console. This time, maybe some built-in math functions. 
+
+```{r}
+mean(c(1, 2, 3, 4, 5))
+sqrt(4) ## square root
+abs(-1) ## absolute value 
+cos(c(0, pi/4, pi/2, pi)) 
+```
+
+
+***
+## `print()`
+Unlike many other programming languages, we can output code in R without using a print function explicitly.  Internally, when we enter an expression, R evaluates that expression and calls the `print()` function. 
+
+Note: There are times that we do need calling the `print()` function explicitly, such as in a loop. 
+
+We can use the `print()` function for generic printing of any object. And R is smart enough to know how to format that object. For instance, if we print a matrix, internally R calls the `print()` function; the `print()` function knows how to format a matrix and we will see a matrix in the console. 
+
+```{r}
+matrix(1:12, nrow = 2, ncol = 3)
+```
+
+We can also put the matrix in a `print()` function, of course.
+
+```{r}
+print(matrix(1:12, nrow = 2, ncol = 3))
+```
+
+
+***
+## R commands
+The R program issues a prompt `>`, which waits for input commands. 
+
+***
+### assignment
+Like most other languages, R lets us assign values to variables and refer to them by name. The assignment operator is `<-`. 
+
+An assignment evaluates an expression, passes the value to a variable, but the result is not automatically printed. The value is stored in the variable we have defined. 
+
+```{r}
+a <- 1 + 1
+```
+
+
+To print the variable value, we type the variable name. 
+```{r}
+a
+```
+
+Left-to-right assignment also works but is unconventional (not recommended).
+```{r}
+1 + 1 -> a
+a
+```
+
+A single equal sign `=` can also be used as an assignment operator (not recommended). In other programming languages, it is common to use `=` as an assignment operator. But in R the `=` operator can be forbidden in some context. So `<-` is preferred. 
+
+```{r}
+a = 1 + 1
+```
+
+If the object already exists, its previous value is overwritten.
+```{r}
+a <- 2 + 2
+a
+```
+
+***
+### variable names
+Formally in R, variable names are called *symbols*. When we define a variable in R, we are assigning a symbol to a value in an environment. An *environment*, therefore, is the set of symbols that are defined in a certain context.
+
+A variable name must start with `.` or a letter; if it starts with a `.`, the second character must not be a digit. A name cannot start with a number or underscore `_`.
+
+Variable names are case-sensitive. Therefore, `age`, `Age` and `AGE` would be three different variables. 
+
+Reserved words cannot be used as variables (`TRUE`, `FALSE`, `NULL`, `if`, `else`, `while` ...). Use `?Reserved` to learn more of the Reserved Words in R. 
+
+Names are unlimited in length.
+
+Whichever naming convention you choose, keep to one naming convention.
+
+```
+myvar <- "Jane Doe"
+my_var <- "Jane Doe"
+myVar <- "Jane Doe"
+MYVAR <- "Jane Doe"
+```
+
+***
+### R command is case sensitive. 
+For instance, variables `A` and `a` are different. Functions `nrow()` and `NROW()` are different. 
+
+***
+### Commands are separated either by a semi-colon `;` or by a newline.
+
+semi-colon:
+```
+a <- 1 + 1 ; b <- 2 + 2
+```
+
+newline: 
+```
+a <- 1 + 1
+b <- 2 + 2
+```
+
+*** 
+### constants
+R has a small number of built-in *constants*. 
+
+`LETTERS` is the 26 upper-case letters of the Roman alphabet.
+```{r}
+LETTERS
+```
+
+`letters` is the 26 lower-case letters of the Roman alphabet.
+```{r}
+letters
+```
+
+`month.abb` is the three-letter abbreviations for the English month names.
+```{r}
+month.abb
+```
+
+`month.name` is the English names for the months of the year.
+```{r}
+month.name
+```
+
+`pi` is the ratio of the circumference of a circle to its diameter.
+```{r}
+pi
+```
+
+***
+#### What are those "[1]" that accompany the returned values? 
+`[1]` means that the index of the first item displayed in the row is 1. 
+
+In R, any number that we enter in the console is interpreted as a vector. A vector is an ordered collection of numbers. We'll see what vector is pretty soon.
+
+
+***
+### incomplete commands
+If a command is not complete at the end of a line, R will give a prompt `+` on second and subsequent lines and continue to read input until the command is complete. 
+
+Use the **esc** key to escape incomplete command.
+
+***
+### auto-completion
+R also includes automatic completions for object names. 
+
+Clicking **Tab** key at the beginning of a command line will give us a list of functions or objects with the same initial to browse and select.
+
+***
+### recalling previous commands; command-line editing
+We can recall, correct, and reexecute our commands in R easily. By pressing the up arrow or the down arrow keys at the prompt, we can scroll through previous commands. By using the left and right arrow keys to move within the command, we can tweak a previous command to repeat it or correct a mistake. 
+
+***
+### `source()`
+After finish working on a problem, we want to keep a record of every step that we have taken. Or we have a frequently used piece of R code that we want to copy and paste into an editor. Those commands can be stored in an external file (e.g. `project1.R`) in the working directory. Later we can use the `source()` function to read and execute the code without having to retype it.
+
+```
+source("project1.R")
+```
+
+`source()` runs the script via the specified path. If you have set up the working directory, the script could be easily written from it.
+
+
+***
+### a sample R session
+You may follow a sample R session to get yourself started and get a sense of R [here](https://cran.r-project.org/doc/manuals/R-intro.html#A-sample-session).
+
+
+
+******
+## Comments
+Comment starts with `#`. When executing R commands, R will ignore anything that starts with `#`.
+
+If we need to comment out a block of code, we need to use `#` at the start of each new line to create multiline comments.
+
+```{r}
+# x <- 5 + 1 
+# print(x) 
+```
+
+Comments are useful in many ways. We use comments to annotate code, or organize a script into segments that are more readable. We can also comment out parts of code to prevent execution when testing alternative commands.
+
+```{r}
+# 1 + 1
+1 #+2
+c(1:2) # this is a vector
+
+# This is a comment
+# written in
+# more than just one line
+```
+
+
+******
+## Packages
+"R is a fully planned and coherent system. It is an integrated suite of software facilities for data manipulation, calculation and graphical display." (W. N. Venables, D. M. Smith and the R Core Team. (2021).)
+
+The design philosophy behind R is based on the S language. The authors of S worked at Bell Labs and really believed in the Unix design philosophy. The idea is to build smaller, specialized tools that each does one thing well, instead of large programs that does everything. That's why we said R is modular. R functions and datasets are stored in *packages*. 
+
+A package is a related set of functions, help files, and datasets that have been packed together. For instance, we have packages for drawing graphics, packages for performing statistical tests, or packages for the latest machine learning techniques.
+
+When we download R, we get the *base* (standard) packages. These packages contain the basic functions that allow R to work. These packages are automatically available to us. 
+
+We can download and install many more packages from package repositories (usually CRAN) that are specialized in certain things (e.g. statistical methods) or designed for a purpose (e.g. textbook companion). 
+
+***
+### installing packages
+`install.packages()` function installs packages. Make sure we are connected to the Internet. Put the name of the package in quotes. 
+
+```
+install.packages("dplyr")
+install.packages(c("ggplot2", "dplyr"))
+```
+
+`library()` function with no arguments prints a list of installed packages in a new window. 
+
+`update.packages()` updates installed packages.
+
+
+***
+### loading packages
+`library()` loads a specified package.
+```
+library(tidyverse)
+```
+
+Only when a package is loaded are its contents available. 
+
+`search()` function with no arguments prints a list of packages currently loaded into R.
+
+`detach()` function unloads a package that is currently loaded. 
+
+```
+detach(package:tidyverse)
+```
+
+We can build our own packages, if we want to share code or data with other people, or if we want to pack it up in a form that’s easy to reuse. 
+
+
+******
+## Getting Help
+`help()` displays the documentation for a specific function. `?` is the shortcut for `help()`. 
+
+```
+help(mean)
+?mean
+```
+
+For a feature specified by special characters, the argument must be enclosed in double or single quotes. 
+
+```
+help("if")
+help("function")
+help("[[")
+```
+
+`example()` runs an Examples section from the online help.  
+```
+example(median)
+```
+
+`help.search()` searches all the installed packages for the function. 
+```
+help.search("linear models")
+```
+
+`??` searches the help files for a topic. Note it will only search in the installed packages.
+
+
+***
+### Stack Overflow
+[Stack Overflow](http://stackoverflow.com/) is a searchable Q&A site oriented toward programming issues.
+
+***
+### CRAN task views
+Sometimes we simply have a generic interest. [CRAN Task Views](http://cran.r-project.org/web/views/) lets us find and read the task view for our area. It gives us links to and descriptions of relevant packages.
+
+***
+### Google
+Finally, don't forget that Google is our friend!
+

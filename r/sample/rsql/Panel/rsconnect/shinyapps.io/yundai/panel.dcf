@@ -1,0 +1,10 @@
+name: panel
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3111465
+bundleId: 3852168
+url: https://yundai.shinyapps.io/panel/
+when: 1605189707.08526

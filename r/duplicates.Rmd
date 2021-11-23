@@ -1,0 +1,84 @@
+---
+title: "Duplicates"
+author: "Yun Dai"
+date: "05/2020"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+library(readr)
+location <- read_csv("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/faculty_loc.csv")
+```
+
+***
+In this post, we discuss a few tricks for working with duplicates, including how to find and mark duplicates, find positions of duplicates, and remove duplicates.
+
+The sample dataset we will be using is shown below. In this dataset, `Name` and `Location` both contain duplicates.
+
+```{r echo=FALSE}
+location
+```
+
+ 
+***
+## Finding duplicates
+Using `duplicated()`, we will get a logical vector indicating which values are duplicates. By default, the first value will be marked as the unique value (`FALSE`) and the rest as duplicates (`TRUE`).
+
+```{r}
+duplicated(location$Name)
+```
+
+***
+We may create a new column to mark the duplicates.
+```{r}
+location$dup <- duplicated(location$Name)
+```
+
+```{r echo=FALSE}
+location
+```
+
+***
+In cases where we want to mark all identical elements as "duplicates", we can specify the `fromLast` argument to be `TRUE`. When `fromLast` is `TRUE`, duplication would be considered from the reverse side.
+```{r}
+location$dup2 <- duplicated(location$Name) | duplicated(location$Name, fromLast=TRUE)
+```
+
+```{r echo=FALSE}
+location
+```
+
+***
+## Finding positions of duplicates
+`which()` gives us the TRUE indices of a logical object.
+
+Using `which()` with `duplicated()`, we get the positions of the duplicates.
+```{r}
+which(duplicated(location$Name))
+```
+
+***
+## Removing duplicates
+`dplyr::distinct()` keeps the unique values of selected columns.
+
+If we do not specify `.keep_all = TRUE`, only variable `Name` will be kept and the others will be dropped.
+```{r message=FALSE,warning=FALSE}
+library(dplyr)
+
+location %>% distinct(Name, .keep_all = TRUE)
+```
+
+***
+We can include multiple variables in `distinct()` so that the combination of the group would be unique.
+
+```{r}
+location %>% distinct(Name, Location, .keep_all = TRUE)
+```
+

@@ -1,0 +1,458 @@
+---
+title: "Subsetting"
+author: "Yun Dai"
+date: "01/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+
+```{r echo=FALSE}
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/sample1")
+```
+
+
+******
+`[]`, `[[]]`, and `$` are the subscripting operators that allow us to access, extract or make changes to elements of an object.
+
+Below we will discuss how to subset vectors, matrices, arrays, lists and data frames. The focus is on subsetting vectors, lists and data frames. We will see examples and scenarios where we would use a method of subsetting.
+
+******
+## Subsetting vectors
+We can access elements of a vector by position, logical condition, or name.
+
+******
+### by position
+
+Below we get the 6th element of `x`.
+```{r}
+x <- 1:10
+x[6] 
+```
+
+The 1st to the 5th elements.
+```{r}
+x[1:5] 
+```
+
+The 1st and the 3rd elements.
+```{r}
+x[c(1, 3)] 
+```
+
+***
+In addition to using numbers to indicate positions, we can use `TRUE` or `FALSE` to indicate which positions to access.
+
+Below we get the elements at the odd positions; the subsetting rule `c(TRUE, FALSE)` gets recycled.
+```{r}
+x <- 1:10
+x[c(TRUE, FALSE)]  
+```
+
+***
+#### renaming data frame columns
+As one application of what we saw above, we may rename column names of a data frame. 
+
+Let's load the `iris` dataset and get its column names in a vector with `names()`.
+```{r}
+data(iris)
+names(iris)
+```
+
+Then we can access and change the 1st to the 4th column names. 
+```{r}
+names(iris)[1:4] <- c("sepal.length", "sepal.width", "petal.length", "petal.width")
+names(iris)
+```
+
+
+******
+### excluding elements
+`-` sign excludes the elements in subsetting. 
+
+Below we exclude the 2nd and the 4th elements of `x`.
+```{r}
+x <- 1:10
+x[c(-2, -4)]
+```
+
+This excludes the first three elements.
+```{r}
+x[-(1:3)] 
+```
+
+******
+### using logical operators and keeping all TRUEs
+Here we keep elements smaller than 8 and larger than 4.
+```{r}
+x[x > 4 & x < 8] 
+```
+
+This keeps elements equal to 5.
+```{r}
+x[x == 5] 
+```
+
+***
+#### extracting elements by conditional statements
+Below we extract the subset of column `Sepal.Length` in dataset `iris` whose values are larger than 6.
+```{r}
+iris$Sepal.Length[iris$Sepal.Length > 6.5]
+```
+
+As another example, below we get the subset of `Sepal.Length` where `Species` has values of `versicolor` and where `Petal.Width` is smaller than 1.2.
+```{r}
+iris$Sepal.Length[iris$Species == "versicolor" & iris$Petal.Width < 1.2] 
+```
+
+
+******
+### by name
+Below we get all elements with names "apple", "melon" and "lemon".
+```{r}
+y <- 1:8
+names(y) <- c("apple", "orange", "pear", "melon", "mango", "lemon", "banana", "kiwi") 
+y[c("apple", "melon", "lemon")]  
+```
+
+***
+#### subsetting a data frame by column names
+The example above can be useful when we subset a data frame by its column names. 
+```{r}
+data(iris)
+head(iris[c("Sepal.Length", "Species")])
+```
+
+******
+### including all elements
+A blank `[]` returns everything.
+```{r}
+x[]  
+```
+
+******
+## Subsetting matrices and arrays
+
+***
+### subsetting matrices
+Getting matrix subsets by the positions of rows and columns is similar to subsetting vectors by position.
+
+Let's first create a matrix `m`. 
+```{r}
+m <- matrix(c(1:12), nrow = 4, ncol = 3) 
+```
+
+Below we get the second row of the matrix.
+```{r}
+m[2, ]   
+```
+
+The third column.
+```{r}
+m[, 3]   
+```
+
+The second row and the third column.
+```{r}
+m[2, 3]
+```
+
+The second and fourth rows as well as the first and third columns.
+```{r}
+m[c(2,4), c(1,3)]
+```
+
+******
+### subsetting arrays
+Matrix is a special form of an array with two dimensions. Thus the idea of subsetting arrays is the same as subsetting matrices.
+
+Let's create an array first.
+```{r}
+a <- array(1:12, dim = c(2, 2, 3))
+a
+```
+
+Below we subset all second rows from the array; row is the 1st dimension. 
+```{r}
+a[2, , ] 
+```
+
+This subsets all 1st columns from the array; column is the 2nd dimension.
+```{r}
+a[ , 1, ]
+```
+
+This subsets the 3rd matrix, which is the 3rd dimension.
+```{r}
+a[ , , 3] 
+```
+
+We can further subset elements from the matrix that we got above.
+```{r}
+a[, , 3][1, 2]  
+```
+
+Below we get the 1st row of the 3rd matrix.
+```{r}
+a[1, , 3]
+```
+
+This returns the 1st row and the 2nd column of the 3rd matrix.
+```{r}
+a[1, 2, 3] 
+```
+
+
+******
+## Subsetting data frames
+Subsetting a data frame is similar to subsetting a matrix. Data frame subsetting is frequently seen when we work with subsamples.
+
+Let's load the sample dataset `iris` first.
+```{r}
+data(iris)
+head(iris)
+```
+
+******
+### by row and column positions
+Accessing rows and columns of a data frame is the same as accessing rows and columns of a matrix.
+
+```{r}
+## accessing rows
+iris[c(1, 3, 5), ]
+```
+
+
+```{r}
+## accessing rows and columns
+iris[1:5, 1:3]
+```
+
+
+```{r}
+## excluding columns
+iris[c(1, 3, 5), -c(1:3)]
+```
+
+******
+### by column and row names
+We can also subset data frames by specifying the row and column names.
+
+By column name.
+```{r}
+iris[3, c("Species", "Petal.Length")]
+```
+
+By row name.
+```{r}
+data(USArrests)
+USArrests["California", ] ## USArrests is a sample R dataset
+```
+
+
+***
+#### keeping and dropping columns
+Another scenario where we use data frame subsetting often is keeping or dropping columns to creata a reasonable subsample to work with.
+
+For instance, when we collect data from Twitter using `rtweet`, the returned data frame contains 90 variables. Not all of them we will use.
+
+```{r message=FALSE,warning=FALSE}
+library(rtweet)
+tweets <- search_tweets(q = "immigration", n = 5)
+names(tweets)
+```
+
+We keep the subset that we need.
+```{r}
+tweets2 <- tweets[, c("user_id", "text", "retweet_count")]
+tweets2
+```
+
+******
+### by logical statements
+```{r}
+iris[iris$Species == "versicolor" & iris$Petal.Width < 1.2, ] 
+```
+
+We can also use `with()` to specify the conditions. `with()` evaluates an expression before applying it to data.
+
+```{r}
+iris[with(iris, Species == "versicolor" & Petal.Width < 1.2),]
+```
+
+
+***
+In the example below, the output of a numeric operation is used as the logical condition.
+```{r}
+iris[iris$Sepal.Length / iris$Sepal.Width > 2.5, ]
+```
+
+
+***
+We have another case. Here, we want to recode the `year` so that dates and times before Nov. 1 of the current year will be recoded to the previous year. We need to work on the proper subset of data for recoding.
+```{r message=FALSE, warning=FALSE}
+head(sample1[c("year", "datetime")])
+```
+
+When we have multiple conditions to specify, we may first define all the subsetting rules (the intermediate steps), and then pass them to the data frame.
+```{r message=FALSE, warning=FALSE}
+library(lubridate)
+
+i <- 2000
+while (i < 2015){
+  upper <- sample1$datetime < make_datetime(year = i + 1, month = 11, day = 1)
+  lower <- sample1$datetime >= make_datetime(year = i, month = 11, day = 1)
+  sample1$year[upper & lower] <- i
+  i <- i + 1
+}
+
+head(sample1[c("year", "datetime")], 10)
+```
+
+***
+#### creating training and test sets
+One scenario where we frequently use data frame subsetting is creating training and test sets on which to apply machine learning techniques.
+
+For instance, below I randomly select 75% of the data as the training set to build a classification model. The rest 25% would be the test set to validate the model. 
+
+```{r eval=FALSE}
+set.seed(123)
+
+## creating an indicator for which subset goes to the training set 
+## and which goes to the test set
+ind <- sample(2, size = nrow(data), replace = TRUE, prob = c(0.75, 0.25))
+
+## creating the training and test set: X
+data_train <- data[ind == 1, 3:12]
+data_test <- data[ind == 2, 3:12]
+
+## creating the training and test set: y
+data_train_labels <- data[ind == 1, 13]
+data_test_labels <- data[ind == 2, 13]
+```
+
+
+
+******
+## Subsetting lists
+Subsetting lists can be slightly more complex. Depending on what objects you want to obtain, using `[]` or `[[]]` operators returns different object types. 
+
+Let's create a list `L` first.
+```{r}
+L <- list (AA = c(1:10), BB = matrix(1:6, ncol = 3, nrow = 2), CC = list(c("a", "b", "c"), c(TRUE, FALSE), factor(c("one", "two", "three")))) 
+L
+```
+
+With `[]` we get a list containing a vector.
+```{r}
+L[1] 
+```
+
+With `[[]]` we get a vector.
+```{r}
+L[[1]] 
+```
+
+******
+### subsetting elements on lower levels
+Here the third element of `L` is a list `CC`; the second element of that list `CC` is a vector.
+```{r}
+L[[3]][[2]] 
+```
+
+We can further subset that vector to get its first and third elements.
+```{r}
+L[[3]][[1]][c(1, 3)]
+```
+
+******
+### subsetting elements by name
+When using `[[]]` to subset a list, we must specify the full name of the component.
+```{r}
+L[["AA"]] 
+```
+
+When we use `$` to subset a list, the component's name can be abbreviated.
+```{r}
+L$A 
+```
+
+******
+## Subsetting model output components
+One very useful application of subsetting is extracting model output components. 
+
+***
+### case 1
+For instance, from regression outputs,
+```{r}
+data(mtcars)
+model <- lm(mpg ~ cyl, data = mtcars)
+summary(model)
+```
+
+we are extracting the `coefficients` component.
+```{r}
+summary(model)[["coefficients"]] 
+```
+
+It is the same as 
+```{r}
+summary(model)$coefficients
+```
+
+We can further extract the `Estimate`, `Std. Error` etc. if we want to.
+```{r}
+summary(model)[["coefficients"]][,"Std. Error"]
+```
+
+***
+### case 2
+In one consultation with our student, the student wanted to extract some values buried deep down in his model outputs. He wanted to extract the Parameter estimate Phi, and Value of the Fixed effects.
+```{r}
+library(nlme)
+X <- arima.sim(model = list(ar = 0.99), n = 100) 
+y <- 0*X
+result <- lme (X ~ 1, random = ~ 1 | y, correlation = corARMA (form = ~ 1, p = 1, q = 0))
+summary(result)
+```
+
+In this case, extracting model outputs is similar to list subsetting.
+
+Phi can be extracted by
+```{r}
+phi <- result$modelStruct$corStruct
+phi <- coef(phi, unconstrained = FALSE)
+phi
+```
+
+Value of the Fixed effects can be extracted by
+```{r}
+summary(result)$tTable[1]
+```
+
+
+******
+## Subsetting components from other data types
+For instance, we may need to access components from an igraph object for network analysis.
+```{r message=FALSE,warning=FALSE}
+library(igraph)
+network <- graph_from_literal(1-2, 1-3, 2-3, 2-4, 3-5, 4-5, 
+                        4-6, 4-7, 5-6, 6-7)
+network 
+```
+
+For the graph `network`, we may want to access its components `membership` (numeric vector giving the cluster id to which each vertex belongs), `csize` (numeric vector giving the sizes of the clusters), or `no` (numeric constant, the number of clusters). These components are stored in a named list. 
+```{r}
+components(network)
+```
+
+Therefore, to access `no`, for instance, we can simply apply the list subsetting rules.
+```{r}
+components(network)$no
+```
+

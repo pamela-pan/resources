@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Summarizing Your Data</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-96123149-3');
+  </script>
+</head>
+
+<body>
+  <div class="border">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+<!--   <div class="fast-nav">
+    <div id="back"><a href="../stata.html">&larr;</a></div>
+    <div id="home"><a href="../home.html">home</a></div>
+  </div> -->
+  
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Summarizing Your Data</h1>
+		<p>The four commands all produce summary statistics. The choice of the command, however, depends on the question we ask.
+		</p>
+
+		<h2>summarize</h2>
+			<p>
+				<span class="g">summarize</span> returns a variety of univariate summary statistics. If no options have been specified for the variables, it displays the number of observations, mean, standard deviation, minimum and maximum values. <br>
+				<span class="g">
+					. sysuse auto <br>
+					. sum weight 
+				</span>
+				<pre><code>
+					
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      weight |         74    3019.459    777.1936       1760       4840
+
+
+				</code></pre>
+
+			</p>
+			<p>
+				<span class="g">
+					. sum weight, detail</span> produces additional statistics with the <span class="g">detail</span> option.
+				<pre><code>                              Weight (lbs.)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         1760           1760
+ 5%         1830           1800
+10%         2020           1800       Obs                  74
+25%         2240           1830       Sum of Wgt.          74
+
+50%         3190                      Mean           3019.459
+                        Largest       Std. Dev.      777.1936
+75%         3600           4290
+90%         4060           4330       Variance       604029.8
+95%         4290           4720       Skewness       .1481164
+99%         4840           4840       Kurtosis       2.118403
+  				</code></pre>
+			</p>
+
+
+		<h2>tabulate; tab1; tabulate, summarize(); tabulate, generate()</h2>
+		<h3>tabulate</h3>
+			<p>
+				<span class="g">tabulate</span> produces one- and two-way tables of frequencies. <br>
+				<span class="g">
+					. tab rep78</span> produces the distribution of the variable car repair record <span class="g">rep78</span>.
+			<pre><code>
+     Repair |
+Record 1978 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |          2        2.90        2.90
+          2 |          8       11.59       14.49
+          3 |         30       43.48       57.97
+          4 |         18       26.09       84.06
+          5 |         11       15.94      100.00
+------------+-----------------------------------
+      Total |         69      100.00
+      		</code></pre>
+			</p>
+
+			<p>
+				In combination with the categorical variable, <span class="g">tabulate</span> can produce a cross-tabulation of summary statistics by category. <br>
+				<span class="g">. tab rep78 foreign</span> produces the car repair record frequencies by foreign or domestic car type, where <span class="g">foreign</span> is a categorical variable.<br>
+			<pre><code>
+    Repair |
+    Record |       Car type
+      1978 |  Domestic    Foreign |     Total
+-----------+----------------------+----------
+         1 |         2          0 |         2 
+         2 |         8          0 |         8 
+         3 |        27          3 |        30 
+         4 |         9          9 |        18 
+         5 |         2          9 |        11 
+-----------+----------------------+----------
+     Total |        48         21 |        69 
+      
+      		</code></pre>				
+			</p>
+
+			<p>
+				<span class="g">. tab rep78 foreign, column row</span> reports relative frequencies within the columns and rows when the options <span class="g">column</span> and <span class="g">row</span> are specified.<br>
+			<pre><code>
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+|  row percentage   |
+| column percentage |
++-------------------+
+     
+    Repair |
+    Record |       Car type
+      1978 |  Domestic    Foreign |     Total
+-----------+----------------------+----------
+         1 |         2          0 |         2 
+           |    100.00       0.00 |    100.00 
+           |      4.17       0.00 |      2.90 
+-----------+----------------------+----------
+         2 |         8          0 |         8 
+           |    100.00       0.00 |    100.00 
+           |     16.67       0.00 |     11.59 
+-----------+----------------------+----------
+         3 |        27          3 |        30 
+           |     90.00      10.00 |    100.00 
+           |     56.25      14.29 |     43.48 
+-----------+----------------------+----------
+         4 |         9          9 |        18 
+           |     50.00      50.00 |    100.00 
+           |     18.75      42.86 |     26.09 
+-----------+----------------------+----------
+         5 |         2          9 |        11 
+           |     18.18      81.82 |    100.00 
+           |      4.17      42.86 |     15.94 
+-----------+----------------------+----------
+     Total |        48         21 |        69 
+           |     69.57      30.43 |    100.00 
+           |    100.00     100.00 |    100.00 
+      
+      		</code></pre>
+			</p>
+
+			<p>
+				Using <span class="g">by</span>  with the categorical or indicator variables produces separate tables of the statistics by each category. <br>
+				<span class="g">. by foreign: tab rep78</span> returns the summary statistics in two tables for each foreign and domestic car type.
+			<pre><code>
+------------------------------------------------------------
+-&gt; foreign = Domestic
+    
+     Repair |
+Record 1978 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |          2        4.17        4.17
+          2 |          8       16.67       20.83
+          3 |         27       56.25       77.08
+          4 |          9       18.75       95.83
+          5 |          2        4.17      100.00
+------------+-----------------------------------
+      Total |         48      100.00
+      
+-------------------------------------------------------------
+-&gt; foreign = Foreign
+     
+     Repair |
+Record 1978 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          3 |          3       14.29       14.29
+          4 |          9       42.86       57.14
+          5 |          9       42.86      100.00
+------------+-----------------------------------
+      Total |         21      100.00
+      
+      		</code></pre>
+			</p>
+			
+			<h3>tab1</h3>
+			<p><span class="g">tab1</span> is a convenience tool for one-way table of frequencies. <br>
+				<span class="g">. tab1 rep78 foreign headroom</span> returns three tables of frequencies for each variable, equivalent to <br>
+				<span class="g">. tab rep78 <br>
+				. tab foreign<br>
+				. tab headroom</span>
+				<pre><code>
+-&gt; tabulation of rep78  
+      
+     Repair |
+Record 1978 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |          2        2.90        2.90
+          2 |          8       11.59       14.49
+          3 |         30       43.48       57.97
+          4 |         18       26.09       84.06
+          5 |         11       15.94      100.00
+------------+-----------------------------------
+      Total |         69      100.00
+      
+-&gt; tabulation of foreign  
+      
+  Car type |      Freq.     Percent        Cum.
+-----------+-----------------------------------
+  Domestic |         52       70.27       70.27
+   Foreign |         22       29.73      100.00
+-----------+-----------------------------------
+     Total |         74      100.00
+      
+-&gt; tabulation of headroom  
+      
+   Headroom |
+      (in.) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+        1.5 |          4        5.41        5.41
+        2.0 |         13       17.57       22.97
+        2.5 |         14       18.92       41.89
+        3.0 |         13       17.57       59.46
+        3.5 |         15       20.27       79.73
+        4.0 |         10       13.51       93.24
+        4.5 |          4        5.41       98.65
+        5.0 |          1        1.35      100.00
+------------+-----------------------------------
+      Total |         74      100.00
+      		</code></pre>
+			</p>
+
+			<h3>tabulate, summarize()</h3>
+			<p>
+				<span class="g">tabulate <em>category</em>, summarize(<em>var</em>)</span> produces one- and two-way tables of means and standard deviations by <span class="g">category</span> on <span class="g">var</span>. <br>
+				<span class="g">. tab foreign, sum(weight)</span> returns the summary table of the means and standard deviations of the car weight by foreign and domestic car types. 
+			<pre><code>
+            |      Summary of Weight (lbs.)
+   Car type |        Mean   Std. Dev.       Freq.
+------------+------------------------------------
+   Domestic |   3,317.115   695.36374          52
+    Foreign |   2,315.909   433.00345          22
+------------+------------------------------------
+      Total |   3,019.459   777.19357          74
+      		</code></pre>
+			</p>
+
+			<h3>tabulate, generate()</h3>
+			<p>
+				<span class="g">tabulate <em>var</em>, generate(<em>newvar</em>)</span> creates indicator variables. <br>
+				<span class="g">. tab foreign, gen(import)</span> generates two new variables <span class="g">import1</span>, indicating whether the car is domestic made, and <span class="g">import2</span>, indicating whether the car is foreign made.
+			<pre><code>
+   Car type |      Freq.     Percent        Cum.
+------------+-----------------------------------
+   Domestic |         52       70.27       70.27
+    Foreign |         22       29.73      100.00
+------------+-----------------------------------
+      Total |         74      100.00
+      		</code></pre>
+			</p>
+
+		<h2>tabstat</h2>
+			<p>
+				<span class="g">tabstat <em>varlist</em>, by(<em>category</em>) statistics (<em>stat1 stat2…</em>)</span> reports summary statistics by groups, where multiple statistics can be specified, including mean, sum, count, standard deviation, percentiles etc. <br>
+				<span class="g">
+					. tabstat price weight, by(foreign) statistics(n mean sd p50)</span> 
+				reports the number of nonmissing observations, mean, standard deviation, and the 50th percentile (median) of variable price and weight by their car type of foreign or domestic made.
+				<pre><code>
+Summary statistics: N, mean, sd, p50
+  by categories of: foreign (Car type)
+      
+ foreign |     price    weight
+---------+--------------------
+Domestic |        52        52
+         |  6072.423  3317.115
+         |  3097.104  695.3637
+         |    4782.5      3360
+---------+--------------------
+ Foreign |        22        22
+         |  6384.682  2315.909
+         |  2621.915  433.0035
+         |      5759      2180
+---------+--------------------
+   Total |        74        74
+         |  6165.257  3019.459
+         |  2949.496  777.1936
+         |    5006.5      3190
+------------------------------
+      			</code></pre>
+
+		<h2>table</h2>
+			<p>
+				<span class="g">table <em>category1</em>, by(<em>category2</em>) contents (<em>stat1 var stat2 var stat3 var…</em>)</span> is a more flexible command that produces one-, two-, and up-to-seven-way tables of various summary statistics. Up to four variables can be selected as categories and up to five statistics can be specified. <br>
+				<span class="g">
+					. table rep78, by(foreign) contents(n weight mean weight sd weight p50 weight)</span>
+				reports the mean and the 50th percentile of car weight by repair record <span class="g">rep78</span> and foreign/domestic car types. <span class="g">foreign</span> is the main category under which each value of <span class="g">price</span> is specified.
+				<pre><code>
+------------------------------------------------------------------
+Car type  |
+and       |
+Repair    |
+Record    |
+1978      |    N(weight)  mean(weight)    sd(weight)   med(weight)
+----------+-------------------------------------------------------
+Domestic  |
+        1 |            2         3,100       523.259         3,100
+        2 |            8       3,353.8      445.9961         3,465
+        3 |           27       3,442.2      645.3701         3,350
+        4 |            9       3,532.2      806.2068         3,700
+        5 |            2         1,960      226.2742         1,960
+----------+-------------------------------------------------------
+Foreign   |
+        1 |                                                       
+        2 |                                                       
+        3 |            3         2,010      158.7451         2,070
+        4 |            9       2,207.8      335.4764         2,160
+        5 |            9       2,403.3      405.0926         2,240
+------------------------------------------------------------------
+      			</code></pre>
+			</p>
+		</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

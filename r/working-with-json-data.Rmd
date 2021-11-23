@@ -1,0 +1,232 @@
+---
+title: "Working with JSON Data"
+author: "Yun Dai"
+date: "04/2020"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+setwd("/Volumes/GoogleDrive/My Drive/websites/new web/data/r")
+library(readr)
+business <- read_csv("sample/business.csv")
+ted <- read_csv("sample/ted.csv")
+```
+
+***
+When using R to read [JSON](https://www.json.org/json-en.html) files or datasets containing columns of JSON objects or arrays, we often get very long strings or deeply nested lists. However, ideally, we would want to work with data structures that are more easily to manipulate in R, such as vectors or data frames. How to do transformations and solve the problems then? 
+
+In this post, we discuss four types of scenarios, and questions arising from each scenario, with three sample datasets:
+
+* How to handle JSON objects and flatten list-column of data frames
+* How to handle nested JSON objects and rectangle deeply nested lists
+* How to handle JSON arrays and flatten list-column of vectors
+* How to handle JSON files
+
+We will be using tools from several packages to handle each situation.
+
+Reading JSON objects, arrays or files:
+
+* `jsonlite::fromJSON()` reads JSON objects and arrays. 
+* `jsonlite::stream_in()` implements line-by-line processing of JSON data and works over a connection (e.g. url, file).
+
+Flattening list of data frames, list of vectors, or nested data frames:
+
+* `tidyr::unnest()` flattens a list-column of data frames to regular columns.
+* `tidyr::unnest_longer()` and `tidyr::unnest_wider()` rectangle and collapse deeply nested lists into regular columns. `unnest_longer()` turns each element of a list-column into a row; it preserves the columns, but changes the rows. `unnest_wider()` turns each element of a list-column into a column; it preserves the rows, but changes the columns.
+* `jsonlite::flatten()` flattens nested data frames.
+
+Working with lists:
+
+* `purrr::map()` applies a function to each element of a vector. It can also extract elements from a deeply nested list. `purrr::map()` returns a list.
+* `plyr::ldply` splits a list, applies a function, and returns results in a data frame. 
+
+***
+## Handling JSON objects
+The first sample dataset we will be using is `ted_main.csv`, which is part of the [Ted Talks](https://www.kaggle.com/rounakbanik/ted-talks) data that can be downloaded from Kaggle.
+
+```{r echo=FALSE}
+head(ted)
+```
+
+In this dataset, `ratings` takes the form of JSON objects, which is a stringified dictionary of the various ratings given to the talk.
+```{r echo=FALSE}
+head(ted$ratings, 1)
+```
+
+***
+### reading JSON objects
+Using `jsonlite::fromJSON` to read `ratings`, we get a list of data frames. 
+```{r message=FALSE,warning=FALSE}
+library(jsonlite)
+library(purrr)
+
+### fromJSON takes JSON strings
+ted$ratings2 <- gsub("'", '"', ted$ratings)
+ted$ratings2 <- map(ted$ratings2, fromJSON)
+head(ted$ratings2, 2)
+```
+
+***
+### flattening list-column of data frames
+The question then becomes how to flatten the list-column of data frames to regular columns.
+
+One solution is to use `tidyr::unnest()`. For each `title`, we take out the frame of ratings from the list `ratings2`; these data frames consist of three columns `id`, `name` and `count`. The flattened data frame is in the long format. 
+
+Below we show the output of the first two talks.
+```{r message=FALSE, warning=FALSE}
+library(tidyr)
+library(dplyr)
+
+rating <- ted %>% select(title, ratings2) %>% unnest(ratings2) 
+head(rating, 20)
+```
+
+
+***
+## Handling nested JSON objects
+The next demo dataset `yelp_academic_dataset_business.json` is from the [Yelp Dataset](https://www.kaggle.com/yelp-dataset/yelp-dataset), which can also be found on Kaggle. 
+```{r echo=FALSE}
+head(business)
+```
+
+`hours` takes the form of nested JSON objects, slightly more complex than the previous case.
+```{r}
+head(business$hours)
+```
+
+***
+Converting `hours` using `jsonlite`, we get nested lists. For each business, there is a nested list of its opening and closing hours by day of a week.
+
+```{r  message=FALSE,warning=FALSE}
+business$hours2 <- gsub("'", '"', business$hours)
+business$hours2 <- map(business$hours2, fromJSON)
+head(business$hours2, 1)
+```
+
+***
+It would make sense if we can extract the elements from each nested list and place everything properly into a data frame like the one below.
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+df <- business %>% select(name, hours2)
+df <- df %>% unnest_longer(hours2) %>% unnest_wider(hours2)
+df <- df %>% select(name, close, open, day = hours2_id)
+df
+```
+
+
+***
+### rectangling deeply nested lists
+We use `unnest_longer()` and `unnest_wider()` to collapse deeply nested lists into regular columns. `unnest_longer()` turns each element of a list-column into a row; `unnest_wider()` turns each element of a list-column into a column.
+
+Below we start with the first level of the list, days of a week. We use `unnest_longer()` to put the days into a new column. The data frame grows longer with the days grouped under each `name`.
+```{r message=FALSE,warning=FALSE}
+hours <- business %>% select(name, hours2)
+hours %>% unnest_longer(hours2)
+```
+
+We then work on the elements on the second level of the list, opening and closing hours of the businesses. We use `unnest_wider()` to put the opening and closing hours into the same row with the day they belong to. The data frame grows wider. 
+
+```{r message=FALSE,warning=FALSE}
+hours %>% unnest_longer(hours2) %>% unnest_wider(hours2)
+```
+
+Finally, after some postprocessing we get a data frame that is easier to manipulate and displays the information buried in the lists.
+```{r message=FALSE,warning=FALSE}
+hours %>% 
+  unnest_longer(hours2) %>% 
+  unnest_wider(hours2) %>%
+  select(name, close, open, day = hours2_id)
+```
+
+***
+## Handling JSON arrays
+In the sample dataset `yelp_academic_dataset_business.json`, we have a variable `categories` that takes the form of JSON arrays.
+
+```{r warning=FALSE}
+head(business$categories)
+```
+
+Again, we use `jsonlite::fromJSON` and `purrr::map` to read the JSON arrays. We get a list-column of vectors `categories2`.
+```{r}
+business$categories2 <- gsub("'", '"', business$categories)
+business$categories2 <- map(business$categories2, fromJSON)
+head(business$categories2)
+```
+***
+### flattening list-column of vectors
+Using `unnest_longer()`, we convert the list-column of vectors to a regular column and turn the data frame into the longer format.
+```{r}
+business %>% select(name, categories2) %>% unnest_longer(categories2)
+```
+
+
+***
+## Handling JSON files
+Below we use the third sample dataset, `log`, to show how to handle JSON files, which we also discussed in [this post](http://shanghai.hosting.nyu.edu/data/r/reading-data.html#reading_json_files) with more examples. 
+
+The `log` file is part of a large dataset of server logs recording user behaviors of an online course on a learning platform.
+
+***
+The JSON data is in the ndjson format that `jsonlite::fromJSON` does not directly support. The `stream_in()` function in the package implements line-by-line processing of JSON data in the ndjson format over a connection (e.g. url, file). 
+
+Therefore, we read the file line-by-line first. The output is a large character vector.
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+
+con <- read_lines("sample/tracking.log")
+head(con, 1)
+```
+
+We then use `jsonlite::stream_in()` to implement line-by-line processing. Below, `textConnection()` inputs and outputs text connections. The output is a data frame of vectors, a data frame, and a list.
+```{r}
+df <- stream_in(textConnection(con))
+head(df)
+```
+
+We use `jsonlite::flatten()` to flatten the nested data frame `context`. 
+```{r eval=FALSE}
+flatten(df$context)
+```
+
+
+***
+If we use `rjson` to read the file line-by-line, the initial outputs can be more complex and it takes more steps to get what we want.
+```{r message=FALSE, warning=FALSE}
+library(rjson) 
+library(plyr)
+
+lines <- read_lines("sample/tracking.log")
+df2 <- ldply(lapply(lines, function(x) t(unlist(fromJSON(json_str = x)))))
+```
+
+In the code above, `rjson::fromJSON()` reads the first JSON object from the file and outputs a list.
+```{r}
+a <- fromJSON(json_str = lines)
+head(a)
+```
+
+`unlist()` unlists the list and transforms it to a vector. `t()` transposes the vector to a matrix.
+```{r}
+b <- t(unlist(fromJSON(json_str = lines)))
+head(b)
+```
+
+`lapply()` applies a function over a list or vector. In this case, it repeats what we have done above to every JSON object in `lines`. The output is a list.
+```{r eval=FALSE}
+l <- lapply(lines, function(x) t(unlist(fromJSON(json_str = x))))
+head(l, 1)
+```
+
+As the last step, in order to get a data frame, we use the function `plyr::ldply()` that splits the list, applies a function, and returns results in a data frame.
+```{r}
+df2 <- ldply(lapply(lines, function(x) t(unlist(fromJSON(json_str = x)))))
+head(df2, 1)
+```
+

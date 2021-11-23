@@ -1,0 +1,126 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Reshaping Your Data</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+		
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Reshaping Your Data</h1>
+	<h2>reshape</h2>
+	<p> <span class="g">reshape long <em>varlist</em>, i(<em>i</em>) j(<em>j</em>)</span> or <span class="g">reshape wide <em>varlist</em>, i(<em>i</em>) j(<em>j</em>)</span> converts data from long to wide and vice versa.</p>
+	<p>
+		<span class="g">i</span> is the id variable of a higher level;<br>
+		<span class="g">j</span> is the id variable of a lower level;<br>
+		<span class="g">wide</span> means reshaping to wide;<br>
+		<span class="g">long</span> means reshaping to long. 
+	</p>
+	<p>There are more observations in the long format and more variables in the wide format. In the long format, variable values of the lower levels are grouped under values of a higher level.  In the wide format, each column represents variable values of lower levels. </p>
+	<p>
+		<span class="g">
+			. use long <br>
+			. list
+		</span>
+		<pre><code>
+     +------------------------------------------+
+     | id   semester   course    gpa   attend~e |
+     |------------------------------------------|
+  1. |  1          1        A   3.81          1 |
+  2. |  1          1        B   3.82          2 |
+  3. |  1          2        A   3.76          3 |
+  4. |  1          2        B   3.77          4 |
+  5. |  2          1        A   3.56          4 |
+     |------------------------------------------|
+  6. |  2          1        B   3.55          3 |
+  7. |  2          2        A   3.45          2 |
+  8. |  2          2        B   3.47          1 |
+     +------------------------------------------+			
+		</code></pre>	
+		<span class="g">. reshape wide gpa attendance, i(id semester) j(course) string</span>  converts the dataset from long to wide. 
+		<pre><code>
+(note: j = A B)
+
+Data                               long   ->   wide
+-----------------------------------------------------------------------------
+Number of obs.                        8   ->       4
+Number of variables                   5   ->       6
+j variable (2 values)            course   ->   (dropped)
+xij variables:
+                                    gpa   ->   gpaA gpaB
+                             attendance   ->   attendanceA attendanceB
+-----------------------------------------------------------------------------
+			
+		</code></pre>
+		<span class="g">. list</span>
+		<pre><code>
+     +---------------------------------------------------+
+     | id   semester   gpaA   attend~A   gpaB   attend~B |
+     |---------------------------------------------------|
+  1. |  1          1   3.81          1   3.82          2 |
+  2. |  1          2   3.76          3   3.77          4 |
+  3. |  2          1   3.56          4   3.55          3 |
+  4. |  2          2   3.45          2   3.47          1 |
+     +---------------------------------------------------+			
+		</code></pre>
+		<span class="g">. reshape long</span> changes it back to the long format.
+		<pre><code>
+(note: j = A B)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------
+Number of obs.                        4   ->       8
+Number of variables                   6   ->       5
+j variable (2 values)                     ->   course
+xij variables:
+                              gpaA gpaB   ->   gpa
+                attendanceA attendanceB   ->   attendance
+-----------------------------------------------------------------------			
+		</code></pre>
+	</p>
+
+	<h2>collapse</h2>
+	<p><span class="g">collapse (<em>stat1</em>) <em>varlist1</em> (<em>stat2</em>) <em>varlist2…</em>, by(<em>group varlist</em>)</span> aggregates the dataset to summary statistics. <span class="g">stat</span> options include mean, median, percentiles, standard deviations, standard errors, first/last values, maximum/minimum etc.</p>
+	<p>
+		<span class="g">
+		. use long <br>
+		. collapse (mean) gpa, by(semester id)</span><br>
+		returns the mean of gpa of each id by semester. <br>
+		<span class="g">
+		. list 
+		</span>
+		<pre><code>
+     +-----------------------+
+     | id   semester     gpa |
+     |-----------------------|
+  1. |  1          1   3.815 |
+  2. |  2          1   3.555 |
+  3. |  1          2   3.765 |
+  4. |  2          2    3.46 |
+     +-----------------------+			
+		</code></pre>
+	</p>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>

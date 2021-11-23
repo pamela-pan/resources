@@ -1,0 +1,132 @@
+---
+title: "Writing R Code"
+author: "Yun Dai"
+date: "01/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+## Being reproducible
+Usually, when we work on a project, we will want to keep track of what we do. Below we discuss the best practices for writing R code to the goal of being reproducible, together with some general tips and tricks.
+
+******
+### setting up current working directory
+The first thing we want to do is set up a working directory, which is the default directory to read and write files. 
+
+`getwd()` returns the location of the current working directory. 
+
+`setwd()` sets the current working directory. Once we set the working directory, we can access the files via relative path, which is much easier to specify than the absolute path.
+```{r results=FALSE, message=FALSE, eval=FALSE}
+setwd("~/Desktop")
+```
+
+******
+### organizing files
+For each project we will want to set up a different working directory, and put data, code, graphics, tables, documentations, reports and other files of one project in one folder.
+
+******
+## Organizing code
+The recommended way to organize code is as below:
+
+* Starting the script with the project information using comments
+* Loading all required packages
+* Sourcing codes
+* Functions for specific tasks
+
+```{r results=FALSE, message=FALSE, eval=FALSE}
+######################################
+# project description
+######################################
+# Author:
+# Date:
+# ...
+
+######################################
+# load libraries
+######################################
+library(readr)
+library(dplyr)
+library(stringr)
+library(depmixS4)
+library(ggplot2)
+
+######################################
+# run scripts
+######################################
+source("cleaning.R")
+source("models.R")
+source("viz.R")
+######################################
+
+```
+
+******
+### using comments
+`#` indicates comments. Everything following `#` will be ignored.
+
+We use comments not only to "comment", but also to
+
+* keep track of our reasoning and let the readers (e.g. our collaborators) know what we have been doing
+* break long scripts into blocks
+* comment out commands to test parts of code in debugging
+
+If we need to comment out a block of codes, we need to put `#` at the start of each new line.
+```{r}
+# this is 
+# a very long
+# comment
+```
+
+******
+### intermediate objects
+Defining intermediate objects as we move along gives the readers (and yourself when you later review your code) a clear clue of what you have done. It also makes debugging and checking intermediate outputs easier.
+
+As an oversimplified example, below we first defined all the rules, logical expressions indicating elements or rows to keep, before passing them to `subset()`.
+```{r results=FALSE, message=FALSE, eval=FALSE}
+a <- rule1
+b <- rule2
+c <- rule3
+
+subset(data, a & b & c)
+```
+
+******
+### automating your code
+If you find yourself repeating your code, automate them with a loop or a function. Doing so would also reduce chances of making mistakes in our code.
+
+******
+## Syntax
+### spacing around binary operators (=, <-, + etc.) and after a comma
+The exception is around `:` and `::`.
+
+```{r results=FALSE, eval=FALSE}
+x <- (-b + sqrt(b ^ 2 - 4 * a * c)) / (2 * a)
+```
+
+******
+### assignment
+Use `<-` for assignment instead of `=`.
+
+******
+### using consistent naming conventions
+Whichever naming convention (underscore_separated, period.separated, CamelCase ...) we choose, it is best that we keep it consistent. 
+
+******
+## Miscellaneous
+
+******
+### conflicts in function names
+Sometimes there could be conflicts in function names. For instance, packages `dplyr` and `plyr` have several functions that share the same names: `mutate()`, `rename()`, `summarise()` etc. We need to specify which package needs to be loaded when calling those functions (e.g.  `dplyr::summarise()` or `plyr::summarise()`).
+ 
+******
+## Read more
+* [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml)
+* [Style guide](http://stat405.had.co.nz/r-style.html)
+* [Best Practices for Writing R Code](https://swcarpentry.github.io/r-novice-inflammation/06-best-practices-R/index.html)
+

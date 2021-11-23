@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Shiny</title>
+	<link rel="stylesheet" href="css/overall.css">
+	<link rel="stylesheet" href="css/tools.css">
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<script src="js/menu.js"></script>
+
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+	<header>
+		<div class="title">Shiny</div> 
+		<div class="subtitle"><a href="home.html">Home</a> | <a href="r.html">R</a> | <a href="stata.html">Stata</a> | <a href="rshiny.html">Shiny</a></div>
+	</header>
+
+	<nav>
+		<div class="menu">
+			<div class="menu-container">
+			<ul>
+				<li class="menu-item"><a href="home.html"><span class="menu-num">00</span>HOME</a></li>
+				<li class="menu-item"><span class="menu-num">01</span>DATA TOOLS & SKILLS
+					<ul>
+						<li class="menu-sub-item"><a href="r.html">R</a></li>
+						<li class="menu-sub-item"><a href="stata.html">Stata</a></li>
+						<li class="menu-sub-item"><a href="rshiny.html">Shiny</a></li>						
+					</ul>
+				</li>
+				<li class="menu-item"><span class="menu-num">02</span>DATA VISUALIZATION
+					<ul>
+						<li class="menu-sub-item"><a href="viz/state-of-the-art.html" target="_blank">state of the art</a></li>
+						<li class="menu-sub-item"><a href="viz/resources.html" target="_blank">read more</a></li>
+					</ul>
+				</li>
+				<li class="menu-item"><span class="menu-num">03</span>DATA LITERACY
+					<ul>
+						<li class="menu-sub-item"><a href="workshops.html">workshops</a></li>
+						<li class="menu-sub-item"><a href="events.html">events</a></li>
+					</ul>
+				</li>				
+				<li class="menu-item"><a href="https://datascience.shanghai.nyu.edu/datasets"><span class="menu-num">04</span>CHINESE DATASETS</a></li>
+				<li class="menu-item"><a href="about.html"><span class="menu-num"><b>||</b></span>ABOUT</a></li>
+			</ul>
+		</div> 
+		</div> 
+
+		<div class="menu-sign">
+		<div class="menu-burger">
+			<div id="one"></div>
+			<div id="two"></div>
+			<div id="three"></div>
+		</div>
+		<div id="menu-hint">Menu</div>
+		</div> 
+	</nav>
+
+	
+		<section class="choice">
+			<div class="button button-selected" id="all">All</div>
+			<div class="button" id="intro">Coding Smartly</div>
+			<div class="button" id="cases">Cases</div>
+		</section>
+	
+	<main>
+		<section class="meat">
+			<div class="box">
+			<h3>Web-interfacing Visualization</h3>
+
+			<!-- <h3>Case I: Visualizing Survey Data with R Shiny App</h3>
+			<h4><a href="https://yundai.shinyapps.io/2018-lib-survey/" target="_blank">Survey Shiny App</a></h4>
+
+			<div class="ticket cases">
+				<a href="../r/case-1-1-preprocessing.html" target="_blank">Part I: The Dirty Work - Reshaping Data for Visualization</a> <br> 
+				<span>(Reshaping data: summarizing before plotting; extracting strings from the separators; making use of info from several columns; Reshaping for Shiny)</span>
+			</div>	
+			<div class="ticket cases">
+				<a href="../r/case-1-2-ggplot2.html" target="_blank">Part II: The Jigsaw Puzzle Pieces - Creating Graphs with ggplot2</a> <br>
+				<span>(A lot of bars; Using summary stats; Using info from several columns; Visually grouping data)</span>
+			</div>	
+			<div class="ticket cases">
+				<a href="../r/case-1-3-shinyapp.html" target="_blank">Part III: Assembling the Pieces - Creating R Shiny App</a> <br>
+				<span>(Getting started with Shiny App; User interface layout; Widgets; Reactive expressions; Plot outputs; Table outputs; Style; Hosting the App)</span>
+			</div>				
+			</div>	 -->
+
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case I: Exploring Multiple Dimensions of Survey Data with Shiny App</h4>				
+				<ul>
+					<li>
+						<a href="r/case-1-1-preprocessing.html" target="_blank">Part I: The Dirty Work - Reshaping Data for Visualization</a> <br>
+						<span>(Reshaping data structures; Extracting strings; Automating for Shiny)</span>
+					</li>
+					<li>
+						<a href="r/case-1-2-ggplot2.html" target="_blank">Part II: The Jigsaw Puzzle Pieces - Creating Graphs with ggplot2</a> <br>
+						<span>(Bars; Using summary stats; Using info from several columns; Visually grouping data)</span>
+					</li>
+					<li>
+						<a href="r/case-1-3-shinyapp.html" target="_blank">Part III: Assembling the Pieces - Creating R Shiny App</a> <br>
+						<span>(User interface layout; Widgets; Reactive expressions; Plot outputs; Table outputs; Style; Hosting the App)</span>
+					</li>
+					<li>
+						<a href="https://yundai.shinyapps.io/2018-lib-survey/" target="_blank">Product: Shiny App</a><br>
+						<span>(Source: library user survey data)</span>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div>	<!-- part -->
+
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case II: Visualizing Times and Locations with Animation and Interactivity Using Tracking Logs </h4>				
+				<ul>
+					<li>
+						<a href="r/case-2-1-animation.html" target="_blank">Part I: Creating Animated Graphs with gganimate</a> <br>
+						<span>(gganimate; Animated map; Animated line graph)</span>
+					</li>
+					<li>
+						<a href="r/case-2-2-shinyapp.html" target="_blank">Part II: The Shiny App</a> <br>
+						<span>(Slider; Slider range; Animation sequences)</span>
+					</li>
+					<li>
+						<a href="https://yundai.shinyapps.io/2016-track-log/" target="_blank">Product: Shiny App</a><br>
+						<span>(Source: user behavior logs / server events data)</span>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div><!-- part -->
+		</div> <!-- box -->
+
+		<div class="box">
+			<h3>Working with SQL in Shiny</h3>
+
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case I: Building a one-stop-shop web app for business intelligence</h4>				
+				<ul>
+					<li>
+						<a href="r/case-3-sql-shiny.html" target="_blank">Connecting SQLite Database and Shiny Apps for Business Intelligence</a> <br>
+						<span>(Compiling database queries with SQL; Issuing queries with RSQLite; Embedding SQL queries in Shiny components)</span>
+					</li>
+					<li>
+						<a href="https://yundai.shinyapps.io/2020-business-intelligence/">Product: Business Intelligence Dashboard</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/channel/SQLite%2BDatabase%2Band%2BShiny%2BApp%2Bfor%2BBusiness%2BIntelligence/193288383">Video tutorials</a><br>
+						<span>(Part 1: About database; Part2: The three big steps; Part 3: Navigation bar; Part 4: Select input; Part 5: Data range; Part 6: Data table; Part 7: Panel; Part 8: Plot; Part 9: Prediction; Part 10: Save table; Part 11: Conclusion)</span>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div>	<!-- part -->	
+			
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case II: Building a prototype of a database management system</h4>				
+				<ul>
+					<li>
+						<a href="r/case-4-database-management-shiny.html" target="_blank">Creating a Shiny App for Database Management</a> <br>
+						<span>(Dashboard layout; Authentication; Dynamic UI reacting to user inputs; Making sure the SQL parts work in Shiny; Web development in Shiny)</span>
+					</li>					
+					<li>
+						<a href="https://yundai.shinyapps.io/2020-database-management/">Product: Database Management Platform</a>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div>	<!-- part -->	
+
+			</div> <!-- box -->
+
+		</section>
+	</main>	
+</body>
+</html>

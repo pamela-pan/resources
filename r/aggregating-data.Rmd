@@ -1,0 +1,221 @@
+---
+title: "Aggregating Data to Get Summaries"
+author: "Yun Dai"
+date: "07/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/session2")
+library(dplyr)
+session <- session2 %>% select(-event) %>% ungroup()
+```
+
+******
+In this post, we demonstrate two ways of aggregating and summarizing data: with package `dplyr` and with package `data.table`.
+
+******
+First, let's load the sample dataset `session`, which has recorded how much time a user has spent on each resource type on which device type on an online course platform.
+
+```{r}
+head(session)
+```
+
+```{r}
+summary(session$resource)
+```
+
+```{r}
+summary(session$device)
+```
+
+```{r}
+summary(session$interval)
+```
+
+
+******
+## `dplyr` functions
+
+There are several functions in `dplyr` that aggregate data for summaries: `tally()`, `count()`, and `summarise()`. Below we explain how each one works with examples.
+
+```{r message=FALSE,warning=FALSE}
+library(dplyr)
+```
+
+******
+### `tally()`
+
+`tally()` calls `n()` to count the number of cases or calls `sum()` to calculate the total amount. 
+
+******
+#### `tally(n())`
+Below we count the number of cases by the resource type. Note that `n()` does not take arguments.
+
+```{r}
+session %>% filter(!is.na(resource)) %>% group_by(resource) %>% tally(n())
+```
+
+******
+#### `tally(sum())`
+
+`tally(sum())` calculates the sum by the specified group. 
+
+Below we sum the time spent on each resource type in minutes. 
+```{r}
+session %>% filter(!is.na(resource)) %>% group_by(resource) %>% tally(sum(interval) / 60)
+```
+
+******
+#### `add_tally()`
+
+`add_tally()` is short-hand for `mutate()` and adds a column named `n` to the data frame.
+
+Below column `n` is the sum of the time spent on each `resource` type by `date` and `resource`.
+
+```{r}
+session %>% filter(!is.na(resource)) %>% group_by(date, resource) %>% add_tally(sum(interval) / 60)
+```
+
+
+******
+### `count()`
+
+`count()` is similar to `tally()`, but calls `group_by()` before and `ungroup()` after. If the data is already grouped, `count()` adds an additional group that is removed afterwards.
+
+Here, using `count()` to get the number of cases by each resource type returns the same result as with `tally()` above. With `count(resource)`, data is grouped by `resource`.
+```{r}
+session %>% filter(!is.na(resource)) %>% count(resource)
+```
+
+******
+In the example below, we count the number of cases grouped by both `id` and `resource`.
+```{r}
+session %>% filter(!is.na(resource)) %>% count(id, resource)
+```
+
+
+
+
+******
+#### `add_count()`
+
+`add_count()` is a short-hand for `group_by()` + `add_tally()`. 
+
+Below column `n` is the count of `resource` by `date` and `resource`.
+```{r}
+session %>% filter(!is.na(resource)) %>% add_count(date, resource)
+```
+
+
+******
+### `summarise()`
+`summarise()` reduces multiple values down to a single value. The summary functions include measures for center (`mean()`, `median()`), spread (`sd()`, `IQR()`, `mad()`), range (`min()`, `max()`, `quantile()`), position (`first()`, `last()`, `nth()`), count (`n()`, `n_distinct()`) and logical evaluations (`any()`, `all()`) of data. 
+
+Together with `group_by()`, `summarise()` returns summaries by the specified group. Without grouping, `summarise()` returns a single row.
+
+Below we calculate the mean of the total time (in minutes) spent on each `resource` by `date` and `resource`.
+```{r}
+session %>% 
+  filter(!is.na(resource)) %>% 
+  group_by(date, resource) %>% 
+  tally(sum(interval)) %>% 
+  group_by(resource) %>%
+  summarise(mean(n) / 60)
+```
+
+******
+Without grouping data, below we get a single row, the sum of the time spent on all resources.
+```{r}
+session %>% 
+  filter(!is.na(resource)) %>% 
+  tally(sum(interval / 60)) 
+```
+
+******
+## `data.table` functions
+
+`data.table` offers efficient methods to aggregate and summarize data with the `data.table` syntax `DT[i, j, by]`. `i` indicates on which rows; `j` indicates what to do; `by` indicates being grouped by what.
+
+```{r message=FALSE,warning=FALSE}
+library(data.table)
+
+session <- data.table(session)
+```
+
+******
+### count
+Below we first count the number of cases by the resource type. 
+
+`.N` is a `data.table` [special-symbol](https://www.rdocumentation.org/packages/data.table/versions/1.10.0/topics/special-symbols). It is an integer containing the number of rows in the group, and is renamed to `N` in the result. `.N` may be useful when the column names are not known in advance. 
+
+```{r}
+session[!is.na(resource), .N, by = resource]
+```
+
+It is equivalent to the `dplyr` way of 
+```{r eval=FALSE}
+session %>% filter(!is.na(resource)) %>% group_by(resource) %>% tally(n())
+```
+
+******
+### sum
+
+Below we sum the time spent on each resource type in minutes. 
+
+```{r}
+session[!is.na(resource), sum(interval)/60, by = resource]
+```
+
+It is equivalent to the `dplyr` way of 
+```{r eval=FALSE}
+session %>% filter(!is.na(resource)) %>% group_by(resource) %>% tally(sum(interval) / 60)
+```
+
+
+******
+### adding a column 
+
+Like with `dplyr::add_tally()`, we can create a new column with `:=` in the data table that contains the summaries instead of aggregating the data table. 
+
+Below column `sum` is the sum of the time spent on each `resource` type by `date` and `resource`. 
+
+Note that the `data.table` method keeps the missing cases of `resource` in the result, while the `dplyr` way excludes the rows where `resource` is `NA`.
+```{r}
+session[!is.na(resource), sum := sum(interval)/60, by = c("date", "resource")]
+session
+```
+
+It is equivalent to the `dplyr` way of 
+```{r eval=FALSE}
+session %>% filter(!is.na(resource)) %>% group_by(date, resource) %>% add_tally(sum(interval) / 60)
+```
+
+
+******
+Below we calculate the mean of the total time (in minutes) spent on each `resource` by `date` and `resource`.
+
+```{r}
+s <- session[!is.na(resource), sum(interval), by = c("date", "resource")]
+s[, mean(V1)/60, by = resource]
+```
+
+It is equivalent to the `dplyr` way of 
+
+```{r eval=FALSE}
+session %>% 
+  filter(!is.na(resource)) %>% 
+  group_by(date, resource) %>% 
+  tally(sum(interval)) %>% 
+  group_by(resource) %>% 
+  summarise(mean(n)/60)
+```
+

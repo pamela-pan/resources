@@ -1,0 +1,253 @@
+---
+title: "Flow Control"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+***
+There are times when we would like to execute some code if a *condition* is fulfilled. 
+
+This post discusses flow control. We will see conditional statements.
+
+***
+## `if`
+The simplest form of flow control is `if` conditional statements. `if` takes a logical value (a logical vector of length one). If the condition is `TRUE`, the statement gets executed. If the condition is `FALSE`, `if` invisibly returns `NULL`.
+
+***
+*How it works:*
+
+If we only have one statement:
+```
+if(condition) statement
+```
+
+If we have more than one statement, we need to use a pair of curly braces to wrap the statements.
+```
+if(condition) {
+  statement
+}
+```
+
+***
+*Example:*
+```{r}
+x <- sample(1:15, 1) 
+x
+
+if (x > 5) {
+  print(paste(x, "is larger than 5."))
+}
+```
+
+Or:
+```{r}
+x <- sample(1:10, 1) 
+x
+
+if (x > 5) print(paste(x, "is larger than 5."))
+```
+
+
+***
+## `if` ... `else if`
+If there are other conditions to evaluate, include `else if`. `else if` is essentially saying "if the previous condition is not true, then try this condition". 
+
+***
+*How it works:*
+```
+if(condition) {
+  statement
+} else if (condition) {
+  statement
+} 
+```
+
+***
+*Example:*
+```{r}
+x <- sample(1:15, 1)
+x
+
+if (x > 5) {
+  print(paste(x, "is larger than 5."))
+} else if (x < 5) {
+  print(paste(x, "is smaller than 5."))
+}
+```
+
+***     
+We can have more than one `else if`.
+```
+if(condition) {
+  statement
+} else if (condition) {
+  statement
+} else if (condition) {
+  statement
+}
+```
+
+***
+## `if` ... `else if` ... `else`
+`else` catches anything that is not caught by the preceding conditions. The `else` statement is only evaluated if the condition is `FALSE`.
+
+***
+*How it works:*
+
+```
+if(condition) {
+  statement
+} else if (condition) {
+  statement
+} else {
+  statement
+}
+```
+
+***
+*Example 1:*
+```{r}
+x <- sample(1:15, 1)
+x
+
+if (x > 5) {
+  print(paste(x, "is larger than 5."))
+} else if (x == 5) {
+  print(paste(x, "is equal to 5."))
+} else {
+  print(paste(x, "is smaller than 5."))
+}
+```
+
+Note: The `else` statement must occur on the same line as the closing curly brace from the `if` clause. 
+
+***
+*Example 2:*
+
+Write an R program to convert month name to a number of days. For instance, if we input "February", then the output will be "No. of days: 28 or 29 days". Hint: Use `readline()`, which reads a line from the terminal in interactive use.
+
+```{r eval=FALSE}
+month <- as.character(readline("Input a month name: "))
+month_30 <- c("April", "June", "September", "November")
+month_31 <- c("January", "March", "May", "July", "August", "October", "December")
+
+if (month %in% month_30){
+  print("No. of days: 30 days") 
+} else if (month %in% month_31){
+  print("No. of days: 31 days")
+} else if (month == "February") {
+  print("No. of days: 28 or 29 days")
+} else {
+  print("Incorrect input")
+}
+```
+
+
+***
+## `if` ... `else`
+We can have an `else` statement without the `else if`.
+
+***
+*How it works:*
+```
+if(condition) {
+  true statement
+}
+else {
+  false statement
+}
+```
+
+***
+*Example:*
+```{r}
+x <- sample(1:15, 1)
+x
+
+if (x > 5) {
+  print(paste(x, "is larger than 5."))
+} else {
+  print(paste(x, "is not larger than 5."))
+}
+```
+
+
+***
+## Nested `if`
+We can have `if` statements inside `if` statements. This is called nested `if` statements.
+
+***
+*Example 1:*
+```{r}
+x <- sample(1:15, 1)
+x
+
+if (x > 5) {
+  print(paste(x, "is larger than 5,"))
+  if (x > 10) {
+    print(paste("and 10."))
+  } else {
+    print("but not larger than 10.")
+  }
+} else {
+  print(paste(x, "is not larger than 5"))
+}
+```
+
+***
+*Example 2:*
+
+Write an R program to find the median of three integers. Do not use the built-in function `median().`
+
+```{r eval=FALSE}
+a <- as.integer(readline("Input the 1st number: "))
+b <- as.integer(readline("Input the 2nd number: "))
+c <- as.integer(readline("Input the 3rd number: "))
+
+if (a > b){
+  if (b > c) { print(b) }
+  else if (c > a) { print(a) } 
+  else { print(c) }
+} else {
+  if (a > c){ print(a) }
+  else if (c > b){ print(b) } 
+  else{ print(c) }
+} 
+```
+
+
+***
+## Vectorized `ifelse()`
+Remember that `if` only takes a logical vector of length *one*. What if we have multiple logical values? 
+
+If we pass a logical vector with a length of more than one, e.g. `if(c(TRUE, FALSE))`, only the first one will be used. 
+
+There is a vectorized version of the `if ... else` construct, the `ifelse()` function. 
+
+***
+*How it works:*
+```
+ifelse(condition, yes, no)
+```
+
+`ifelse()` takes three arguments. The first is a logical vector of conditions. The second contains values that are returned when the first vector is `TRUE`. The third contains values that are returned when the first vector is `FALSE`.
+
+It returns a vector of the same length as `condition`, with elements `yes[i]` if `condition[i]` is `TRUE`, otherwise `no[i]`. `yes` and `no` are recycled where necessary.
+
+***
+*Example:*
+```{r}
+x <- sample(1:15, 1)
+x
+
+yes <- paste(x, "is larger than 5")
+no <- paste(x, "is not larger than 5")
+ifelse(x > 5, yes, no)
+```

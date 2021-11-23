@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Resources</title>
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+	<style>
+*,
+*::after,
+*::before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body{
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    background-color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/*border*/
+.border div{
+    display: block;
+    background: #212121;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    position: fixed;
+    z-index: 500;
+}
+
+.border div:nth-child(1){
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    margin-bottom: 20px;
+}
+
+.border div:nth-child(2){
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 100%;
+    margin-left: 20px;
+}
+
+.border div:nth-child(3){
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    margin-top: 20px;
+}
+
+.border div:nth-child(4){
+    top: 0;
+    left: 0;
+    width: 15px;
+    height: 100%;
+    margin-right: 20px;
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(1){
+    	height: 10px;
+	}
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(2){
+    	width: 10px;
+	}
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(3){
+    	height: 10px;
+	}
+}
+
+@media only screen and (max-width: 800px){
+	.border div:nth-child(4){
+    	width: 10px;
+	}
+}
+
+/* */
+h1.h1{
+	font-family: Arial, Helvetica, sans-serif;
+	margin-top: 50px;
+	line-height: 110%;
+}
+
+@media only screen and (max-width: 600px){
+	h1.h1-s{
+		font-size: 1.8em;
+		margin-top: 80px;	
+	}
+}
+
+@media only screen and (max-width: 800px) and (min-width: 600px) {
+	h1.h1-m{
+		font-size: 2em;
+		margin-top: 80px;
+	}
+}
+
+@media only screen and (min-width: 800px){
+	h1.h1-l{
+		font-size: 2.2em;
+	}
+}
+
+h2,h3{
+	text-align: left;
+	padding-top: 30px;
+	line-height: 120%;
+}
+
+h4{
+	text-align: left;
+	padding-top: 20px;
+}
+
+/*contents*/
+.text{
+	display: block;
+	overflow: hidden;
+	text-align: left;
+	margin: auto;
+	margin-bottom: 80px;
+	margin-top: 30px;
+	width:60%;
+	padding: 0px 7% 0px 6%;
+}
+
+@media only screen and (min-width: 800px){
+	.t-l{
+		width:60%;
+		font-size: 105%;
+		line-height: 180%;
+	}
+}
+
+@media only screen and (max-width: 800px) and (min-width: 600px) {
+	.t-m{
+		width:80%;
+		font-size: 100%;
+		line-height: 180%;
+	}
+}
+
+@media only screen and (max-width: 600px){
+	.t-s{
+		width:90%;
+		font-size: 100%;
+		line-height: 160%;
+	}
+}
+
+
+a.internal:link{
+	color:#666666;
+	text-decoration: underline;
+	font-weight:bolder;
+}
+
+a.internal:visited{
+	color:#666666;
+	text-decoration: underline;
+	font-weight:bolder;
+}
+
+a.internal:hover{
+	color:black;
+	text-decoration: none;
+}
+		
+	</style>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Data Visualization Resources</h1>
+		<h2>Visual Vocabulary</h2>
+			<ul style="list-style-type:none">
+				<li>
+					<p><em style="font-size:95%">Data relationships. Chart types. </em></p>
+				</li>
+				<li><p><a class = "internal" href="http://datavizproject.com/" target="_blank">Data Viz Project</a></p></li>
+				<li><p><a class = "internal" href="https://datavizcatalogue.com/index.html" target="_blank">The Data Visualization Catalogue</a></p></li>
+				<li><p><a class = "internal" href="https://www.r-graph-gallery.com/" target="_blank">The R Graph Gallery</a></p></li>
+				<li><p><a class = "internal" href="http://visualizationuniverse.com/charts/" target="_blank">The Visualization Universe</a></p></li>
+				<li><p><a class = "internal" href="https://ft-interactive.github.io/visual-vocabulary/">Visual Vocabulary</a></p></li>
+			</ul>	
+
+		<h2>The Classical</h2>
+			<ul style="list-style-type:none">
+<!-- 				<li>
+					<p><em style="font-size:95%">Books that laid the foundations for the practitioners of the field. Early works that are never outdated, even in the digital era. </em></p>
+				</li> -->
+				<li><p>Edward R. Tufte, <b style="color:#666666">The Visual Display of Quantitative Information</b><br></p></li>
+				<li><p>Edward R. Tufte, <b style="color:#666666">Envisioning Information</b><br></p></li>
+				<li><p>Edward R. Tufte, <b style="color:#666666">Visual Explanations</b><br></p></li>
+				<li><p>Edward R. Tufte, <b style="color:#666666">Beautiful Evidence</b><br></p></li>
+				<li><p>William S. Cleveland, <b style="color:#666666">The Elements of Graphing Data</b><br></p></li>
+			</ul>
+		<h2>General Introduction</h2>
+			<ul style="list-style-type:none">
+				<li>
+					<p><em style="font-size:95%">Guides and case studies for newcomers to the field. </em></p>
+				</li>
+				<li><p>Alberto Cairo, <b style="color:#666666">The Truthful Art: Data, Charts, and Maps for Communication</b><br></p></li>
+				<li><p>Alberto Cairo, <b style="color:#666666">The Functional Art: An Introduction to Information Graphics and Visualization</b><br></p></li>
+				<li><p>Stephen Few, <b style="color:#666666">Show Me the Numbers: Designing Tables and Graphs to Enlighten</b><br></p></li>
+			</ul>
+		<h2>Scientific Visualization</h2>
+			<ul style="list-style-type:none">
+<!-- 				<li>
+					<p><em style="font-size:95%">Principles, practices, reflections. Concepts, techniques, analyses. </em></p>
+				</li> -->
+				<li><p>William S. Cleveland, <b style="color:#666666">The Elements of Graphing Data</b><br></p></li>
+				<li><p>Leland Wilkinson, <b style="color:#666666">The Grammar of Graphics</b><br></p></li>
+				<li><p>Tamara Munzner, <b style="color:#666666">Visualization Analysis and Design</b><br></p></li>
+				<li><p>Nathan Yau, <b style="color:#666666">Visualize This: The FlowingData Guide to Design, Visualization, and Statistics</b><br></p></li>
+			</ul>			
+		<h2>Business Intelligence</h2>
+			<ul style="list-style-type:none">
+<!-- 				<li>
+					<p><em style="font-size:95%">Dashboard building and information graphics design in communication and reporting. </em></p>
+				</li> -->
+				<li><p>Steve Wexler, Jeffrey Shaffer, and Andy Cotgreave, <b style="color:#666666">The Big Book of Dashboards: Visualizing Your Data Using Real-World Business Scenarios</b><br></p></li>
+				<li><p> Cole Nussbaumer Knaflic, <b style="color:#666666">Storytelling with Data: A Data Visualization Guide for Business Professionals</b><br></p></li>
+				<li><p>Dona M. Wong, <b style="color:#666666">The Wall Street Journal Guide to Information Graphics: The Dos and Don'ts of Presenting Data, Facts, and Figures</b><br></p></li>
+			</ul>	
+
+		<h2>Data Journalism</h2>
+			<ul style="list-style-type:none">
+				<li><p><b style="color:#666666">The New York Times</b></p></li>
+				<li><p><b style="color:#666666">The Washington Post</b></p></li>
+				<li><p><b style="color:#666666">Financial Times</b></p></li>
+				<li><p><b style="color:#666666">The Wall Street Journal</b></p></li>
+				<li><p><a class = "internal" href="https://www.theguardian.com/technology/data-visualisation" target="_blank">Data Visualizations | The Guardian</a></p></li>
+				<li><p><a class = "internal" href="https://www.theguardian.com/data" target="_blank">Data | The Guardian</a></p></li>
+				<li><p><a class = "internal" href="https://www.propublica.org/newsapps/" target="_blank">ProPublica News Apps</a></p></li>
+				<li><p><a class = "internal" href="https://pudding.cool/" target="_blank">ThePudding</a></p></li>
+				<li><p><b style="color:#666666"><a class = "internal" href="https://fivethirtyeight.com/" target="_blank">FiveThirtyEight</a></b></p></li>
+			</ul>	
+
+		<h2>Blogs</h2>
+			<ul style="list-style-type:none">
+<!-- 				<li>
+					<p><em style="font-size:95%">Keeping up with the trends. </em></p>
+				</li> -->
+				<li><p><a class = "internal" href="http://flowingdata.com/" target="_blank">FlowingData</a></p></li>
+				<li><p><a class = "internal" href="https://www.informationisbeautifulawards.com/" target="_blank">Information is Beautiful Awards</a></p></li>
+				<!-- <li><p><a class = "internal" href="http://hint.fm/">HINT.FM</a></p></li> -->
+			</ul>
+
+<!-- 		<h2>Handy Companions to Tools</h2>
+			<ul style="list-style-type:none">
+				<li>
+					<p><em style="font-size:95%">A little bit of statistical reasoning, programming and web development goes a long way. </em></p>
+				</li>
+				<li><p>Scott Murray, <b style="color:#666666">Interactive Data Visualization for the Web: An Introduction to Designing with D3</b><br></p></li>
+				<li><p>Ben Fry, <b style="color:#666666">Visualizing Data: Exploring and Explaining Data with the Processing Environment</b><br></p></li>
+			</ul>	 -->
+	</div>
+
+	
+</body>
+</html>

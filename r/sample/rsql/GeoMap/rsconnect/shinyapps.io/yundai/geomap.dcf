@@ -1,0 +1,10 @@
+name: geomap
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3111431
+bundleId: 3851031
+url: https://yundai.shinyapps.io/geomap/
+when: 1605169918.76865

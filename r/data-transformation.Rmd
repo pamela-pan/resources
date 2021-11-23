@@ -1,0 +1,353 @@
+---
+title: "Data Transformation with Base R and dplyr"
+author: "Yun Dai"
+date: "04/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+load("/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample/sample")
+subsample <- data.frame(sample)
+```
+
+
+******
+In this post, we will go through the tasks we most frequently meet with in data transformation. We will take a very practical approach, at times even seemingly trivial, leaving the conceptual part aside for a moment. 
+
+We are going to show examples along the way with the aid of package `dplyr` as well as base R functions. `dplyr` provides fast and intuitive ways to manipulate date frames. [This article](https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html) offers a quick start of `dplyr` on data frame manipulation essentials.
+
+Before we start, let's load the package `dplyr`. 
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+```
+
+******
+A side note on `dplyr` pipe operator `%>%` before we proceed. 
+
+The `dplyr` pipe operator `%>%` originally comes from package `magrittr`. In `dplyr`, `%>%` chains functions together, passing the output of the former function to the input of the next function. This way we don't have to nest a lot of functions, which also makes the code more readable.
+
+For instance, in the example below, step by step each new operation is performed on the output from the previous one. We first keep the rows where the variable `resource` has no missing cases; we then group the data by `date` and `resource` on the filtered subset; we next add a new column to count observations of the newly formed group; following that we rename the new variable counting the observations, and so forth. 
+```{r eval=FALSE}
+session %>% 
+  filter(!is.na(resource)) %>%
+  group_by(date, resource) %>%
+  add_tally(interval) %>%
+  rename(sum_day = n)
+```
+
+******
+## Recoding variables
+
+******
+### variable transformation
+Variable transformation is the replacement of a variable by a new value or a function of that variable. The purposes can be multiple: convenience, reducing skewness, producing linear or additive relationships, and more. Standardisation and logarithmic transformation are common types that are familiar to us. 
+
+Below we are not discussing why we are performing a task, but simply showing how with a few examples for specific tasks.
+
+******
+### `<-` to assign new values
+One way we often use to recode variables is to use the assignment sign `<-`.
+
+Let's use the sample dataset `storms` from `dplyr` to show how we may recode the missing values.
+```{r}
+head(dplyr::storms)
+```
+
+As we can see, there are many missing values in `storms$ts_diameter`.
+```{r}
+summary(storms$ts_diameter)
+```
+
+We decide that we want to recode all `NA`s to 9999.
+```{r}
+storm <- storms
+
+storm$ts_diameter[is.na(storm$ts_diameter)] <- 9999
+summary(storm$ts_diameter)
+```
+
+We can of couse recode the values 9999 back to `NA`.
+```{r}
+storm$ts_diameter[storm$ts_diameter == 9999] <- NA
+summary(storm$ts_diameter)
+```
+
+******
+### `recode()` to replace values
+`recode()` replaces numeric values based on their position, and replaces character values by their name. `.default` argument, if supplied, gives all cases not matched a new value. `.missing` argument replaces the missing values by the specified new value.
+
+Recoding character values:
+```{r}
+iris$species <- recode(iris$Species, setosa = "a",  versicolor = "b", virginica = "c")
+table(iris$species)
+```
+
+Recoding numeric values:
+```{r}
+mtcars$cyl2 <- recode(mtcars$cyl, `4` = 1, `6` = 2, `8` = 3)
+table(mtcars$cyl2)
+```
+
+******
+### `case_when()` to recode on subsets
+`case_when()` allows us to vectorize multiple `if` and `else if` statements. 
+
+For instance, below we reorganized the majors by grouping them to a higher category.
+```{r eval=FALSE}
+survey$new_major <- case_when(
+  survey$major %in% c("Biology", "Chemistry", "Physics", "Neural Science") ~ "Science",
+  survey$major %in% c("Computer Systems Engineering", "Electrical and Systems Engineering") ~ "CS & Engineering",
+  survey$major %in% c("Business and Marketing", "Business and Finance", "Economics") ~ "Business, Finance & Economics",
+  survey$major %in% "Mathematics" ~ "Mathematics",
+  survey$major %in% NA ~ "Undefined"
+)
+```
+
+******
+### `mutate()` to add new variables at the same time
+`mutate()` adds new variables while recoding them.
+
+```{r}
+mt <- mtcars %>% mutate(newvar = mpg * 2)
+head(mt)
+```
+
+******
+`mutate()` can operate on multiple variables.
+```{r}
+mt <- mtcars %>% mutate(newvar1 = mpg * 2, newvar2 = cumsum(mpg))
+head(mt)
+```
+
+******
+### `mutate(ifelse())` to recode with conditions
+`mutate()` can be used with functions. For instance, `mutate()` with `ifelse()` recodes variables conditionally.
+
+Let's say we want to create a new column, copying cases whose values are smaller than 3.
+```{r eval=FALSE}
+mutate(rank2 = ifelse(rank <= 3, rank, NA))
+```
+
+
+In another example, let's say we have a dataset `subsample`. 
+```{r}
+subsample
+```
+
+When processing the data, we want to combine the information from two columns. The rule is that we only need the non-missing case from the two columns.
+```{r}
+subsample %>% mutate(
+  newvar = ifelse(is.na(Q1), Q2, NA),
+  newvar = ifelse(is.na(Q2), Q1, newvar)
+)
+```
+
+
+******
+### `mutate(case_when())`
+`case_when()` can be nested within `mutate()`.
+```{r eval=FALSE}
+mutate(rank2 = case_when(
+    rank <= 3 ~ rank,
+    rank > 3 & row_number() %% 2 == 0 & expd == 1 ~ 4,
+    rank > 3 & row_number() %% 2 == 1 & expd == 1 ~ 5))
+```
+
+
+******
+## Adding / dropping columns and rows
+There are several ways to add and drop columns and rows in a data frame. First, let's look at the base R methods using the sample dataset `mtcars`.
+
+```{r}
+head(mtcars)
+```
+
+Adding a column:
+```{r}
+mt <- mtcars
+mt$new_col <- 2 * mt$cyl
+head(mt)
+```
+
+Removing a column:
+```{r}
+mt$new_col <- NULL
+head(mt)
+```
+
+Removing a row:
+```{r}
+mt <- mtcars[-(1:5), ]
+head(mt)
+```
+
+******
+### `select()`
+`dplyr` offers several functions that handle adding and dropping columns and rows efficiently.
+
+`select()` keeps the selected variables.
+```{r}
+mt <- mtcars %>% select(mpg, cyl) 
+head(mt)
+```
+
+We can rename the variables while we select the variables.
+```{r}
+mt <- mtcars %>% select(mpg2 = mpg, cyl2 = cyl) 
+head(mt)
+```
+
+
+******
+### `filter()`
+`filter()` filters rows, keeping rows where given conditions are true.
+
+Here we use the sample dataset `iris`.
+```{r}
+head(iris)
+```
+
+Below we filter the rows to get a subset where `Species` is all `versicolor` and `Petal.Width` is smaller than 1.2
+```{r}
+filter(iris, Species == "versicolor" & Petal.Width < 1.2)
+```
+
+This would be the same as
+```{r}
+iris %>% filter(Species == "versicolor" & Petal.Width < 1.2)
+```
+
+
+******
+## Renaming variables
+
+******
+### `names()`
+In base R, we can rename variables using function `names()`.
+```{r}
+mt <- mtcars
+names(mt)[1] <- "var"
+names(mt)
+```
+
+Renaming more than one variable:
+```{r}
+names(mt)[1:3] <- c("a", "b", "c")
+names(mt)
+```
+
+Renaming all:
+```{r}
+names(mt)[1:11] <- letters[1:11]
+names(mt)
+```
+
+
+******
+### `rename()`
+We can also use `rename()` from `dplyr`, which renames the variables without dropping variales. If we use `select()` to rename variables, the unmentioned variables will be dropped.
+```{r}
+mt <- mtcars %>% rename(mpg2 = mpg, cyl2 = cyl) 
+head(mt)
+```
+
+Compare it with how `select()` works:
+```{r}
+mt <- mtcars %>% select(mpg2 = mpg, cyl2 = cyl) 
+head(mt)
+```
+
+
+
+******
+## Arranging rows
+`arrange()` from package `dplyr` sorts variables in ascending order, and `desc()` sorts variables in descending order.
+
+This example below sorts `mtcars` by variable `mpg` in ascending order.
+```{r}
+df <- arrange(mtcars, mpg)
+head(df)
+```
+
+`arrange()` can sort multiple variables in the order specified. The example below sorts `df` first by `mpg`, then `cyl`, and finally `disp`.
+```{r}
+df <- arrange(mtcars, mpg, cyl, disp)
+head(df)
+```
+
+This example sorts `df` first by `mpg` and `cyl` in ascending order, and then `disp` in descending order.
+```{r}
+df <- arrange(mtcars, mpg, cyl, -disp)
+head(df)
+```
+
+Same as above, except that we use function `desc()` to sort rows in descending order.
+```{r}
+df <- arrange(mtcars, mpg, cyl, desc(disp))
+head(df)
+```
+
+******
+## Reordering columns
+We can move columns with `select(var, everything())`.
+```{r}
+new_col <- mtcars %>% select(carb, gear, everything())
+head(new_col)
+```
+
+Or move a column the other way:
+```{r}
+new_col <- mtcars %>% select(-mpg, everything())
+head(new_col)
+```
+
+
+******
+## Grouping
+`group_by()` from `dplyr` groups a data frame by the specified variable. `ungroup()` removes the grouping.
+```{r}
+storm <- dplyr::storms %>% group_by(status)
+head(storm)
+```
+
+
+******
+`group_by()` is most useful to use with `summarise()`, `filter()`, `mutate()`, and `arrange()`.
+```{r message=FALSE, warning=FALSE}
+storm <- dplyr::storms %>% filter(!is.na(ts_diameter)) %>% group_by(year) %>% summarise(mean = mean(ts_diameter))
+head(storm)
+```
+
+
+******
+## Removing duplicates
+`distinct()` from `dplyr` selects unique rows from a data frame.
+
+```{r eval=FALSE}
+distinct(mtcars)
+```
+
+In the example below, duplicates are removed and all other variables are kept where `cyl` has no duplicates. Only the first cases of duplicated `cyl` have been kept.
+
+```{r}
+distinct(mtcars, cyl, .keep_all = TRUE)
+```
+
+Without argument `.keep_all`, the other variables will be dropped. 
+```{r}
+distinct(mtcars, cyl)
+```
+
+`distinct()` allows for multiple variables to be included. 
+```{r}
+distinct(mtcars, cyl, gear, .keep_all = TRUE)
+```
+
+******
+`unique()` from base R can also extract unique elements, but `distinct()` offers more flexibility.

@@ -1,0 +1,358 @@
+---
+title: "Loops"
+author: "Yun Dai"
+date: "07/2021"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+***
+Loops execute a block of code as long as a specified condition is reached.
+
+We discuss two kinds of loops in R: `for` loops and `while` loops.
+
+***
+## `for` loops
+A `for` loop is used for iterating over items in a vector (or an array or a list). It is useful if we know in advance the set of values that we want to iterate over. 
+
+***
+*How it works:*
+```
+for (variable in vector) expression
+```
+
+*variable* is the loop variable. For each *variable* in *vector*, *expression* is called once; the value of *variable* is then updated. *vector* can be a vector, array, list, etc.
+
+*expression* is often a grouped expression. In that case, when we have multiple expressions, the expressions must be surrounded by curly braces.
+
+```
+for (variable in vector) {
+  expression 1
+  expression 2
+  ...
+}
+```
+
+***
+It's conventional to use very short variable names like `i` or `j` to iterate over a vector.
+
+```{r}
+for (i in seq(from = 5, to = 25, by = 5)) print(i)
+```
+
+
+*** 
+In loops, we must use the `print()` function if we want to output a result. 
+
+```{r}
+for (i in 1:5) {
+  i
+}
+```
+
+
+***
+*Example 1:*
+
+Append each value in ` c(0,1,2,3,4,5)` to an empty vector. 
+
+```{r}
+values <- c(0,1,2,3,4,5)
+
+vec <- numeric(0)
+#vec <- vector("numeric", 0) returns a numeric vector of length 0
+#vec <- c() returns a NULL object
+#vec <- vector() returns a logical vector of length 0
+
+for (i in seq_along(values)) {
+  vec <- c(vec, values[i])
+}
+print(vec)
+```
+
+
+***   
+*Notes:*
+
+(1) `seq_along(values)` generates a sequence `1,2,3,4,5,6`.
+
+(2) `vec <- c(vec, values[i])` flattens vectors and combines them into one single vector. When the arguments to `c()` are themselves vectors, it flattens them and combines them into one single vector.
+
+(3) `for (i in seq_along(values))` iterates over each item in `values`.    
+
+vec                 i     values[i]    
+------------------  ----  ----------
+empty                     
+0                   1     0    
+0,1                 2     1
+0,1,2               3     2
+0,1,2,3             4     3
+0,1,2,3,4           5     4
+0,1,2,3,4,5         6     5
+
+    
+(4) We can substitute `i in seq_along(values)` with `i in 1:length(values)` in this case. 
+```{r}
+vec <- c()
+for (i in 1:length(values)) {
+  vec[i] <- values[i]
+}
+print(vec)
+```
+
+There are times that `seq_along(x)` and `1:length(x)` do not return the same results; that's when `x` is empty. 
+
+```{r}
+x <- vector("numeric")
+seq_along(x)
+1:length(x)
+```
+
+   
+We will be seeing the trick of appending values to an empty vector (or other objects) frequently in writing loops.
+
+***
+*Example 2:*
+
+Get the first 10 [Fibonacci numbers](https://en.wikipedia.org/wiki/Fibonacci_number). The Fibonacci numbers form a sequence, such that each number is the sum of the two preceding ones, starting from 0 and 1. 
+
+```{r}
+f <- numeric(10)
+f[1] <- 0
+f[2] <- 1
+for (i in 3:10) {
+  f[i] <- f[i - 2] + f[i - 1]
+}  
+print(f)
+```
+
+
+***  
+*Notes:*
+
+f                         i      f[i]    f[i-2]   f[i-1]
+------------------------  -----  ------  -------  -------
+0                         1      0
+0,1                       2      1    
+0,1,1                     3      1       0        1
+0,1,1,2                   4      2       1        1
+0,1,1,2,3                 5      3       1        2
+0,1,1,2,3,5               6      5       2        3
+0,1,1,2,3,5,8             7      8       3        5
+0,1,1,2,3,5,8,13          8      13      5        8
+0,1,1,2,3,5,8,13,21       9      21      8        13
+0,1,1,2,3,5,8,13,21,34    10     34      13       21
+
+
+***
+*Example 3:*
+
+Count how many 2 occurs in the vector `rep(1:4, each = 2, times = 3)`. 
+```{r}
+vec <- rep(1:3, each = 2, times = 2)
+c <- 0
+for (i in seq_along(vec)){
+  if (vec[i] == 2){
+    c <- c + 1
+  }
+}
+
+print(c)
+```
+
+   
+***
+*Notes:*
+
+i      vec[i]  TRUE     c
+-----  ------  -------  ------
+1      1       0        0
+2      1       0        0
+3      2       1        1
+4      2       1        2
+5      3       0        2
+6      3       0        2
+7      1       0        2
+8      1       0        2
+9      2       1        3
+10     2       1        4
+11     3       0        4
+12     3       0        4
+
+
+In real life, you should just use the vectorized `sum()`. What we did was just to get familiar with how a `for` loop works. 
+```{r}
+vec <- rep(1:4, each = 2, times = 3)
+sum(vec == 2)
+```
+
+***
+*Note:* Wherever vectorized operations are possible, we should avoid `for` loops. `for` loops in R run much slower than their vectorized equivalents. 
+
+***
+*Example 4:*
+
+Print the numbers from 1 to 100. Print "Fizz" for multiples of 3, print "Buzz" for multiples of 5, and print "FizzBuzz" for multiples of both 3 and 5. Hint: Use the modulus operator `%%`.
+
+Solution 1: a naive `for` loop
+```{r}
+vec <- c()
+for (n in 1:100){
+  if (n %% 3 == 0){ vec[n] <- "Fizz" } 
+  else if (n %% 5 == 0){ vec[n] <- "Buzz" } 
+  else if (n %% 3 == 0 & n %% 5 == 0){ vec[n] <- "FizzBuzz" } 
+  else { vec[n] <- n }
+}
+
+print(vec)
+```
+
+
+Solution 2: a better `for` loop
+
+```{r eval=FALSE}
+output <- vector()
+
+for (i in 1:100) {
+  output[i] <- ""
+  if (i %% 3 == 0) {output[i] <- paste(output[i], "Fizz")}
+  if (i %% 5 == 0) {output[i] <- paste(output[i], "Buzz")}
+  if (output[i] == "") {output[i] <- i}
+}
+
+print(output)
+```
+
+(Reference: Rory Spanton. (2020). *How to Solve the FizzBuzz Problem in R*. https://towardsdatascience.com/how-to-solve-the-fizzbuzz-problem-in-r-c62e7e6c959a)    
+
+***
+*Notes:*
+
+(1) Solution 1: Create an empty vector. Mark multiples of 3 as "Fizz". Mark multiples of 5 as "Buzz". Mark multiples of 3 and 5 as "FizzBuzz". Mark the remaining elements as the original numbers. The resulting vector is a character vector.
+
+(2) Solution 2: Create an empty vector. Mark all elements as an empty string `""`. Inside the loop, `if (i %% 3 == 0) {output[i] <- paste(output[i], "Fizz")}` is evaluated first. If an element is a multiple of 3, "Fizz" is pasted to an empty string, resulting in "Fizz". Next, `if (i %% 5 == 0) {output[i] <- paste(output[i], "Buzz")}` is evaluated, which works in the same way as the first conditional statement. Lastly, if an element is a multiple of both 3 and 5, "Buzz" will be pasted to "Fizz". Remaining elements are marked by the original numbers and coerced to characters.
+
+
+***
+## Nested loops
+A nested loop is a loop inside a loop. The "inner loop" will be executed one time for each iteration of the "outer loop".
+
+***
+*Example:* 
+
+Write an R program which takes two digits m (row) and n (column) as input and generates a two-dimensional array. The element value in the i-th row and j-th column of the array should be i*j (i = 1.., m; j = 1.., n).
+
+```{r}
+m <- 3
+n <- 4
+
+row <- 1:m
+col <- 1:n
+a <- matrix(m*n, nrow = m, ncol = n)
+for (i in row){
+  for (j in col){
+    a[i,j] <- i*j
+  }
+}
+
+print(a)
+```
+
+*** 
+*Notes:*
+
+If `m=3` and `n=4`, we get a matrix of 3 rows and 4 columns. 
+
+i      j      i*j     
+-----  -----  -----  
+1      1      1        
+1      2      2        
+1      3      3       
+1      4      4     
+2      1      2        
+2      2      4        
+2      3      6        
+2      4      8        
+3      1      3        
+3      2      6        
+3      3      9        
+3      4      12      
+
+
+***
+## `while` loops
+`while` loops repeat an expression while a condition is true.
+
+***
+*How it works:*
+```
+while (condition) expression
+```
+
+***
+```{r}
+i <- 5
+while (i <= 25) {
+  print(i)
+  i <- i + 5
+}
+```
+
+***
+*Note:* We can rewrite any `for` loop with `while` instead. This means `while` is more flexible than `for`. So we should use `for` wherever possible. It’s good practice to use the least flexible solution to a problem.
+
+***
+*Example:* 
+
+Write an R program to guess a number between 1 to 9. Hint: User is prompted to enter a guess. If the user guesses wrong then the prompt appears again until the guess is correct. On successful guess, the program will exit.
+
+```{r eval=FALSE}
+target_num <- sample(1:9, 1)
+guess_num <- 0
+
+while (guess_num != target_num){
+  guess_num <- as.numeric(readline("Guess a number between 1 and 10 until you get it right : "))
+}
+```
+
+***
+## `break`
+The `break` statement can be used to terminate a loop.
+
+***
+*Example:* 
+
+Exit the loop if the number is equal to 15.
+```{r}
+i <- 5
+while (i <= 25) {
+  print(i)
+  if (i == 15) break
+  i <- i + 5
+}
+```
+
+
+
+***
+## `next`
+The `next` statement can be used to discontinue one cycle and skip to the "next" cycle.
+
+***
+*Example:* 
+
+Print all the numbers from 0 to 6 except 3 and 6.
+```{r}
+num <- 0:6
+for (i in num) {
+  if (i == 3 | i ==6) {
+    next
+  }
+  print(i)
+}
+```

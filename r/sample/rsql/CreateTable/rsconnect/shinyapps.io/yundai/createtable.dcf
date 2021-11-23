@@ -1,0 +1,10 @@
+name: createtable
+title:
+username:
+account: yundai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3200810
+bundleId: 3842153
+url: https://yundai.shinyapps.io/createtable/
+when: 1605001470.40604

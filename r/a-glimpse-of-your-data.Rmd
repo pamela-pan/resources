@@ -1,0 +1,163 @@
+---
+title: "A Glimpse of Your Data"
+author: "Yun Dai"
+date: "01/2019"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+******
+## Summary Statistics
+`head()`, `str()`, `summary()` and `table()` are useful functions to get a sense of our data in terms of the structure and summary statistics of the objects.
+
+******
+### head(), tail()
+`head()` returns the first several rows of an object. The default number of rows is 6.
+```{r cars}
+head(mtcars)
+```
+
+We can set how many rows to be displayed. 
+```{r}
+head(mtcars, n = 10)
+```
+
+The `tail()` function, alternatively, returns the last several rows of the object.
+```{r}
+tail(mtcars, 2)
+```
+
+
+******
+### str()
+The `str()` function displays the structure of an object.
+```{r iris}
+str(iris)
+```
+
+We can also go to the level of vector.
+```{r}
+str(iris$Species)
+```
+
+******
+### summary()
+`summary()` provides us with the basic summary statistics.
+
+Summarizing the dataset:
+```{r}
+summary(iris)
+```
+
+Summarizing a column:
+```{r}
+summary(iris$Species)
+```
+
+`summary()` will also tell us the number of missing values, if there are any.
+```{r}
+library(dplyr)
+summary(storms$ts_diameter)
+```
+
+
+******
+### table()
+`table()` gives us a frequency table.
+```{r}
+table(iris$Species)
+```
+
+`table()` can be more useful in cross-tabulation.
+```{r}
+table(iris$Species, iris$Petal.Width)
+```
+
+
+******
+### listing cases
+To examine a subset of data, we can print the cases in the R console by [subsetting the data frame](https://shanghai.hosting.nyu.edu/data/r/subsetting.html#subsetting_data_frames).
+
+Rows (cases) and columns (variables):
+```{r}
+mtcars[10:15, 2:5]
+```
+
+Conditional:
+```{r}
+mtcars[mtcars$mpg > 25, ]
+```
+
+******
+## Exploratory Analysis
+`cor()`, `t.test()` and `lm()` are useful functions for exploratory analysis.
+
+******
+### correlations
+`cor()` produces correlations.
+```{r}
+cor(mtcars[,1:3])
+```
+
+`use` argument allows us to decide if we want to apply pairwise deletion of missing values should we have missing data, for instance. 
+```{r}
+a <- mtcars
+a[2, 1] <- NA
+a[5, 3] <- NA
+
+cor(a[,1:3], use = "pairwise.complete.obs")
+```
+
+Or listwise deletion of missing values.
+```{r}
+cor(a[,1:3], use = "complete.obs")
+```
+
+
+******
+### t-tests
+`t.test()` performs one and two sample t-tests.
+
+Let's create a group variable by some arbitrary standard first with the `mtcars` data before performing a t-test.
+```{r}
+mtcars$group <- NA
+mtcars$group[mtcars$cyl > 4] <- 1
+mtcars$group[mtcars$cyl <= 4] <- 2
+```
+
+Now we can perform an independent 2-group t-test by `group`. 
+```{r}
+t.test(mpg ~ group, data = mtcars)
+```
+
+We can also do paired t-test and one sample t-test with `t.test()`.
+
+******
+### linear regressions
+`lm()` fits linear models. Below are some arbitrary examples of using `lm()` to fit linear regressions. `+` indicates multiple independent variables. `:` indicates interactions without main effects, and `*` indicates interactions with main effects.
+```{r}
+model1 <- lm(mpg ~ cyl, data = mtcars)
+model2 <- lm(mpg ~ cyl + disp + vs, data = mtcars)
+model3 <- lm(mpg ~ cyl : disp, data = mtcars)
+model4 <- lm(mpg ~ cyl * disp, data = mtcars)
+```
+
+`summary()` returns the summary statistics of the model.
+```{r}
+summary(model2)
+```
+
+We can also obtain the model components of interest to us, which are stored in a list.
+```{r}
+summary(model2)$coefficient
+```
+
+```{r}
+summary(model2)$residuals
+```
+

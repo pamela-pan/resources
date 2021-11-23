@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>R</title>
+	<link rel="stylesheet" href="css/overall.css">
+	<link rel="stylesheet" href="css/tools.css">
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<script src="js/menu.js"></script>
+
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+	<header>
+		<div class="title">R</div> 
+		<div class="subtitle"><a href="home.html">Home</a> | <a href="r.html">R</a> | <a href="stata.html">Stata</a> | <a href="rshiny.html">Shiny</a></div> 
+	</header>
+
+	<nav>
+		<div class="menu">
+			<div class="menu-container">
+			<ul>
+				<li class="menu-item"><a href="home.html"><span class="menu-num">00</span>HOME</a></li>
+				<li class="menu-item"><span class="menu-num">01</span>DATA TOOLS & SKILLS
+					<ul>
+						<li class="menu-sub-item"><a href="r.html">R</a></li>
+						<li class="menu-sub-item"><a href="stata.html">Stata</a></li>
+						<li class="menu-sub-item"><a href="rshiny.html">Shiny</a></li>						
+					</ul>
+				</li>
+				<li class="menu-item"><span class="menu-num">02</span>DATA VISUALIZATION
+					<ul>
+						<li class="menu-sub-item"><a href="viz/state-of-the-art.html" target="_blank">state of the art</a></li>
+						<li class="menu-sub-item"><a href="viz/resources.html" target="_blank">read more</a></li>
+					</ul>
+				</li>
+				<li class="menu-item"><span class="menu-num">03</span>DATA LITERACY
+					<ul>
+						<li class="menu-sub-item"><a href="workshops.html">workshops</a></li>
+						<li class="menu-sub-item"><a href="events.html">events</a></li>
+					</ul>
+				</li>				
+				<li class="menu-item"><a href="https://datascience.shanghai.nyu.edu/datasets"><span class="menu-num">04</span>CHINESE DATASETS</a></li>
+				<li class="menu-item"><a href="about.html"><span class="menu-num"><b>||</b></span>ABOUT</a></li>
+			</ul>
+		</div> 
+		</div> 
+
+		<div class="menu-sign">
+		<div class="menu-burger">
+			<div id="one"></div>
+			<div id="two"></div>
+			<div id="three"></div>
+		</div>
+		<div id="menu-hint">Menu</div>
+		</div> 
+	</nav>
+
+	
+		<section class="choice">
+			<div class="button button-selected" id="all">All</div>
+			<div class="button" id="intro">Coding Smartly</div>
+			<div class="button" id="cases">Cases</div>
+		</section>
+	
+	<main>
+		<section class="meat">
+			<div class="box">
+			<h3>Speaking R</h3>	
+
+			<div class="ticket">
+				<a href="r/environment.html" target="_blank">The R Environment</a> 
+				<span>(Downloading R and RStudio; RStudio interface and features; Working directory; Objects)</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="https://stream.nyu.edu/media/02.+Thinking+like+a+computer+%282%29/1_dw4tiuof" target="_blank">RStudio, R GUI, IDE</a>
+					</li>					
+					<li>
+						<a href="https://stream.nyu.edu/media/03.+Speaking+R+%281%29/1_e6ro93ts?st=190&ed=3070" target="_blank">Working directory</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/05.+Speaking+R+%283%29/1_qoytts2e?st=132&ed=379" target="_blank">Objects</a>
+					</li>
+				</ul>
+			</div>	<!-- part-video -->
+			</div>	<!-- ticket -->	
+
+			<div class="ticket">
+				<a href="r/concepts.html" target="_blank">R commands</a> 
+				<span>(Using R as a calculator; Print; R commands; Comments; Packages; Getting help)</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="https://stream.nyu.edu/media/04.+Speaking+R+%282%29/1_fia3cxot" target="_blank">R commands</a>
+					</li>					
+					<li>
+						<a href="https://stream.nyu.edu/media/05.+Speaking+R+%283%29/1_qoytts2e?st=0&ed=132" target="_blank">Comments</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/06.+Speaking+R+%284%29/1_cnrgnve0?st=174&ed=410" target="_blank">Packages</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/06.+Speaking+R+%284%29/1_cnrgnve0?st=174&ed=410" target="_blank">Getting help</a>
+					</li>					
+				</ul>
+			</div>	<!-- part-video -->
+			</div>
+
+			<div class="ticket intro">
+				<a href="r/writing-r-code.html" target="_blank">Writing R Code</a> 
+				<span>(Being reproducible; Organizing code; Syntax; Miscellaneous)</span>
+			</div>
+
+			</div><!-- box -->
+
+
+			<div class="box">
+			<h3>Data Structures</h3>
+			<div class="ticket">
+				<a href="r/vectors.html" target="_blank">Vectors</a> 
+				<span>(Generating sequences; Arithmetic operations; Logical vectors; Operators; Character vectors; Missing values; Indexing; Data types; Attributes)</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="https://stream.nyu.edu/media/08.+Vectors+%281%29/1_9kaciyax" target="_blank">Generating sequences</a>
+					</li>					
+					<li>
+						<a href="https://stream.nyu.edu/media/09.+Vectors+%282%29/1_nxhwr46a" target="_blank">Arithmetic operations</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/10.+Vectors+%283%29/1_3u1umpa0" target="_blank">Useful functions on vectors</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/11.+Vectors+%284%29/1_r0qkgmi4" target="_blank">Logical vectors</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/12.+Vectors+%285%29/1_etsrqnin" target="_blank">Operators</a>
+					</li>	
+					<li>
+						<a href="https://stream.nyu.edu/media/13.+Vectors+%286%29/1_z83bl69x" target="_blank">Character vectors</a>
+					</li>	
+					<li>
+						<a href="https://stream.nyu.edu/media/14.+Vectors+%287%29/1_jbqballm" target="_blank">Missing values</a>
+					</li>	
+					<li>
+						<a href="https://stream.nyu.edu/media/15.+Vectors+%288%29/1_77i4sjxm" target="_blank">Indexing</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/16.+Vectors+%289%29/1_msrrydvm" target="_blank">Data types; Attributes</a>
+					</li>																															
+				</ul>
+			</div>	<!-- part-video -->
+			</div>			
+
+<!-- 			<div class="ticket">
+				<a href="r/objects.html" target="_blank">Objects</a> 
+				<span>(Vectors; Factors; Arrays and matrices; Lists; Data frames; Data types; Attributes)</span>
+			</div>	 -->
+			
+			<div class="ticket">
+				<a href="r/data-structures.html" target="_blank">Data Structures</a> 
+				<span>(Factors; Matrices and Arrays; Lists; Data frames)</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="https://stream.nyu.edu/media/17.+Data+Structures+%281%29/1_653u8588" target="_blank">Overview of data structures; Factors; Matrices and arrays</a>
+					</li>					
+					<li>
+						<a href="https://stream.nyu.edu/media/18.+Data+Structures+%282%29/1_4w06liz1" target="_blank">Lists; Data frames</a>
+					</li>				
+				</ul>
+			</div>	<!-- part-video -->
+			</div>
+
+<!-- 			<div class="ticket intro cases">
+				<a href="r/subsetting.html" target="_blank">Subsetting Objects</a> 
+				<span>(Subsetting vectors; Subsetting arrays and matrices; Subsetting lists; Subsetting data frames; Subsetting model outputs; Subsetting components from other data types)</span>
+			</div>	 -->
+			<div class="ticket intro">
+				<a href="r/more-on-subsetting.html" target="_blank">More on Subsetting</a> 
+				<span>(Storing temporary outputs; Modifying object elements; subset(); %in% operator)</span>
+			</div>
+			<div class="ticket intro cases">
+				<a href="r/working-with-json-data.html" target="_blank">Working with JSON Data</a> 
+				<span>(JSON objects; JSON arrays; Nested JSON objects; JSON files)</span>
+			</div>		
+			</div>
+
+			<div class="box">
+			<h3>Control Statements and Functions</h3>		
+			<div class="ticket">
+				<a href="r/flow-control.html" target="_blank">Flow Control</a> 
+				<span>(if; if ... else if; if ... else if ... else; if ... else; Nested if; Vectorized ifelse())</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="https://stream.nyu.edu/media/19.+What+IFs+%281%29/1_zl3n1msf" target="_blank">if; if ... else if; if ... else if ... else; if ... else</a>
+					</li>					
+					<li>
+						<a href="https://stream.nyu.edu/media/20.+What+IFs+%282%29/1_fzzzfnz3" target="_blank">Nested if; Vectorized ifelse()</a>
+					</li>				
+				</ul>
+			</div>	<!-- part-video -->			
+			</div>
+
+			<div class="ticket">
+				<a href="r/loops.html" target="_blank">Loops</a> 
+				<span>(for loops; Nested loops; while loops; break; next)</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="https://stream.nyu.edu/media/21.+Loops+%281%29/1_44d9q0k3" target="_blank">for loops</a>
+					</li>					
+					<li>
+						<a href="https://stream.nyu.edu/media/22.+Loops+%282%29/1_odtghiav" target="_blank">for loops continued; Nested loops</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/media/23.+Loops+%283%29/1_omlsz10z" target="_blank">while loops; break; next</a>
+					</li>										
+				</ul>
+			</div>	<!-- part-video -->					
+			</div>
+
+			<div class="ticket">
+				<a href="r/functions.html" target="_blank">Functions</a> 
+				<span>()</span>
+			<div class="part-video">
+			<h4 class="video">video tutorials</h4>
+				<ul>
+					<li>
+						<a href="" target="_blank"></a>
+					</li>					
+					<li>
+						<a href="" target="_blank"></a>
+					</li>
+					<li>
+						<a href="" target="_blank"></a>
+					</li>										
+				</ul>
+			</div>	<!-- part-video -->					
+			</div>
+
+			</div>	<!-- box -->			
+
+			<div class="box">
+			<h3>Exploring Data</h3>		
+			<div class="ticket intro">
+				<a href="r/reading-data.html" target="_blank">Reading Data</a> 
+				<span>(Importing data with RStudio; Reading rectangular text data; Reading data from other software; Reading data of JSON format; Readinhg many compressed JSON files; Working with databases)</span>
+			</div>
+			<div class="ticket">
+				<a href="r/a-glimpse-of-your-data.html" target="_blank">A Glimpse of Your Data</a> 
+				<span>(Summary statistics; Listing specific cases; Correlations; t-tests; Linear regressions)</span>
+			</div>				
+			</div>	
+
+
+			<div class="box">
+			<h3>Data Manipulation</h3>
+			<div class="ticket intro">
+				<a href="r/data-transformation.html" target="_blank">Data Transformation</a>
+				<span>(Recoding variables; Adding/dropping columns and rows; Renaming variables; Arranging rows; Reordering columns; Grouping; Removing duplicates)</span>
+			</div>
+			<div class="ticket intro">
+				<a href="r/combining-data-frames.html" target="_blank">Combining Data Frames</a>
+				<span>(Binding by rows; Merging; Joining)</span>
+			</div>	
+			<div class="ticket intro">
+				<a href="r/aggregating-data.html" target="_blank">Aggregating Data</a>
+				<span>(dplyr functions; data.table functions)</span>
+			</div>	
+			<div class="ticket intro">
+				<a href="r/reshaping.html" target="_blank">Reshaping Data between Long and Wide Formats</a>
+				<span>(spread(); gather(); pivot_wider(); pivot_longer(); dcast(); melt())</span>
+			</div>	
+			<div class="ticket intro">
+				<a href="r/spreading-rows.html" target="_blank">Spreading Rows</a>
+				<span>(Filling in values; Replicating rows)</span>
+			</div>
+			<div class="ticket intro">
+				<a href="r/filling-in-missing-values-with-previous-or-next-value.html" target="_blank">Filling in Missing Values with Previous or Next Value</a>
+				<span>(tidyr::fill(); zoo::na.locf())</span>
+			</div>
+			<div class="ticket intro">
+				<a href="r/duplicates.html" target="_blank">Duplicates</a>
+				<span>(Finding and marking duplicates; Finding the positions of duplicates; Removing duplicates)</span>
+			</div>	
+			</div>
+
+			<div class="box">
+			<h3>Dates and Times</h3>
+			<div class="ticket intro">
+				<a href="r/dates-and-times.html" target="_blank">Dates and Times Fundamentals</a>
+				<span>(Data types; Converting dates and times; Creating dates and times; Extracting date-time components; Calculations; Time zones)</span>
+			</div>	
+			<div class="ticket intro cases">
+				<a href="r/local-time.html" target="_blank">Extracting Information from IP Addresses to Get Local Time</a>
+			</div>
+			</div>
+
+			<div class="box">
+			<h3>R Markdown</h3>
+			<div class="ticket intro">
+				<a href="r/r-markdown.html" target="_blank">Using R Markdown for Homework and More</a>
+			</div>	
+			</div>			
+
+			<div class="box">
+			<h3>Texts</h3>
+			<div class="ticket intro">
+				<a href="r/extracting-strings-from-separators.html" target="_blank">Extracting Strings from Separators</a>
+			</div>	
+			</div>
+
+			<div class="box">
+			<h3>Visualization</h3>
+			<div class="ticket intro">
+				<a href="r/a-lot-of-bars.html" target="_blank">A Lot of Bars</a>
+				<span>(Stacked bars (count); Stacked bars (percentage); Grouped bars; Lollipop chart)</span>
+			</div>	
+			<div class="ticket intro">
+				<a href="r/grouping-in-plotting.html" target="_blank">Grouping in Plotting</a>
+				<span>(Coloring; Facets; Grouped bars; Combining graphs)</span>
+			</div>		
+			</div>	
+
+			<div class="box">
+			<h3>Web-interfacing Visualization</h3>
+
+			<div class="part">
+			<div class="ticket cases">
+				<h4 class="casebook">Case I: Exploring multiple dimensions of survey data with Shiny app</h4>
+				<ul>
+					<li>
+						<a href="r/case-1-1-preprocessing.html" target="_blank">Part I: The Dirty Work - Reshaping Data for Visualization</a> <br>
+						<span>(Reshaping data structures; Extracting strings; Automating for Shiny)</span>
+					</li>
+					<li>
+						<a href="r/case-1-2-ggplot2.html" target="_blank">Part II: The Jigsaw Puzzle Pieces - Creating Graphs with ggplot2</a> <br>
+						<span>(Bars; Using summary stats; Using info from several columns; Visually grouping data)</span>
+					</li>
+					<li>
+						<a href="r/case-1-3-shinyapp.html" target="_blank">Part III: Assembling the Pieces - Creating R Shiny App</a> <br>
+						<span>(User interface layout; Widgets; Reactive expressions; Plot outputs; Table outputs; Style; Hosting the App)</span>
+					</li>
+					<li>
+						<a href="https://yundai.shinyapps.io/2018-lib-survey/">Product: Shiny App</a><br>
+						<span>(Source: library user survey data)</span>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div>	<!-- part -->
+
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case II: Visualizing times and locations with animation and interactivity using tracking logs </h4>				
+				<ul>
+					<li>
+						<a href="r/case-2-1-animation.html" target="_blank">Part I: Creating Animated Graphs with gganimate</a> <br>
+						<span>(gganimate; Animated map; Animated line graph)</span>
+					</li>
+					<li>
+						<a href="r/case-2-2-shinyapp.html" target="_blank">Part II: The Shiny App</a> <br>
+						<span>(Slider; Slider range; Animation sequences)</span>
+					</li>
+					<li>
+						<a href="https://yundai.shinyapps.io/2016-track-log/">Product: Shiny App</a><br>
+						<span>(Source: user behavior logs / server events data)</span>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div><!-- part -->
+
+			</div> <!-- box -->
+
+			<div class="box">
+			<h3>Working with SQL in Shiny</h3>
+
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case I: Building a one-stop-shop web app for business intelligence</h4>				
+				<ul>
+					<li>
+						<a href="r/case-3-sql-shiny.html" target="_blank">Connecting SQLite Database and Shiny App for Business Intelligence</a> <br>
+						<span>(Compiling database queries with SQLite; Issuing queries with RSQLite; Embedding SQLite queries in Shiny components)</span>
+					</li>
+					<li>
+						<a href="https://yundai.shinyapps.io/2020-business-intelligence/">Product: Business Intelligence Dashboard</a>
+					</li>
+					<li>
+						<a href="https://stream.nyu.edu/channel/SQLite%2BDatabase%2Band%2BShiny%2BApp%2Bfor%2BBusiness%2BIntelligence/193288383">Video tutorials</a><br>
+						<span>(Part 1: About database; Part2: The three big steps; Part 3: Navigation bar; Part 4: Select input; Part 5: Data range; Part 6: Data table; Part 7: Panel; Part 8: Plot; Part 9: Prediction; Part 10: Save table; Part 11: Conclusion)</span>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div>	<!-- part -->	
+
+			<div class="part">
+			<div class="ticket cases">
+			<h4 class="casebook">Case II: Buildng a prototype of a database management system</h4>
+				<ul>
+					<li>
+						<a href="r/case-4-database-management-shiny.html" target="_blank">Creating a Shiny App for Database Management</a> <br>
+						<span>(Dashboard layout; Authentication; Dynamic UI reacting to user inputs; Making sure the SQL parts work in Shiny; Web development in Shiny)</span>
+					</li>					
+					<li>
+						<a href="https://yundai.shinyapps.io/2020-database-management/">Product: Database Management Platform</a>
+					</li>
+				</ul>
+			</div>	<!-- ticket -->
+			</div>	<!-- part -->	
+			
+			</div>	<!-- box -->		
+
+
+			<div class="box">
+			<h3>Recommended Resources</h3>
+			<div class="ticket">
+				<a href="r/resources.html" target="_blank">Resources for Self-Paced Learning</a>
+				<!-- <span>(Quick Start; R for Data Science; Coursera Online Classes; Blogs; Forum)</span> --> 
+			</div>			
+			</div>	
+
+			</div>		
+
+		</section>
+	</main>	
+</body>
+</html>

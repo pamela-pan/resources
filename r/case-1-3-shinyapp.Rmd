@@ -1,0 +1,601 @@
+---
+title: "Assembling the Pieces - Creating R Shiny App "
+author: "Yun Dai"
+date: "10/2018"
+output: 
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    css: contents.css
+---
+
+```{r echo=FALSE}
+knitr::opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/websites/new web/data/r/sample") 
+```
+
+******
+The case presented here is adapted from how the [R Shiny App for a Library Survey](https://yundai.shinyapps.io/2018-lib-survey/) was created. This is the third post of the series to make an interactive data visualization web app: 
+
+* Part 1 - [The Dirty Work - Reshaping Data for Visualization](https://shanghai.hosting.nyu.edu/data/r/case-1-1-preprocessing.html)
+* Part 2 - [The Jigsaw Puzzle Pieces - Creating Graphs with ggplot2](https://shanghai.hosting.nyu.edu/data/r/case-1-2-ggplot2.html)
+* Part 3 - [Assembling the Pieces - Creating R Shiny App](https://shanghai.hosting.nyu.edu/data/r/case-1-3-shinyapp.html)
+
+Now that we have done with the dirty work of data cleaning, and we have got familiar with visually presenting data with `ggplot2`, let's get started with creating a Shiny App. We will make use of the data objects and plot prototypes that we saw in the first two posts, building up the Shiny app like assembling the jigsaw puzzle pieces.
+
+
+******
+## Getting Started with Shiny App
+[Learn Shiny](https://shiny.rstudio.com/tutorial/) from RStudio provides step-by-step tutorials (textual and video) on getting started with Shiny App. The [Articles](https://shiny.rstudio.com/articles/) section offers many useful topics on building Shiny App once you have grasped the basics.
+
+Here we will skip many "what and how" parts of building a Shiny App and go ahead to decompose this [R Shiny App for a Library Survey](https://yundai.shinyapps.io/2018-lib-survey/). We will take a top down approach to so do.
+
+<iframe src ="https://yundai.shinyapps.io/2018-lib-survey/" height= 600px width = 900px />
+
+******
+## User Interface Layout
+
+******
+### overall structure
+Basically we need a `ui` object that controls how the interface looks like, a `server` object that takes charges of the inputs and outputs, and a `global.R` that takes care of the extra work that we need for building up the App (e.g. creating objects for later use). Read more [here](https://shiny.rstudio.com/tutorial/written-tutorial/lesson1/) for the structure of a Shiny App. 
+
+******
+### application layout
+The first thing we want to do is laying out the overall user interface and the arrangement of each dashboard. RStudio's [Application layout guide](https://shiny.rstudio.com/articles/layout-guide.html) introduced four layout features: 
+
+* sidebar + main area
+* grid system
+* top navigation bar
+* tabsets and sidebar lists
+
+We will use all of them in our design except for the sidebar lists. 
+
+In our case, we use the top navigation bar as the highest level of navigation structure. 
+
+<iframe src ="https://yundai.shinyapps.io/demo1/" height= 200px width = 900px />
+
+```{r results=FALSE, message=FALSE}
+library(shiny)
+library(shinythemes)
+
+ui <- 
+  navbarPage("Demo", collapsible = TRUE, inverse = TRUE, theme = shinytheme("spacelab"),
+             tabPanel("Participation"),
+             tabPanel("Service Use",
+                      fluidPage(
+                        tabsetPanel(
+                          tabPanel("Accessing Website"),
+                          tabPanel("Visiting Library"),
+                          tabPanel("Attending Workshops"),
+                          tabPanel("Exploring Technology")
+                        ))),
+             tabPanel("Space & Study Habits",
+                      fluidPage(
+                        tabsetPanel(
+                          tabPanel("Study Habit"),
+                          tabPanel("Space Preference - Mid & Final Terms"),
+                          tabPanel("Space Preference - Most Days"),
+                          tabPanel("Space Preference - Student Submissions")
+                        ))), 
+             tabPanel("Outreach"),
+             tabPanel("About")
+)
+
+server <- function(input, output) {}
+
+shinyApp(ui = ui, server = server)
+```
+
+We started with creating a navigation bar organized by topics of the survey (service use, space use & study habits, outreach), in addition to a "survey summary" page and an "about" page. We did that with `navbarPage()`. Under "Service Use" we further created a layer evaluating services we offer (website access, library visits, workshop attendance, technology exploration) with [Tabsets](https://shiny.rstudio.com/articles/tabsets.html). Similarly we created this nested navigation structure for "Space and Study Habits". 
+
+The logic behind this layout is grouping blocks with similar topics into one place. This will also create visual consistency and repetition, which will be applied throughout the App.  
+
+`shinythemes` package changes the overall look of a Shiny App with many built-in themes as options. More on the package [here](https://rstudio.github.io/shinythemes/).
+
+In the following sections, we will build up the App piece by piece.
+
+******
+## Dashboard 1
+In the first dashboard on service use, we will be exploring the sidebar layout, Shiny widgets and reactive expressions. Important techniques to this dashboard are using reactive expressions to facilitate automation and repetition (e.g. simultaneously adjust the output of a plot by selecting the survey question, participant subgroup and plot type) in inputs and outputs.
+
+******
+### sidebar layout
+<iframe src ="https://yundai.shinyapps.io/demo3/" height= 600px width = 900px />
+
+******
+This dashboard uses the `sidebarLayout()`, where we have a `sidebarPanel()` for input and a `mainPanel()` for output.
+
+```{r results=FALSE, message=FALSE}
+library(shiny)
+library(shinythemes)
+library(ggplot2)
+
+source("global.R")
+
+ui <- 
+  navbarPage("Demo", selected = "Service Use", collapsible = TRUE, inverse = TRUE, theme = shinytheme("spacelab"),
+             tabPanel("Participation"),
+             tabPanel("Service Use",
+                      fluidPage(
+                        tabsetPanel(
+                          tabPanel("Accessing Website", br(),
+                                   sidebarLayout(
+                                     sidebarPanel(
+                                       radioButtons(
+                                         inputId = "question1",
+                                         label = "Choose a question to explore",
+                                         choices = c("Email/chat with library staff", 
+                                                     "Find books", 
+                                                     "Search for articles", 
+                                                     "Use subject / citation guides",
+                                                     "Book a group study room")), br(),
+                                       radioButtons(
+                                         inputId = "group1",
+                                         label = "Choose a dimension to explore",
+                                         choices = c("Student Status", "Country / Region of Origin", "Major")), br(),
+                                       radioButtons(
+                                         inputId = "plot1",
+                                         label = "Choose a plot type to explore",
+                                         choices = c("Stacked Bars", "Grouped Bar Charts", "Stacked Bars (Percent)"))),
+                                     mainPanel(plotOutput(outputId = "plot_access_web", height = "600px"))
+                                   )),
+                          tabPanel("Visiting Library"),
+                          tabPanel("Attending Workshops"),
+                          tabPanel("Exploring Technology")
+                        ))),
+             tabPanel("Space & Study Habits",
+                      fluidPage(
+                        tabsetPanel(
+                          tabPanel("Study Habit"),
+                          tabPanel("Space Preference - Mid & Final Terms"),
+                          tabPanel("Space Preference - Most Days"),
+                          tabPanel("Space Preference - Student Submissions")
+                        ))), 
+             tabPanel("Outreach"),
+             tabPanel("About")
+  )
+
+
+server <- function(input, output) {
+  groupInput <- reactive({
+    switch(input$group1,
+           "Student Status" = survey$status, 
+           "Country / Region of Origin" = survey$country, 
+           "Major" = survey$major)
+  })
+  dataInput <- reactive({
+    switch(input$question1, 
+           "Email/chat with library staff" = survey$Q1.1_2, 
+           "Find books" = survey$Q1.1_7, 
+           "Search for articles" = survey$Q1.1_4, 
+           "Use subject / citation guides" = survey$Q1.1_6,
+           "Book a group study room" = survey$Q1.1_3)
+  })
+  output$plot_access_web <- renderPlot({
+    if (input$plot1 == "Stacked Bars") {
+      ggplot(survey, aes(groupInput())) + 
+        geom_bar(aes(fill = dataInput()), position = position_stack(reverse = TRUE), width = 0.4, alpha = 0.75) +
+        scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+        scale_x_discrete(limits = rev(levels(groupInput()))) +
+        coord_flip() +
+        theme(axis.text.x = element_text(size = 15),
+              axis.text.y = element_text(size = 15, margin = margin(0,3,0,0)),
+              axis.title.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.ticks.x = element_line(size = 0),
+              legend.title = element_blank(),
+              legend.text = element_text(size = 15),
+              plot.margin = unit(c(1,2,2,3), "cm")) 
+    } else if (input$plot1 == "Grouped Bar Charts") {
+      ggplot(survey, aes(groupInput())) + 
+        geom_bar(aes(fill = dataInput()), position = "dodge", width = 0.6, alpha = 0.75) +
+        scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+        scale_x_discrete(limits = rev(levels(groupInput()))) +
+        coord_flip() +
+        theme(axis.text.x = element_text(size = 15),
+              axis.text.y = element_text(size = 15, margin = margin(0,3,0,0)),
+              axis.title.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.ticks.x = element_line(size = 0),
+              legend.title = element_blank(),
+              legend.text = element_text(size = 15),
+              plot.margin = unit(c(1,2,2,3), "cm")) 
+    } else if (input$plot1 == "Stacked Bars (Percent)") {
+      ggplot(survey, aes(groupInput())) + 
+        geom_bar(aes(fill = dataInput()), position = "fill", width = 0.3, alpha = 0.75) +
+        scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+        scale_x_discrete(limits = rev(levels(groupInput()))) +
+        coord_flip() +
+        theme(axis.text.x = element_text(size = 15),
+              axis.text.y = element_text(size = 15, margin = margin(0,3,0,0)),
+              axis.title.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.ticks.x = element_line(size = 0),
+              legend.title = element_blank(),
+              legend.text = element_text(size = 15),
+              plot.margin = unit(c(1,2,2,3), "cm")) 
+    }
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+
+******
+### plot outputs
+We talked about how to create those bar charts [here](https://shanghai.hosting.nyu.edu/data/r/case-1-2-ggplot2.html#a_lot_of_bars).
+
+Each plot got an outpud id with `plotOutput(outputId = "id")` in `ui`, and was rendered in `server` with `output$id <- renderPlot({})`. This refers to the [reactive programming models](https://shiny.rstudio.com/articles/reactivity-overview.html) that Shiny relies on. 
+
+Note that when rendering plots the function is not always `renderPlot()`, which depends on the plot library you use. For instance, it is `renderPlotly()` to render `Plotly` plots, and `renderWordcloud2()` to render plots produced by `wordcloud2()`.
+
+******
+### widgets
+Shiny offers many widgets to make use of. [Widgets](https://shiny.rstudio.com/gallery/widget-gallery.html) are web elements that we can interact with. Available widgets include checkbox, date input and range, slider, select box, file input, radio button, action button etc. 
+
+We used the radio buttons here, which will also be applied across almost all dashboards, for two reasons. (1)Most of our tasks are concerned with visualizing categories, and groups of radio buttons supports this need when each group refers to a category. (2)We wanted to create consistency across the dashboards in this App. It is also easier for users to follow the logic of the visualization when they browse among the dashboards. 
+
+First of all, the radion button needs a name and a label, which all widgets have. In addition to the name(id) and label, we also specified the `choices` argument with all the options for a user to choose from. Below is what we did.
+```{r results=FALSE, message=FALSE}
+radioButtons(inputId = "question1", 
+             label = "Choose a question to explore",
+             choices = c("Email/chat with library staff", 
+                         "Find books", 
+                         "Search for articles"))
+```
+
+Then in the `server` object we output what we defined earlier.   
+```{r results=FALSE, message=FALSE}
+dataInput <- reactive({
+  switch(input$question1, 
+         "Email/chat with library staff" = survey$Q1.1, 
+         "Find books" = survey$Q1.2, 
+         "Search for articles" = survey$Q1.3)
+})
+```
+
+******
+### automation and repetition
+Above we have created a dashboard that allows one to examine the website access by each survey question, subgroups of participants by country/status/major, and plot types, all at the same time. We automated that process by creating two reactive expressions, `groupInput` and `dataInput`. `groupInput` handles which subgroup to look at, and `dataInput` handles which survey question to look at.
+
+A [reactive expression](https://shiny.rstudio.com/tutorial/written-tutorial/lesson6/) is a expression whose result will change over time. It uses widget input, which may change, and returns a value, which will be updated when the widget input has changed.
+
+```{r results=FALSE, message=FALSE}
+groupInput <- reactive({
+  switch(input$group1,
+         "Student Status" = survey$status, 
+         "Country / Region of Origin" = survey$country, 
+         "Major" = survey$major)
+})
+
+dataInput <- reactive({
+  switch(input$question1, 
+         "Email/chat with library staff" = survey$Q1.1, 
+         "Find books" = survey$Q1.2, 
+         "Search for articles" = survey$Q1.3)
+})
+```
+
+Then later in plotting, we can simply use what we defined earlier as arguments in the `ggplot()` function.
+```{r results=FALSE, message=FALSE}
+server <- function(input, output) {
+  output$plot_access_web <- renderPlot({
+    if (input$plot1 == "Stacked Bars") {
+      ggplot(survey, aes(groupInput())) + 
+        geom_bar(aes(fill = dataInput()), 
+                 position = position_stack(reverse = TRUE), 
+                 width = 0.4, alpha = 0.75) +
+        scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1])) +
+        scale_x_discrete(limits = rev(levels(groupInput()))) 
+    } else if (input$plot1 == "Grouped Bar Charts") { 
+    } else if (input$plot1 == "Stacked Bars (Percent)") { 
+    }
+  })
+}  
+```
+
+******
+## Dashboard 2
+In this second dashboard on survey summary, we will further explore the input and output in Shiny and the layout system. Techniques important to this dashboard is using action buttons to display extra information complementary to the main visualization, using texts as visualization and using tables to provide more information to the plots.
+
+******
+### grid layout
+<iframe src ="https://yundai.shinyapps.io/demo2/" height= 500px width = 900px />
+
+******
+The survey summary dashboard uses the grid layout system, where we get to define how much space the rows and columns should take. The column widths are based on the Bootstrap 12-wide grid system. Basically one page is divided into 12 columns; we then decide how many columns we want to allocate to one block. 
+
+In this case, the dashboard is divided into four rows (1 for `help text` and 3 for outputs). Within each row of the output, we allocated 6 columns to the left block of texts with button (including 1 column of blank space), 5 to the plot (including 2 columns of blank space), and 1 to be the blank space to the right. `offset = #` pushes the block to the right by # columns.
+
+```{r results=FALSE, message=FALSE}
+library(shiny)
+library(shinythemes)
+
+source("global.R")
+
+ui <- 
+  navbarPage("Demo", collapsible = TRUE, inverse = TRUE, theme = shinytheme("spacelab"),
+             tabPanel("Participation",
+                      fluidPage(
+                        fluidRow(
+                          column(5, offset = 1, 
+                                 helpText("Click More Stats button to find out more information of each group.", 
+                                          style = "font-size:115%;font-style:italic;" ), 
+                                 br())),
+                        fluidRow(
+                          column(3, offset = 2, br(), br(), 
+                                 h1("320", align = "center", 
+                                    style = "font-size: 350%; letter-spacing: 3px;"), 
+                                 h3("Student Participants", 
+                                    align = "center", style = "opacity: 0.75;"), br(),
+                                 div(actionButton(inputId = "more1", "More Stats"), 
+                                     style = "margin:auto; width:30%;")),
+                          column(6, plotOutput(outputId = "g1", height = "400px")),
+                          column(1)),
+                        fluidRow(
+                          column(3, offset = 2, br(), br(),
+                                 h1("48", align = "center", 
+                                    style = "font-size: 350%; letter-spacing: 3px;"), 
+                                 h3("Countries / Regions of Origin", 
+                                    align = "center", style = "opacity: 0.75;"), br(),
+                                 div(actionButton(inputId = "more2", "More Stats"), 
+                                     style = "margin:auto; width:30%;")),
+                          column(6, plotOutput(outputId = "g2", height = "400px")),
+                          column(1)),
+                        fluidRow(
+                          column(3, offset = 2, br(), br(),
+                                 h1("16", align = "center", 
+                                    style = "font-size: 350%; letter-spacing: 3px;"), 
+                                 h3("Majors", align = "center", 
+                                    style = "opacity: 0.75; letter-spacing: 1px;"), 
+                                 br(),
+                                 div(actionButton(inputId = "more3", "More Stats"), 
+                                     style = "margin:auto; width:30%;")),
+                          column(6, plotOutput(outputId = "g3", height = "600px")),
+                          column(1))
+                      )),
+                      tabPanel("Service Use",
+                               fluidPage(
+                                 tabsetPanel( 
+                                   tabPanel("Accessing Website"), 
+                                   tabPanel("Visiting Library"), 
+                                   tabPanel("Attending Workshops"), 
+                                   tabPanel("Exploring Technology")
+                                 ))),
+                      tabPanel("Space & Study Habits",
+                               fluidPage(
+                                 tabsetPanel(
+                                   tabPanel("Study Habit"), 
+                                   tabPanel("Space Preference - Mid & Final Terms"), 
+                                   tabPanel("Space Preference - Most Days"), 
+                                   tabPanel("Space Preference - Student Submissions")
+                                 ))), 
+                      tabPanel("Outreach"),
+                      tabPanel("About")
+)
+             
+server <- function(input, output) {
+  ## charts
+  output$g1 <- renderPlot({plot1})
+  output$g2 <- renderPlot({plot2})
+  output$g3 <- renderPlot({plot3})
+  
+  ## button
+  observeEvent(input$more1, {
+    showModal(modalDialog(
+      renderTable({tb[[1]]}),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  observeEvent(input$more2, {
+    showModal(modalDialog(
+      renderTable({tb[[2]]}),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+  observeEvent(input$more3, {
+    showModal(modalDialog(
+      renderTable({tb[[3]]}),
+      easyClose = TRUE,
+      footer = modalButton("Close")
+    ))
+  })
+}
+             
+shinyApp(ui = ui, server = server)
+
+```
+
+You may have noticed that we have applied many internal styles to the components in the above dashboard. Styles will be discussed [below](#style). For now we will skip that. 
+
+******
+### plot outputs
+The lollipop charts (`plot1` to `plot3`) were created in the `global.R`. We talked about how to create those lollipops [here](https://shanghai.hosting.nyu.edu/data/r/case-1-2-ggplot2.html#lollipop_chart).
+
+```{r results=FALSE, message=FALSE}
+plot1 <- 
+  ggplot(tb[[1]], aes(`#`, reorder(tb[[1]][,1], -`#`), label = `#`)) +
+  geom_segment(aes(x = 0, y = reorder(tb[[1]][,1], -`#`), xend = `#`, yend = reorder(tb[[1]][,1], -`#`)), 
+               size = 0.5, color = "grey50") +
+  geom_point(size = 10) +
+  geom_text(color = "white", size = 4) +
+  coord_flip() +
+  theme(axis.text.x = element_text(size = 14, angle = 90, hjust = 1),
+        axis.text.y = element_text(size = 14),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_line(size = 0),
+        plot.margin = unit(c(1,2,2,3), "cm"))
+```
+
+******
+### using texts as visualization
+A plot is not the only element that we can rely on in visualization. Texts, especially large texts, can be useful when there are not too much information to display but when there is an important message to convey. 
+
+For instance, we chose to highlight the number of survey participants, number of the particpants' countries/regions, and number of the participants' majors using the `h1()` HTML tag function. This helps the numbers stand out and also tells the audience that those numbers matter. The large texts aim to catch the readers' attention.
+
+```{r results=FALSE, message=FALSE}
+fluidRow(
+  column(3, offset = 2, br(), br(), 
+          h1("320", align = "center", style = "font-size: 350%; letter-spacing: 3px;"), 
+          h3("Student Participants", align = "center", style = "opacity: 0.75;"), br(),
+          div(actionButton(inputId = "more1", "More Stats"), style = "margin:auto; width:30%;")),
+  column(6, plotOutput(outputId = "g1", height = "400px")),
+  column(1)
+)
+```
+
+
+******
+### action buttons
+The reason that we included action buttons in this case are double. (1) There is limited space to display all information. An action button allows hidden information to be displayed when an action is triggered. We want to display the kind of information that is not primary but complementary to what has already been shown. (2) An action button adds interactivity to our App, inviting users to explore. 
+
+RStudio's article [Using Action Buttons](https://shiny.rstudio.com/articles/action-buttons.html) introduced many ways of using buttons. Our use case is a simple one. When someone hits the action button, a model box will be open and a table of summary data inside the box will be rendered. 
+
+Each button has an id and a label: `actionButton(inputId = "more1", "More Stats")`. `observeEvent()` triggers a command with an action button. `showModal(modalDialog())` opens the modal box. `renderTable({tb[[1]]})` renders the summary table that we created in `global.R`.
+
+```{r results=FALSE, message=FALSE}
+observeEvent(input$more1, {
+  showModal(modalDialog(
+    renderTable({tb[[1]]}),
+    easyClose = TRUE,
+    footer = modalButton("Close")
+  ))
+})
+```
+
+******
+### using lists to store data subsets
+The data we used for summary tables were stored in the list `tb`, which we created [previously](https://shanghai.hosting.nyu.edu/data/r/case-1-1-preprocessing.html#reshaping_for_shiny). This is a list of three matrices of summarizing participant stats by subgroups (status/country/major). 
+
+```{r echo=FALSE, message=FALSE}
+load("survey")
+set <- survey[c("status", "country", "major")]
+tb <- replicate(length(set), data.frame(), simplify=FALSE)
+
+for (m in 1:length(set)){
+  tb[m] <- list(data.frame(table(set[m])))
+  names(tb[[m]]) <- c("", "#")
+  tb[[m]] <- tb[[m]][order(tb[[m]]$`#`,decreasing = T),]
+}
+
+
+for (i in 1:3){
+  colnames(tb[[i]])[1] <- c("Student Status", "Country / Region", "Major")[i]
+}
+
+tb
+```
+
+Using a list to store data subsets helps with automating the whole process because we won't need to create many single data objects for each request, but just subset the list for the parts we need. 
+
+This is more obvious in the piece below, where `dtset` is a list consisting of three matrices summarizing top reasons of visiting the library by subgroups(status/country/major).
+
+```{r echo=FALSE, message=FALSE}
+load("survey")
+g <- list(status = c("Freshman", "Sophomore", "Junior", "Senior", "Other Programs") ,
+          country = c("China", "U.S.", "Other"),
+          major = c("Business, Finance & Economics","Humanities & Social Sciences","Data Science & Interactive Media Business",                     "Interactive Media Arts","Science","CS & Engineering","Mathematics","Undefined"))
+
+Reason <- c("Work on a class assignment/paper", "Watch video or listen audio", "Use specialized databases \\(e.g. Bloomberg, Wind\\)", "Use a library computer",  "Use a group study room", "Print, photocopy, scan",  "Other", "Meet up with friends",  "Hang out between classes", "Get readings from Course Reserve", "Get help from a librarian", "Find a quiet place to study", "Borrow books and materials", "Attend a library workshop")
+
+r <- data.frame(survey$status, survey$country, survey$major)
+for (m in 1: length(Reason)){
+  r[,Reason[m]] <- str_extract(survey$top_reason, Reason[m])
+}
+
+dtset <- replicate(3, data.frame(Reason), simplify = FALSE)
+for (i in 1:3){
+  levels(dtset[[i]]$Reason)[levels(dtset[[i]]$Reason) == "Use specialized databases \\(e.g. Bloomberg, Wind\\)"] <- "Use specialized databases (e.g. Bloomberg, Wind)"
+}
+
+for (m in 1:length(dtset)){
+  for (n in 1:length(g[[m]])){
+    dtset[[m]][,g[[m]][n]] <- apply(r[r[m] == g[[m]][n],4:17], 2, function(x) length(which(!is.na(x))))
+  }
+  dtset[[m]]$Total<- rowSums(dtset[[m]][,2:n], na.rm = TRUE, dims = 1)
+  dtset[[m]] <- dtset[[m]][order(dtset[[m]]$Total,decreasing = T),]
+}
+
+dtset
+```
+
+When accessing the subsets of data we need, or specify arguments in `ggplot()`, what we did was to use the `dataInput2()[[1]]` or `groupInput2()[,1]`.
+
+```{r results=FALSE, message=FALSE}
+server <- function(input, output) {
+  dataInput2 <- reactive({
+    switch(input$question2, 
+           "My top reasons for visiting Library" = dtset,
+           "I asked for help by ..." = dtset2)
+  })
+  
+  groupInput2 <- reactive({
+    switch(input$group2,
+           "Student Status" = dataInput2()[[1]], 
+           "Country / Region of Origin" = dataInput2()[[2]], 
+           "Major" = dataInput2()[[3]])
+  })
+  
+  output$plot_visit_lib <- renderPlot({
+    ggplot(groupInput2(), aes(x = reorder(groupInput2()[,1], Total), y = Total, fill = factor(Level, levels = c("High","Medium","Low")))) + 
+      geom_bar(stat = "identity", alpha = 0.75) + 
+      scale_fill_manual(values = c(palette[[1]][4], palette[[2]][1], palette[[3]][1]), name="Level of\nFrequency") +
+      coord_flip() +
+      theme(axis.text.x = element_text(size = 15),
+            axis.text.y = element_text(size = 15, margin = margin(0,3,0,0)),
+            axis.title.y = element_blank(),
+            axis.title.x = element_text(size = 15, margin = margin(15,0,0,0)),
+            axis.ticks.x = element_line(size = 0),
+            legend.title = element_text(size = 15),
+            legend.text = element_text(size = 15),
+            plot.margin = unit(c(0,0,1,0), "cm")) 
+  })
+  output$table_visit_lib <- renderTable({
+    groupInput2()
+  })
+}
+```
+
+******
+### using tables to provide more information
+Tables in dashboards are useful in that they can provide details of the data used in plots.  
+
+
+******
+## Style
+In Dashboard 2, we saw a lot of elements that control the styles of an app. Here we will take a closer look at how to customize our user interface.
+
+******
+### HTML tags
+If you know some HTML, you will notice many HTML tag functions we used: `h1()`, `h3()`, `br()`, and `div()`. These HTML tag functions format the elements in the dashboard with default CSS values. (`names(tags)` will return the full list of these readily available functions for us. The article [Customize your UI with HTML](https://shiny.rstudio.com/articles/html-tags.html) shows how to apply these functions.)
+
+******
+### inline style
+You may also noticed that we also used inline styles many times. Usually we did this with `style` argument like below.
+```{r results=FALSE, message=FALSE}
+h3("Student Participants", align = "center", style = "opacity: 0.75;")
+```
+
+We also put the action buttons in `div()`s so that we can apply inline styles to them.
+```{r results=FALSE, message=FALSE}
+div(actionButton(inputId = "more1", "More Stats"), style = "margin:auto; width:30%;")
+```
+
+
+******
+## Hosting the App
+Once we have built up the Shiny App, we can run a Shiny App in many ways:
+
+* locally with R scripts
+* host the App on your own server
+* run it from GitHub
+* host it using RStudio's hosting service on shinyapps.io
+
+[Share your apps](https://shiny.rstudio.com/tutorial/written-tutorial/lesson7/) introduces how to share or host a Shiny App with the methods mentioned above. 
+
+shinyapps.io offers free services to host Shiny Apps, and it is easy to deploy the app to the cloud with R. Here is [how](https://shiny.rstudio.com/articles/shinyapps.html).

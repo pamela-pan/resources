@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Table Outputs</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Table Outputs</h1>
+	<p>
+		<span class="g"><a href="http://repec.org/bocode/e/estout/estpost.html" class="internal">estpost</a></span> together with <span class="g"><a href="http://repec.sowi.unibe.ch/stata/estout/esttab.html" class="internal">esttab</a></span> can be very useful in exporting outputs to tables.
+	</p>
+	<p>
+		<span class="g">estpost</span> posts results from various commands in <span class="g">e()</span>. <span class="g">esttab</span> displays formatted tables.
+	</p>
+	<h2>Summary statistics</h2>
+	<pre><code>
+sysuse auto		
+estpost tabstat price mpg weight if rep78 <= 4, by(foreign) s(count mean sd p50 min max) columns(statistics) 	
+	</code></pre>
+	<p>
+		This posted the results from <span class="g">tabstat</span> to the screen.
+	</p>
+	<pre><code>
+Summary statistics: count mean sd p50 min max
+     for variables: price mpg weight
+  by categories of: foreign
+
+     foreign |  e(count)    e(mean)      e(sd)     e(p50)     e(min)     e(max) 
+-------------+------------------------------------------------------------------
+Domestic     |                                                                  
+       price |        46   6265.109   3230.865       4912       3291      15906 
+         mpg |        46         19   4.027682         19         12         29 
+      weight |        46   3429.565    633.463       3385       1800       4840 
+-------------+------------------------------------------------------------------
+Foreign      |                                                                  
+       price |        12    5903.25   1826.219       5654       3895       9735 
+         mpg |        12       24.5   2.645751       24.5         21         30 
+      weight |        12   2158.333   307.3001       2100       1760       2750 
+-------------+------------------------------------------------------------------
+Total        |                                                                  
+       price |        58   6190.241   2984.357     5006.5       3291      15906 
+         mpg |        58   20.13793   4.382774       19.5         12         30 
+      weight |        58   3166.552   777.7195       3290       1760       4840 
+
+	</code></pre>
+	<p>
+		To export the output to a csv file, use <span class="g">esttab</span>:
+	</p>
+	<pre><code>
+esttab using table1.csv, replace cell((count mean sd p50 min max)) nonumber nomtitle		
+	</code></pre>
+	
+	<h2>T test results</h2>
+	<p>
+		The commands below quietly posted the results from <span class="g">ttest</span> and appended all <span class="g">e(b)</span> and <span class="g">e(t)</span> results to a csv file.
+	</p>
+	<pre><code>
+local i = 1
+while `i' < 3{
+	foreach var in price mpg {
+		qui estpost ttest `var' if rep78 == `i' | rep78 == `i'+1, by(rep78)
+		esttab using table2.csv, append nonumber nomtitle nonotes
+	}
+	local i = `i' + 1
+}		
+	</code></pre>
+
+	<h2>Model specifications</h2>
+	<p>
+		Commands below first stored regression outs from each model and appended all of them to a table in a csv file.
+	</p>
+	<pre><code>
+local i = 1
+while `i' < 4{
+	foreach depvar of varlist var1 var2 var3 {
+		areg `depvar' ib`i'.rank if rank <= `i'+1 & rank >= `i', absorb(a)
+		est sto m1
+
+		areg `depvar' ib`i'.rank if rank <= `i'+1 & rank >= `i', absorb(b)
+		est sto m2
+
+		areg `depvar' ib`i'.rank if rank <= `i'+1 & rank >= `i', absorb(b)
+		est sto m3
+
+		esttab m1 m2 m3 using table3.csv, append se nonumber title(`depvar') mtitle("a fe" "b fe" "c fe")
+	}
+	local i = `i' + 1
+}		
+	</code></pre>
+
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+</body>
+</html>		

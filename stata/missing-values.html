@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Missing Values</title>
+	<link rel="stylesheet" href="css/contents.css">
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-96123149-3"></script>
+	<script>
+  	window.dataLayer = window.dataLayer || [];
+  	function gtag(){dataLayer.push(arguments);}
+  	gtag('js', new Date());
+  	gtag('config', 'UA-96123149-3');
+	</script>
+</head>
+
+<body>
+	<div class="border">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</div>
+
+<!-- 	<div class="fast-nav">
+		<div id="back"><a href="../stata.html">&larr;</a></div>
+		<div id="home"><a href="../home.html">home</a></div>
+	</div> -->
+	
+	<div class="text t-l t-m t-s">
+	<h1 class="h1 h1-l h1-m h1-s">Missing Values</h1>
+	<h2>Numeric variables</h2>
+		<p>
+			Missing values of numeric variables are denoted by a period (.), the system missing value. Additionally, Stata provides ways to denote extended missing values: . a, .b, …,and .z. <!-- We may run into the extended missing values in survey data, which could refer to nonresponse, non-applicable, question unasked etc.  -->
+		</p>
+	<h4>Missing values take the largest positive values</h4>
+		<p>
+			The order is numbers< .< .a< .b< … < .z. Results of numeric expressions involving missing values will be missing values. 
+		</p> 
+		<p>
+			We should be careful when working with data containing missing values. <br>
+			<span class="g">. sysuse auto<br>
+			. list make rep78 if rep78 > 4<br></span>
+			returns both car models whose repair records are larger than 4 and those that are missing. <br>
+
+		<pre><code>
+     +------------------------+
+     | make             rep78 |
+     |------------------------|
+  3. | AMC Spirit           . |
+  7. | Buick Opel           . |
+ 20. | Dodge Colt           5 |
+ 43. | Plym. Champ          5 |
+ 45. | Plym. Sapporo        . |
+     |------------------------|
+ 51. | Pont. Phoenix        . |
+ 53. | Audi 5000            5 |
+ 57. | Datsun 210           5 |
+ 61. | Honda Accord         5 |
+ 64. | Peugeot 604          . |
+     |------------------------|
+ 66. | Subaru               5 |
+ 67. | Toyota Celica        5 |
+ 68. | Toyota Corolla       5 |
+ 69. | Toyota Corona        5 |
+ 71. | VW Diesel            5 |
+     |------------------------|
+ 74. | Volvo 260            5 |
+     +------------------------+
+
+		</code></pre>
+
+			If we only want those with a record, we should use:<br>
+			<span class="g">. list make rep78 if rep78 > 4 & !missing(rep78)<br></span> 
+		<pre><code>
+     +------------------------+
+     | make             rep78 |
+     |------------------------|
+ 20. | Dodge Colt           5 |
+ 43. | Plym. Champ          5 |
+ 53. | Audi 5000            5 |
+ 57. | Datsun 210           5 |
+ 61. | Honda Accord         5 |
+     |------------------------|
+ 66. | Subaru               5 |
+ 67. | Toyota Celica        5 |
+ 68. | Toyota Corolla       5 |
+ 69. | Toyota Corona        5 |
+ 71. | VW Diesel            5 |
+     |------------------------|
+ 74. | Volvo 260            5 |
+     +------------------------+
+
+		</code></pre>
+		</p> 
+
+	<h2>String variables</h2>
+
+		<p>
+			Missing values of strings are denoted by “” without space. 
+		</p>
+
+	<h2>Identifying missing values</h2>
+		<p>
+			To check for missing values we can use the following methods: <br>
+			<span class="g">
+			. if <em>var</em> > . <br>
+			. if missing(<em>var</em>)</span> 
+		</p>
+		<p>
+			<span class="g">missing(x,y,z)</span> checks if any of x, y or z is missing.
+		</p>
+
+	<h4>Be careful with the missing value indicators</h4>
+		<p>
+			Sometimes it can be tricky to identify missing values. For instance, survey data usually coded the missing values in certain ways: -999 (not applicable), 88,888,888,888 (don't know), 99,999,999,999 (refused to answer) etc. 
+		</p>
+		<p>
+			Make sure you read the codebook before you clean the data. If you treat the extremely large or small missing values as real cases, the results can be severely biased. Imagine if an income variable contained such missing values as 99,999,999,999, and someone was not being careful to have included those cases in his/her model. While in reality the respondent refused to answer how much his/her income was, in the models that person became super rich.
+		</p>
+
+		<div class="more"><p>More on how Stata handles missing values in various scenarios: <br>
+				<a href="http://stats.idre.ucla.edu/stata/modules/missing-values/">UCLA: Statistical Consulting Group, Missing Values |  Stata Learning Modules</a> </p>
+		</div>
+	</div>
+	<div class="author">Author: Yun Dai, 2018</div>
+	
+</body>
+</html>
